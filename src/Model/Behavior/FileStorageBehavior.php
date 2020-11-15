@@ -74,14 +74,6 @@ class FileStorageBehavior extends Behavior
                 'Missing or invalid fileStorage config key'
             );
         }
-
-        if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
-            $this->transformer = new DataTransformer(
-                $this->getTable()
-            );
-        }
-
-        //$this->processors = (array)$this->getConfig('processors');
     }
 
     /**
@@ -308,7 +300,7 @@ class FileStorageBehavior extends Behavior
      */
     public function entityToFileObject(EntityInterface $entity): FileInterface
     {
-        return $this->transformer->entityToFileObject($entity);
+        return $this->getTransformer()->entityToFileObject($entity);
     }
 
     /**
@@ -319,7 +311,7 @@ class FileStorageBehavior extends Behavior
      */
     public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity)
     {
-        return $this->transformer->fileObjectToEntity($file, $entity);
+        return $this->getTransformer()->fileObjectToEntity($file, $entity);
     }
 
     /**
@@ -365,5 +357,23 @@ class FileStorageBehavior extends Behavior
         }
 
         return $this->processor;
+    }
+
+    /**
+     * @return \Burzum\FileStorage\FileStorage\DataTransformerInterface
+     */
+    protected function getTransformer(): DataTransformerInterface
+    {
+        if ($this->transformer !== null) {
+            return $this->transformer;
+        }
+
+        if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
+            $this->transformer = new DataTransformer(
+                $this->getTable()
+            );
+        }
+
+        return $this->transformer;
     }
 }
