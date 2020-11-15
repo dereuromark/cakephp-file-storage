@@ -49,6 +49,30 @@ class FileStorageTable extends Table
      */
     public function _initializeSchema(TableSchemaInterface $schema): TableSchemaInterface
     {
+        // BAD
+        $file = new ExtendedFile();
+        $file->withDemo('x')
+            ->withVariant('y', [])
+            ->withDemo('z');
+
+        //   Line   Model/Table/FileStorageTable.php
+        // ------ -------------------------------------------------------------------------------------------
+        //  53     Call to an undefined method Phauthentic\Infrastructure\Storage\FileInterface::withDemo().
+
+        // GOOD
+        $file = new CleanExtendedFile();
+        $file->withDemo('x')
+            ->withVariant('y', [])
+            ->withDemo('z');
+
+        // ALL GOOD
+        //   Line   Model/Table/CleanFile.php
+        // ------ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        //  409    Parameter #1 $file of method Phauthentic\Infrastructure\Storage\PathBuilder\PathBuilderInterface::path() expects Phauthentic\Infrastructure\Storage\FileInterface, $this(Burzum\FileStorage\Model\Table\CleanFile) given.
+        //  583    Parameter #1 $file of method Phauthentic\Infrastructure\Storage\UrlBuilder\UrlBuilderInterface::url() expects Phauthentic\Infrastructure\Storage\FileInterface, $this(Burzum\FileStorage\Model\Table\CleanFile) given.
+        // ------ ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+        // are false positive as we didnt also change the builder code
+
         $schema->addColumn('variants', 'json');
         $schema->addColumn('metadata', 'json');
 
