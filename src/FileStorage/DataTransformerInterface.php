@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\FileStorage;
+namespace FileStorage\FileStorage;
 
 use Cake\Datasource\EntityInterface;
 use Phauthentic\Infrastructure\Storage\FileInterface;

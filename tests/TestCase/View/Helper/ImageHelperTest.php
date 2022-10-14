@@ -2,14 +2,14 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Test\TestCase\View\Helper;
+namespace FileStorage\Test\TestCase\View\Helper;
 
-use Burzum\FileStorage\Test\TestCase\FileStorageTestCase;
-use Burzum\FileStorage\View\Helper\ImageHelper;
 use Cake\Core\Configure;
 use Cake\Http\ServerRequest as Request;
 use Cake\View\Helper\HtmlHelper;
 use Cake\View\View;
+use FileStorage\Test\TestCase\FileStorageTestCase;
+use FileStorage\View\Helper\ImageHelper;
 use Phauthentic\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
 
 /**
@@ -24,7 +24,7 @@ class ImageHelperTest extends FileStorageTestCase
     /**
      * Image Helper
      *
-     * @var \Burzum\FileStorage\View\Helper\ImageHelper
+     * @var \FileStorage\View\Helper\ImageHelper
      */
     protected $helper;
 

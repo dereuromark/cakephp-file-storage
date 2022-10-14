@@ -2,16 +2,16 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Model\Behavior;
+namespace FileStorage\Model\Behavior;
 
 use ArrayObject;
-use Burzum\FileStorage\FileStorage\DataTransformer;
-use Burzum\FileStorage\FileStorage\DataTransformerInterface;
 use Cake\Core\Configure;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventInterface;
 use Cake\ORM\Behavior;
+use FileStorage\FileStorage\DataTransformer;
+use FileStorage\FileStorage\DataTransformerInterface;
 use League\Flysystem\AdapterInterface;
 use Phauthentic\Infrastructure\Storage\FileInterface;
 use Phauthentic\Infrastructure\Storage\FileStorage;
@@ -36,7 +36,7 @@ class FileStorageBehavior extends Behavior
     protected $fileStorage;
 
     /**
-     * @var \Burzum\FileStorage\FileStorage\DataTransformerInterface
+     * @var \FileStorage\FileStorage\DataTransformerInterface
      */
     protected $transformer;
 
@@ -48,7 +48,7 @@ class FileStorageBehavior extends Behavior
     /**
      * Default config
      *
-     * @var array
+     * @var array<string, mixed>
      */
     protected $_defaultConfig = [
         'defaultStorageConfig' => 'Local',
@@ -71,13 +71,13 @@ class FileStorageBehavior extends Behavior
             $this->fileStorage = $this->getConfig('fileStorage');
         } else {
             throw new RuntimeException(
-                'Missing or invalid fileStorage config key'
+                'Missing or invalid fileStorage config key',
             );
         }
 
         if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
             $this->transformer = new DataTransformer(
-                $this->getTable()
+                $this->table(),
             );
         }
 
@@ -157,7 +157,7 @@ class FileStorageBehavior extends Behavior
         $this->dispatchEvent('FileStorage.beforeSave', [
             'entity' => $entity,
             'storageAdapter' => $this->getStorageAdapter($entity->get('adapter')),
-        ], $this->getTable());
+        ], $this->table());
     }
 
     /**
@@ -184,14 +184,14 @@ class FileStorageBehavior extends Behavior
                 $this->dispatchEvent('FileStorage.beforeStoringFile', [
                     'entity' => $entity,
                     'file' => $file,
-                ], $this->getTable());
+                ], $this->table());
 
                 $file = $this->fileStorage->store($file);
 
                 $this->dispatchEvent('FileStorage.afterStoringFile', [
                     'entity' => $entity,
                     'file' => $file,
-                ], $this->getTable());
+                ], $this->table());
 
                 $file = $this->processImages($file, $entity);
 
@@ -200,22 +200,22 @@ class FileStorageBehavior extends Behavior
                 $this->dispatchEvent('FileStorage.beforeFileProcessing', [
                     'entity' => $entity,
                     'file' => $file,
-                ], $this->getTable());
+                ], $this->table());
 
                 $file = $processor->process($file);
 
                 $this->dispatchEvent('FileStorage.afterFileProcessing', [
                     'entity' => $entity,
-                    'file' => $file
-                ], $this->getTable());
+                    'file' => $file,
+                ], $this->table());
 
                 $entity = $this->fileObjectToEntity($file, $entity);
-                $this->getTable()->saveOrFail(
+                $this->table()->saveOrFail(
                     $entity,
-                    ['callbacks' => false]
+                    ['callbacks' => false],
                 );
             } catch (Throwable $exception) {
-                $this->getTable()->delete($entity);
+                $this->table()->delete($entity);
 
                 throw $exception;
             }
@@ -224,7 +224,7 @@ class FileStorageBehavior extends Behavior
         $this->dispatchEvent('FileStorage.afterSave', [
             'entity' => $entity,
             'storageAdapter' => $this->getStorageAdapter($entity->get('adapter')),
-        ], $this->getTable());
+        ], $this->table());
     }
 
     /**
@@ -238,7 +238,7 @@ class FileStorageBehavior extends Behavior
     {
         if ($entity->isNew()) {
             if (!$entity->has('model')) {
-                $entity->set('model', $this->getTable()->getAlias());
+                $entity->set('model', $this->table()->getAlias());
             }
 
             if (!$entity->has('adapter')) {
@@ -260,7 +260,7 @@ class FileStorageBehavior extends Behavior
     {
         $this->dispatchEvent('FileStorage.afterDelete', [
             'entity' => $entity,
-        ], $this->getTable());
+        ], $this->table());
 
         $file = $this->entityToFileObject($entity);
         $this->fileStorage->remove($file);
@@ -273,7 +273,7 @@ class FileStorageBehavior extends Behavior
      * - gets the mime type
      * - gets the extension if present
      *
-     * @param array|\ArrayAccess $upload
+     * @param \ArrayAccess|array $upload
      * @param string $field
      *
      * @return void
@@ -306,7 +306,7 @@ class FileStorageBehavior extends Behavior
      */
     public function deleteAllFiles(array $conditions)
     {
-        $table = $this->getTable();
+        $table = $this->table();
 
         $results = $table->find()
             ->select((array)$table->getPrimaryKey())

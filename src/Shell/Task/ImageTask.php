@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Shell\Task;
+namespace FileStorage\Shell\Task;
 
 use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
@@ -20,8 +20,8 @@ use Phauthentic\Infrastructure\Storage\Exception\StorageException;
  * The identifier is the "model" field from the storage table. Versions is a comma
  * separated list of image versions configured for the given identifier.
  *
- * bin\cake Burzum/FileStorage.storage image remove <identifier> <versions>
- * bin\cake Burzum/FileStorage.storage image remove ProfilePicture "thumb60, crop50"
+ * bin\cake FileStorage.storage image remove <identifier> <versions>
+ * bin\cake FileStorage.storage image remove ProfilePicture "thumb60, crop50"
  */
 class ImageTask extends Shell
 {
@@ -38,7 +38,7 @@ class ImageTask extends Shell
     public function initialize(): void
     {
         parent::initialize();
-        $this->Table = TableRegistry::getTableLocator()->get('Burzum/FileStorage.ImageStorage');
+        $this->Table = TableRegistry::getTableLocator()->get('FileStorage.ImageStorage');
     }
 
     /**
@@ -191,7 +191,7 @@ class ImageTask extends Shell
         $parser->addOption('model', [
             'short' => 'm',
             'help' => __('The model to use.'),
-            'default' => 'Burzum/FileStorage.ImageStorage',
+            'default' => 'FileStorage.ImageStorage',
         ]);
 
         $parser->addOption('limit', [

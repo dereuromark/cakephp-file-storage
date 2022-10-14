@@ -2,10 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Test\TestCase\Model\Table;
+namespace FileStorage\Test\TestCase\Model\Table;
 
-use App\Storage\StorageCollections;
-use Burzum\FileStorage\Test\TestCase\FileStorageTestCase;
+use FileStorage\Test\TestCase\FileStorageTestCase;
 use Laminas\Diactoros\UploadedFile;
 
 class ItemsTableTest extends FileStorageTestCase
@@ -16,8 +15,8 @@ class ItemsTableTest extends FileStorageTestCase
      * @var array
      */
     protected $fixtures = [
-        'plugin.Burzum/FileStorage.Items',
-        'plugin.Burzum/FileStorage.FileStorage',
+        'plugin.FileStorage.Items',
+        'plugin.FileStorage.FileStorage',
     ];
 
     /**
@@ -35,7 +34,7 @@ class ItemsTableTest extends FileStorageTestCase
         $this->table = $this->getTableLocator()->get('Items');
 
         $this->table->hasOne('Avatars', [
-            'className' => 'Burzum/FileStorage.FileStorage',
+            'className' => 'FileStorage.FileStorage',
             'foreignKey' => 'foreign_key',
             'conditions' => [
                 'Avatars.model' => 'Items',
@@ -44,7 +43,7 @@ class ItemsTableTest extends FileStorageTestCase
         ]);
 
         $this->table->hasMany('Photos', [
-            'className' => 'Burzum/FileStorage.FileStorage',
+            'className' => 'FileStorage.FileStorage',
             'foreignKey' => 'foreign_key',
             'conditions' => [
                 'Photos.model' => 'Items',
@@ -53,17 +52,18 @@ class ItemsTableTest extends FileStorageTestCase
         ]);
 
         $this->table->addBehavior(
-            'Burzum/FileStorage.FileAssociation', [
+            'FileStorage.FileAssociation',
+            [
                 'associations' => [
                     'Avatars' => [
                         'collection' => 'Avatars',
-                        'replace' => true
+                        'replace' => true,
                     ],
                     'Photos' => [
                         'collection' => 'Photos',
-                    ]
-                ]
-            ]
+                    ],
+                ],
+            ],
         );
     }
 
@@ -94,7 +94,7 @@ class ItemsTableTest extends FileStorageTestCase
                     UPLOAD_ERR_OK,
                     'tituts.jpg',
                     'image/jpeg',
-                )
+                ),
             ],
         ]);
         $this->assertSame([], $entity->getErrors());
@@ -128,7 +128,7 @@ class ItemsTableTest extends FileStorageTestCase
                     UPLOAD_ERR_OK,
                     'tituts.jpg',
                     'image/jpeg',
-                )
+                ),
             ],
         ]);
         $this->assertSame([], $entity->getErrors());
@@ -154,7 +154,7 @@ class ItemsTableTest extends FileStorageTestCase
                     UPLOAD_ERR_OK,
                     'demo.png',
                     'image/png',
-                )
+                ),
             ],
         ]);
         $this->assertSame([], $entity->getErrors());

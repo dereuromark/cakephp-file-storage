@@ -2,14 +2,14 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Test\TestCase\Model\Behavior;
+namespace FileStorage\Test\TestCase\Model\Behavior;
 
 use ArrayObject;
-use Burzum\FileStorage\Test\TestCase\FileStorageTestCase;
-use Burzum\FileStorage\Test\TestCase\FileStorageTestTable;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Event\Event;
+use FileStorage\Test\TestCase\FileStorageTestCase;
+use FileStorage\Test\TestCase\FileStorageTestTable;
 use Laminas\Diactoros\UploadedFile;
 
 /**
@@ -20,7 +20,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
     /**
      * Holds the instance of the table
      *
-     * @var \Burzum\FileStorage\Model\Table\FileStorageTable
+     * @var \FileStorage\Model\Table\FileStorageTable
      */
     protected $FileStorage;
 
@@ -37,11 +37,11 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $this->FileStorage = $this->getTableLocator()->get(FileStorageTestTable::class);
 
         $this->FileStorage->addBehavior(
-            'Burzum/FileStorage.FileStorage',
-            Configure::read('FileStorage.behaviorConfig')
+            'FileStorage.FileStorage',
+            Configure::read('FileStorage.behaviorConfig'),
         );
 
-        $this->testFilePath = Plugin::path('Burzum/FileStorage') . 'Test' . DS . 'Fixture' . DS . 'File' . DS;
+        $this->testFilePath = Plugin::path('FileStorage') . 'Test' . DS . 'Fixture' . DS . 'File' . DS;
     }
 
     /**
@@ -78,10 +78,10 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $this->FileStorage->behaviors()->FileStorage->afterDelete(
             $event,
             $entity,
-            new ArrayObject([])
+            new ArrayObject([]),
         );
 
-        $this->assertFileNotExists($file);
+        $this->assertFileDoesNotExist($file);
     }
 
     /**
@@ -96,7 +96,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
             filesize($this->fileFixtures . 'titus.jpg'),
             UPLOAD_ERR_OK,
             'titus.png',
-            'image/jpeg'
+            'image/jpeg',
         );
 
         $entity = $this->FileStorage->newEntity([

@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\FileStorage;
+namespace FileStorage\FileStorage;
 
 use Cake\Datasource\EntityInterface;
 use Cake\ORM\Table;
@@ -40,7 +40,7 @@ class DataTransformer implements DataTransformerInterface
             (string)$entity->get('model'),
             (string)$entity->get('foreign_key'),
             (array)$entity->get('variants'),
-            (array)$entity->get('metadata')
+            (array)$entity->get('metadata'),
         );
 
         $file = $file->withUuid((string)$entity->get('id'));

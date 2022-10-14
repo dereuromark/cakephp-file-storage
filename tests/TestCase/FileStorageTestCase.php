@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Test\TestCase;
+namespace FileStorage\Test\TestCase;
 
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
@@ -14,8 +14,10 @@ use Phauthentic\Infrastructure\Storage\Factories\LocalFactory;
 use Phauthentic\Infrastructure\Storage\FileStorage;
 use Phauthentic\Infrastructure\Storage\PathBuilder\PathBuilder;
 use Phauthentic\Infrastructure\Storage\Processor\Image\ImageProcessor;
+use Phauthentic\Infrastructure\Storage\Processor\StackProcessor;
 use Phauthentic\Infrastructure\Storage\StorageAdapterFactory;
 use Phauthentic\Infrastructure\Storage\StorageService;
+use TestApp\Storage\Processor\ImageDimensionsProcessor;
 
 /**
  * FileStorageTestCase
@@ -34,13 +36,13 @@ class FileStorageTestCase extends TestCase
      * @var array
      */
     protected $fixtures = [
-        'plugin.Burzum/FileStorage.FileStorage',
+        'plugin.FileStorage.FileStorage',
     ];
 
     /**
      * FileStorage Table instance.
      *
-     * @var \Burzum\FileStorage\Model\Table\FileStorageTable
+     * @var \FileStorage\Model\Table\FileStorageTable
      */
     protected $FileStorage;
 
@@ -68,7 +70,7 @@ class FileStorageTestCase extends TestCase
         parent::setUp();
 
         $this->testPath = TMP . 'file-storage-test' . DS;
-        $this->fileFixtures = Plugin::path('Burzum/FileStorage') . 'tests' . DS . 'Fixture' . DS . 'File' . DS;
+        $this->fileFixtures = Plugin::path('FileStorage') . 'tests' . DS . 'Fixture' . DS . 'File' . DS;
 
         if (!is_dir($this->testPath)) {
             mkdir($this->testPath);
@@ -124,7 +126,7 @@ class FileStorageTestCase extends TestCase
         ]);
 
         $storageService = new StorageService(
-            new StorageAdapterFactory()
+            new StorageAdapterFactory(),
         );
 
         $storageService->setAdapterConfigFromArray([
@@ -138,7 +140,7 @@ class FileStorageTestCase extends TestCase
 
         $fileStorage = new FileStorage(
             $storageService,
-            $pathBuilder
+            $pathBuilder,
         );
 
         $imageManager = new ImageManager([
@@ -148,12 +150,12 @@ class FileStorageTestCase extends TestCase
         $imageProcessor = new ImageProcessor(
             $fileStorage,
             $pathBuilder,
-            $imageManager
+            $imageManager,
         );
-        $imageDimensionsProcessor = new \TestApp\Storage\Processor\ImageDimensionsProcessor(
-            $this->testPath
+        $imageDimensionsProcessor = new ImageDimensionsProcessor(
+            $this->testPath,
         );
-        $stackProcessor = new \Phauthentic\Infrastructure\Storage\Processor\StackProcessor([
+        $stackProcessor = new StackProcessor([
             $imageProcessor,
             $imageDimensionsProcessor,
         ]);

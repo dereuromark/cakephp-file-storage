@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Model\Behavior;
+namespace FileStorage\Model\Behavior;
 
 use ArrayObject;
 use Cake\Datasource\EntityInterface;
@@ -21,8 +21,7 @@ use Laminas\Diactoros\UploadedFile;
 class FileAssociationBehavior extends Behavior
 {
     /**
-     * @var array
-     * @inheritDoc
+     * @var array<string, mixed>
      */
     protected $_defaultConfig = [
         'associations' => [],
@@ -35,15 +34,15 @@ class FileAssociationBehavior extends Behavior
     {
         parent::initialize($config);
 
-        $model = $this->getTable()->getAlias();
+        $model = $this->table()->getAlias();
         foreach ($config['associations'] as $association => $assocConfig) {
-            $associationObject = $this->getTable()->getAssociation($association);
+            $associationObject = $this->table()->getAssociation($association);
 
             $defaults = [
                 'replace' => $associationObject instanceof HasOne,
                 'model' => $model,
                 'collection' => $association,
-                'property' => $this->getTable()->getAssociation($association)->getProperty(),
+                'property' => $this->table()->getAssociation($association)->getProperty(),
             ];
 
             $config['associations'][$association] = $assocConfig + $defaults;
@@ -63,8 +62,7 @@ class FileAssociationBehavior extends Behavior
         EventInterface $event,
         EntityInterface $entity,
         ArrayObject $options
-    ): void
-    {
+    ): void {
         $associations = $this->getConfig('associations');
         foreach ($associations as $association => $assocConfig) {
             $property = $assocConfig['property'];
@@ -118,7 +116,7 @@ class FileAssociationBehavior extends Behavior
                 $entity->{$property}->set('model', $assocConfig['model']);
                 $entity->{$property}->set('foreign_key', $entity->id);
 
-                $this->getTable()->{$association}->saveOrFail($entity->{$property});
+                $this->table()->{$association}->saveOrFail($entity->{$property});
             }
         }
     }
@@ -135,17 +133,17 @@ class FileAssociationBehavior extends Behavior
         string $association,
         array $assocConfig
     ): void {
-        $result = $this->getTable()->{$association}->find()
+        $result = $this->table()->{$association}->find()
             ->where([
                 'model' => $assocConfig['model'],
                 'collection' => $assocConfig['collection'] ?? null,
-                'foreign_key' => $entity->get((string)$this->getTable()->getPrimaryKey()),
-                'id !=' => $entity->get($assocConfig['property'])->get((string)$this->getTable()->{$association}->getPrimaryKey()),
+                'foreign_key' => $entity->get((string)$this->table()->getPrimaryKey()),
+                'id !=' => $entity->get($assocConfig['property'])->get((string)$this->table()->{$association}->getPrimaryKey()),
             ])
             ->first();
 
         if ($result) {
-            $this->getTable()->{$association}->delete($result);
+            $this->table()->{$association}->delete($result);
         }
     }
 }

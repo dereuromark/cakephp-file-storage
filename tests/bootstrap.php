@@ -13,7 +13,7 @@ $findRoot = function ($root) {
         }
     } while ($root !== $lastRoot);
 
-    throw new \Exception('Cannot find the root of the application, unable to run tests');
+    throw new Exception('Cannot find the root of the application, unable to run tests');
 };
 
 $root = $findRoot(__FILE__);
@@ -30,4 +30,4 @@ $loader->setPsr4('Burzum\Imagine\\', './vendor/burzum/cakephp-imagine-plugin/src
 $config = [
     'path' => dirname(__FILE__, 2) . DS,
 ];
-Plugin::getCollection()->add(new \Burzum\FileStorage\Plugin($config));
+Plugin::getCollection()->add(new \FileStorage\Plugin($config));

@@ -1,9 +1,9 @@
 {
-    "name": "burzum/cakephp-file-storage",
+    "name": "dereuromark/cakephp-file-storage",
     "type": "cakephp-plugin",
     "description": "This plugin is giving you the possibility to store files in virtually any kind of storage backend. This plugin is wrapping the Gaufrette library (https://github.com/KnpLabs/Gaufrette) library in a CakePHP fashion and provides a simple way to use the storage adapters through the StorageManager class.",
     "keywords": ["file", "filesystem", "media", "abstraction", "upload", "cakephp", "storage"],
-    "homepage": "https://github.com/burzum/cakephp-file-storage-plugin",
+    "homepage": "https://github.com/dereuromark/cakephp-file-storage-plugin",
     "license": "MIT",
     "authors": [
         {
@@ -12,7 +12,7 @@
         },
         {
             "name": "Other contributors",
-            "homepage": "https://github.com/burzum/cakephp-file-storage/graphs/contributors",
+            "homepage": "https://github.com/dereuromark/cakephp-file-storage/graphs/contributors",
             "role": "Contributors"
         }
     ],
@@ -20,32 +20,26 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=7.4",
-        "cakephp/cakephp": "^4.0",
+        "cakephp/cakephp": "^4.3",
         "phauthentic/file-storage": "dev-develop"
     },
     "require-dev": {
         "cakephp/plugin-installer": "^1.3.0",
         "phauthentic/file-storage-image-processor": "dev-develop",
-        "phpunit/phpunit": "^8.0",
-        "spryker/code-sniffer": "^0.15.6",
+        "phpunit/phpunit": "^9.5",
+        "spryker/code-sniffer": "^0.17.1",
         "vlucas/phpdotenv": "^3.3"
     },
-    "repositories": [
-        {
-            "type": "git",
-            "url": "https://github.com/skie/cakephp-imagine-plugin"
-        }
-    ],
     "autoload": {
         "psr-4": {
-            "Burzum\\FileStorage\\": "src/",
-            "Burzum\\FileStorage\\Test\\Fixture\\": "tests/Fixture/"
+            "FileStorage\\": "src/",
+            "FileStorage\\Test\\Fixture\\": "tests/Fixture/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "TestApp\\": "tests/test_app/src/",
-            "Burzum\\FileStorage\\Test\\TestCase\\": "tests/TestCase/"
+            "FileStorage\\Test\\TestCase\\": "tests/TestCase/"
         }
     },
     "suggest": {
@@ -59,16 +53,18 @@
         ],
         "cs-check": "phpcs -p",
         "cs-fix": "phpcbf -p",
-        "stan": "phpstan analyse src/ && psalm --show-info=false",
+        "stan": "phpstan analyse",
         "stan-test": "phpstan analyse tests/",
         "psalm": "psalm --show-info=false",
-        "stan-setup": "cp composer.json composer.backup && composer require --dev phpstan/phpstan:^0.12 vimeo/psalm:^3.0 && mv composer.backup composer.json",
-        "rector": "rector process src/",
-        "rector-setup": "cp composer.json composer.backup && composer require --dev rector/rector:^0.4.11 && mv composer.backup composer.json",
+        "stan-setup": "cp composer.json composer.backup && composer require --dev phpstan/phpstan:^1.2.0 && mv composer.backup composer.json",
         "test": "phpunit",
         "coverage-test": "phpunit --stderr --coverage-clover=clover.xml"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": {
+            "cakephp/plugin-installer": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     }
 }

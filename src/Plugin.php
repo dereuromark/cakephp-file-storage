@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage;
+namespace FileStorage;
 
 use Cake\Core\BasePlugin;
 

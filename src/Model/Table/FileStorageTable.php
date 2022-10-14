@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Model\Table;
+namespace FileStorage\Model\Table;
 
 use Cake\Core\Configure;
 use Cake\Database\Schema\TableSchemaInterface;
@@ -26,21 +26,21 @@ use Cake\ORM\Table;
  * @copyright 2012 - 2020 Florian Krämer
  * @license MIT
  *
- * @method \Burzum\FileStorage\Model\Entity\FileStorage newEmptyEntity()
- * @method \Burzum\FileStorage\Model\Entity\FileStorage newEntity(array $data, array $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage[] newEntities(array $data, array $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage get($primaryKey, $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage findOrCreate($search, ?callable $callback = null, $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage[] patchEntities(iterable $entities, array $data, array $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage[]|\Cake\Datasource\ResultSetInterface|false saveMany(iterable $entities, $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage[]|\Cake\Datasource\ResultSetInterface saveManyOrFail(iterable $entities, $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage[]|\Cake\Datasource\ResultSetInterface|false deleteMany(iterable $entities, $options = [])
- * @method \Burzum\FileStorage\Model\Entity\FileStorage[]|\Cake\Datasource\ResultSetInterface deleteManyOrFail(iterable $entities, $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage newEmptyEntity()
+ * @method \FileStorage\Model\Entity\FileStorage newEntity(array $data, array $options = [])
+ * @method array<\FileStorage\Model\Entity\FileStorage> newEntities(array $data, array $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage get($primaryKey, $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage findOrCreate($search, ?callable $callback = null, $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
+ * @method array<\FileStorage\Model\Entity\FileStorage> patchEntities(iterable $entities, array $data, array $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage|false save(\Cake\Datasource\EntityInterface $entity, $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage saveOrFail(\Cake\Datasource\EntityInterface $entity, $options = [])
+ * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage>|false saveMany(iterable $entities, $options = [])
+ * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage> saveManyOrFail(iterable $entities, $options = [])
+ * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage>|false deleteMany(iterable $entities, $options = [])
+ * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage> deleteManyOrFail(iterable $entities, $options = [])
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
- * @mixin \Burzum\FileStorage\Model\Behavior\FileStorageBehavior
+ * @mixin \FileStorage\Model\Behavior\FileStorageBehavior
  */
 class FileStorageTable extends Table
 {
@@ -72,7 +72,7 @@ class FileStorageTable extends Table
 
         $this->addBehavior('Timestamp');
         $this->addBehavior(
-            'Burzum/FileStorage.FileStorage',
+            'FileStorage.FileStorage',
             (array)Configure::read('FileStorage.behaviorConfig'),
         );
     }

@@ -14,7 +14,7 @@ composer require burzum/cakephp-imagine-plugin
 In your applications `config/bootstrap.php` load the plugins:
 
 ```php
-Plugin::load('Burzum/FileStorage', [
+Plugin::load('FileStorage', [
 	'bootstrap' => true
 ]);
 Plugin::load('Burzum/Imagine');
@@ -57,7 +57,7 @@ In your `App\Model\Table\UsersTable.php` file is a method called `inititalize()`
 
 ```php
 $this->hasOne('Avatars', [
-	'className' => 'Burzum/FileStorage.FileStorage',
+	'className' => 'FileStorage.FileStorage',
 	'foreignKey' => 'foreign_key',
 	'conditions' => [
 		'Avatars.model' => 'Avatar'

@@ -2,9 +2,9 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Test\TestCase\Model\Table;
+namespace FileStorage\Test\TestCase\Model\Table;
 
-use Burzum\FileStorage\Test\TestCase\FileStorageTestCase;
+use FileStorage\Test\TestCase\FileStorageTestCase;
 use Laminas\Diactoros\UploadedFile;
 
 /**
@@ -56,7 +56,7 @@ class FileStorageTableTest extends FileStorageTestCase
                 filesize($this->fileFixtures . 'titus.jpg'),
                 UPLOAD_ERR_OK,
                 'tituts.jpg',
-                'image/jpeg'
+                'image/jpeg',
             ),
         ]);
         $this->assertSame([], $entity->getErrors());

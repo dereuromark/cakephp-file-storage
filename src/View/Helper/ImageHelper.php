@@ -2,10 +2,10 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\View\Helper;
+namespace FileStorage\View\Helper;
 
-use Burzum\FileStorage\Model\Entity\FileStorageEntityInterface;
 use Cake\View\Helper;
+use FileStorage\Model\Entity\FileStorageEntityInterface;
 use Phauthentic\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
 
 /**
@@ -22,14 +22,14 @@ class ImageHelper extends Helper
     /**
      * Helpers
      *
-     * @var array
+     * @var array<mixed>
      */
     protected $helpers = [
         'Html',
     ];
 
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     protected $_defaultConfig = [
         'pathPrefix' => '',
@@ -38,7 +38,7 @@ class ImageHelper extends Helper
     /**
      * Generates an image url based on the image record data and the used Gaufrette adapter to store it
      *
-     * @param \Burzum\FileStorage\Model\Entity\FileStorageEntityInterface|null $image FileStorage entity or whatever else table that matches this helpers needs without
+     * @param \FileStorage\Model\Entity\FileStorageEntityInterface|null $image FileStorage entity or whatever else table that matches this helpers needs without
      * the model, we just want the record fields
      * @param string|null $version Image version string
      * @param array $options HtmlHelper::image(), 2nd arg options array
@@ -62,7 +62,7 @@ class ImageHelper extends Helper
     /**
      * URL
      *
-     * @param \Burzum\FileStorage\Model\Entity\FileStorageEntityInterface $image FileStorage entity or whatever else table that matches this helpers needs without
+     * @param \FileStorage\Model\Entity\FileStorageEntityInterface $image FileStorage entity or whatever else table that matches this helpers needs without
      * the model, we just want the record fields
      * @param string|null $variant Image version string
      * @param array $options HtmlHelper::image(), 2nd arg options array

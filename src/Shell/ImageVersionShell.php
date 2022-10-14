@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Shell;
+namespace FileStorage\Shell;
 
 use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
@@ -48,7 +48,7 @@ class ImageVersionShell extends Shell
         $parser->addOption('storageTable', [
             'short' => 's',
             'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
-            'default' => 'Burzum/FileStorage.FileStorage',
+            'default' => 'FileStorage.FileStorage',
         ]);
         $parser->addOption('limit', [
             'short' => 'l',
@@ -77,7 +77,7 @@ class ImageVersionShell extends Shell
                         'storageTable' => [
                             'short' => 's',
                             'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
-                            'default' => 'Burzum/FileStorage.FileStorage',
+                            'default' => 'FileStorage.FileStorage',
                         ],
                         'limit' => [
                             'short' => 'l',
@@ -113,7 +113,7 @@ class ImageVersionShell extends Shell
                         'storageTable' => [
                             'short' => 's',
                             'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
-                            'default' => 'Burzum/FileStorage.FileStorage',
+                            'default' => 'FileStorage.FileStorage',
                         ],
                         'limit' => [
                             'short' => 'l',
@@ -140,7 +140,7 @@ class ImageVersionShell extends Shell
                         'storageTable' => [
                             'short' => 's',
                             'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
-                            'default' => 'Burzum/FileStorage.FileStorage',
+                            'default' => 'FileStorage.FileStorage',
                         ],
                         'limit' => [
                             'short' => 'l',
@@ -194,7 +194,7 @@ class ImageVersionShell extends Shell
             'overwrite' => !$this->params['keep-old-versions'],
         ];
 
-        if (empty($operations)) {
+        if (!$operations) {
             $this->abort(__d('file_storage', 'Invalid table or version.'));
         }
 
@@ -225,7 +225,7 @@ class ImageVersionShell extends Shell
             'overwrite' => !$this->params['keep-old-versions'],
         ];
 
-        if (empty($operations)) {
+        if (!$operations) {
             $this->out(__d('file_storage', 'Invalid table or version.'));
             $this->_stop();
         }
@@ -249,7 +249,7 @@ class ImageVersionShell extends Shell
     {
         $operations = Configure::read('FileStorage.imageSizes.' . $model . '.' . $version);
 
-        if (empty($operations)) {
+        if (!$operations) {
             $this->out(__d('file_storage', 'Invalid table or version.'));
             $this->_stop();
         }

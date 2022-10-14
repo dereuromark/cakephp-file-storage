@@ -2,17 +2,17 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Shell;
+namespace FileStorage\Shell;
 
-use Burzum\FileStorage\Utility\StorageUtils;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
 use Cake\Core\Configure;
+use FileStorage\Utility\StorageUtils;
 
 /**
  * Class StorageShell
  *
- * @property \Burzum\FileStorage\Shell\Task\ImageTask $Image
+ * @property \FileStorage\Shell\Task\ImageTask $Image
  */
 class StorageShell extends Shell
 {
@@ -22,7 +22,7 @@ class StorageShell extends Shell
      * @var array
      */
     public $tasks = [
-        'Burzum/FileStorage.Image',
+        'FileStorage.Image',
     ];
 
     /**
@@ -44,7 +44,7 @@ class StorageShell extends Shell
         $parser->addOption('model', [
             'short' => 'm',
             'help' => __('The model / table to use.'),
-            'default' => 'Burzum/FileStorage.FileStorage',
+            'default' => 'FileStorage.FileStorage',
         ]);
         $parser->addSubcommand('image', [
             'help' => __('Image Processing Task.'),

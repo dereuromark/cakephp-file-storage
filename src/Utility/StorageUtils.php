@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Utility;
+namespace FileStorage\Utility;
 
 use Laminas\Diactoros\UploadedFile;
 use Psr\Http\Message\UploadedFileInterface;
@@ -22,7 +22,7 @@ class StorageUtils
             (int)filesize($filename),
             UPLOAD_ERR_OK,
             basename($filename),
-            $mimeType
+            $mimeType,
         );
     }
 

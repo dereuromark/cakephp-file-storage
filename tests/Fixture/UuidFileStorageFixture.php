@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Test\Fixture;
+namespace FileStorage\Test\Fixture;
 
 use Cake\TestSuite\Fixture\TestFixture;
 

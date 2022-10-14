@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Model\Entity;
+namespace FileStorage\Model\Entity;
 
 use Cake\ORM\Entity;
 
@@ -36,7 +36,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().
      *
-     * @var array
+     * @var array<string, bool>
      */
     protected $_accessible = [
         '*' => true,
@@ -44,7 +44,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     ];
 
     /**
-     * @var array
+     * @var array<string>
      */
     protected $_virtual = [
         'variantUrls',

@@ -2,12 +2,12 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Test\TestCase;
+namespace FileStorage\Test\TestCase;
 
-use Burzum\FileStorage\Model\Entity\FileStorage;
 use Cake\Core\Configure;
 use Cake\Database\Schema\TableSchemaInterface;
 use Cake\ORM\Table;
+use FileStorage\Model\Entity\FileStorage;
 
 /**
  * FileStorageTestTable
@@ -41,8 +41,8 @@ class FileStorageTestTable extends Table
         $this->setDisplayField('filename');
 
         $this->addBehavior(
-            'Burzum/FileStorage.FileStorage',
-            Configure::read('FileStorage.behaviorConfig')
+            'FileStorage.FileStorage',
+            Configure::read('FileStorage.behaviorConfig'),
         );
     }
 }

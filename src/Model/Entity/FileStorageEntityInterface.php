@@ -2,7 +2,7 @@
 
 declare(strict_types = 1);
 
-namespace Burzum\FileStorage\Model\Entity;
+namespace FileStorage\Model\Entity;
 
 use Cake\Datasource\EntityInterface;
 

@@ -1,6 +1,7 @@
 <?php
-use Cake\Routing\Router;
-
-Router::plugin('Burzum/FileStorage', function($routes) {
+/**
+ * @var \Cake\Routing\RouteBuilder $routes
+ */
+$routes->plugin('FileStorage', function($routes) {
 	$routes->fallbacks();
 });
