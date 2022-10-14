@@ -1,15 +1,9 @@
 <?php
-declare(strict_types=1);
-/**
- * File Storage Plugin for CakePHP
- *
- * @author Florian Krämer
- * @copyright 2012 - 2020 Florian Krämer
- * @license MIT
- */
+
+declare(strict_types = 1);
+
 namespace Burzum\FileStorage\Shell;
 
-use Burzum\FileStorage\Storage\StorageManager;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Console\Shell;
 use Cake\Core\Configure;
@@ -31,7 +25,7 @@ class ImageVersionShell extends Shell
     /**
      * Storage Table Object
      *
-     * @var \Cake\ORM\Table|null
+     * @var \Cake\ORM\Table
      */
     public $Table;
 
@@ -206,6 +200,9 @@ class ImageVersionShell extends Shell
 
         foreach ($operations as $version => $operation) {
             try {
+                if ($this->command === null) {
+                    $this->abort('No command given');
+                }
                 $this->_loop($this->command, $this->args[0], [$version => $operation], $options);
             } catch (Exception $e) {
                 $this->abort($e->getMessage());
@@ -218,6 +215,7 @@ class ImageVersionShell extends Shell
      *
      * @param string $model
      * @param string $version
+     *
      * @return void
      */
     public function generate(string $model, string $version): void
@@ -244,6 +242,7 @@ class ImageVersionShell extends Shell
      *
      * @param string $model
      * @param string $version
+     *
      * @return void
      */
     public function remove(string $model, string $version): void
@@ -270,8 +269,8 @@ class ImageVersionShell extends Shell
      * @param string $model
      * @param array $operations
      * @param array $options
+     *
      * @return void
-     * @throws \ReflectionException
      */
     protected function _loop(string $action, $model, array $operations = [], array $options = []): void
     {
@@ -333,6 +332,7 @@ class ImageVersionShell extends Shell
      *
      * @param string $identifier
      * @param array $extensions
+     *
      * @return int
      */
     protected function _getCount(string $identifier, array $extensions = ['jpg', 'png', 'jpeg']): int
@@ -351,6 +351,7 @@ class ImageVersionShell extends Shell
      * @param int $limit
      * @param int $offset
      * @param array $extensions
+     *
      * @return \Cake\Datasource\ResultSetInterface
      */
     protected function _getRecords(string $identifier, int $limit, int $offset, array $extensions = ['jpg', 'png', 'jpeg']): ResultSetInterface

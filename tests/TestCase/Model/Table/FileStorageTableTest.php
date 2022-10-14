@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace Burzum\FileStorage\Test\TestCase\Model\Table;
 
@@ -35,14 +35,15 @@ class FileStorageTableTest extends FileStorageTestCase
      */
     public function testInitialize()
     {
-        $this->assertEquals($this->FileStorage->getTable(), 'file_storage');
-        $this->assertEquals($this->FileStorage->getDisplayField(), 'filename');
+        $this->assertSame('file_storage', $this->FileStorage->getTable());
+        $this->assertSame('filename', $this->FileStorage->getDisplayField());
     }
 
     /**
      * Testing a complete save call
      *
      * @link https://github.com/burzum/cakephp-file-storage/issues/85
+     *
      * @return void
      */
     public function testFileSaving()
@@ -57,7 +58,7 @@ class FileStorageTableTest extends FileStorageTestCase
                 'tituts.jpg',
                 'image/jpeg'
             ),
-        ], ['accessibleFields' => ['*' => true]]);
+        ]);
         $this->assertSame([], $entity->getErrors());
 
         $this->FileStorage->saveOrFail($entity);
@@ -67,6 +68,7 @@ class FileStorageTableTest extends FileStorageTestCase
      * Testing a complete save call
      *
      * @link https://github.com/burzum/cakephp-file-storage/issues/85
+     *
      * @return void
      */
     public function testFileSavingArray()
@@ -81,7 +83,7 @@ class FileStorageTableTest extends FileStorageTestCase
                 'name' => 'tituts.jpg',
                 'tmp_name' => $this->fileFixtures . 'titus.jpg',
             ],
-        ], ['accessibleFields' => ['*' => true]]);
+        ]);
         $this->assertSame([], $entity->getErrors());
 
         $this->FileStorage->saveOrFail($entity);

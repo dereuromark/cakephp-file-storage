@@ -1,12 +1,7 @@
 <?php
-declare(strict_types=1);
-/**
- * File Storage Plugin for CakePHP
- *
- * @author Florian Krämer
- * @copyright 2012 - 2020 Florian Krämer
- * @license MIT
- */
+
+declare(strict_types = 1);
+
 namespace Burzum\FileStorage\Shell\Task;
 
 use Cake\Console\ConsoleOptionParser;
@@ -38,7 +33,7 @@ class ImageTask extends Shell
     protected $Table;
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function initialize(): void
     {
@@ -72,6 +67,7 @@ class ImageTask extends Shell
      * @param string $identifier
      * @param array $options
      * @param string $action
+     *
      * @return void
      */
     protected function _loop(string $identifier, $options, $action): void
@@ -104,6 +100,7 @@ class ImageTask extends Shell
      *
      * @param \Cake\ORM\Entity $record
      * @param array $options
+     *
      * @return void
      */
     protected function _removeImage($record, $options): void
@@ -120,6 +117,7 @@ class ImageTask extends Shell
      *
      * @param \Cake\ORM\Entity $record
      * @param array $options
+     *
      * @return void
      */
     protected function _generateImage($record, $options): void
@@ -137,6 +135,7 @@ class ImageTask extends Shell
      * @param string $identifier Identifier.
      * @param int $limit Records limit.
      * @param int $offset Records offset.
+     *
      * @return \Cake\Datasource\ResultSetInterface
      */
     public function _getRecords(string $identifier, int $limit, int $offset): ResultSetInterface
@@ -153,6 +152,7 @@ class ImageTask extends Shell
      * Gets the amount of records for an identifier in the DB.
      *
      * @param string $identifier
+     *
      * @return int
      */
     protected function _getCount(string $identifier): int
@@ -170,6 +170,7 @@ class ImageTask extends Shell
      * Gets the query object for the count.
      *
      * @param string $identifier
+     *
      * @return \Cake\ORM\Query
      */
     protected function _getCountQuery(string $identifier): Query
@@ -182,7 +183,7 @@ class ImageTask extends Shell
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritDoc
      */
     public function getOptionParser(): ConsoleOptionParser
     {

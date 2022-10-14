@@ -1,5 +1,6 @@
 <?php
-declare(strict_types=1);
+
+declare(strict_types = 1);
 
 namespace Burzum\FileStorage\Test\TestCase;
 
@@ -28,6 +29,7 @@ class FileStorageTestTable extends Table
      * Initialize
      *
      * @param array $config
+     *
      * @return void
      */
     public function initialize(array $config): void

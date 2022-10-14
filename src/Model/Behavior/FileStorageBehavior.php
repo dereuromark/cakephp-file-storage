@@ -1,5 +1,6 @@
 <?php
-declare(strict_types=1);
+
+declare(strict_types = 1);
 
 namespace Burzum\FileStorage\Model\Behavior;
 
@@ -32,17 +33,17 @@ class FileStorageBehavior extends Behavior
     /**
      * @var \Phauthentic\Infrastructure\Storage\FileStorage
      */
-    protected FileStorage $fileStorage;
-
-    /**
-     * @var \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface
-     */
-    protected ?ProcessorInterface $imageProcessor;
+    protected $fileStorage;
 
     /**
      * @var \Burzum\FileStorage\FileStorage\DataTransformerInterface
      */
-    protected DataTransformerInterface $transformer;
+    protected $transformer;
+
+    /**
+     * @var \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface
+     */
+    protected $processor;
 
     /**
      * Default config
@@ -54,27 +55,24 @@ class FileStorageBehavior extends Behavior
         'ignoreEmptyFile' => true,
         'fileField' => 'file',
         'fileStorage' => null,
-        'imageProcessor' => null
+        'fileProcessor' => null,
     ];
 
     /**
-     * @var array
-     */
-    protected array $processors = [];
-
-    /**
      * @inheritDoc
+     *
+     * @throws \RuntimeException
      */
     public function initialize(array $config): void
     {
         parent::initialize($config);
 
-        if ($this->getConfig('fileStorage') instanceOf FileStorage) {
+        if ($this->getConfig('fileStorage') instanceof FileStorage) {
             $this->fileStorage = $this->getConfig('fileStorage');
         } else {
-           throw new RuntimeException(
+            throw new RuntimeException(
                 'Missing or invalid fileStorage config key'
-           );
+            );
         }
 
         if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
@@ -82,11 +80,13 @@ class FileStorageBehavior extends Behavior
                 $this->getTable()
             );
         }
+
+        //$this->processors = (array)$this->getConfig('processors');
     }
 
     /**
-     * @throws \InvalidArgumentException
      * @param string $configName
+     *
      * @return \League\Flysystem\AdapterInterface
      */
     public function getStorageAdapter(string $configName): AdapterInterface
@@ -98,6 +98,7 @@ class FileStorageBehavior extends Behavior
      * Checks if a file upload is present.
      *
      * @param \Cake\Datasource\EntityInterface|\ArrayObject $entity
+     *
      * @return bool
      */
     protected function isFileUploadPresent($entity)
@@ -125,6 +126,8 @@ class FileStorageBehavior extends Behavior
      *
      * @param \Cake\Event\EventInterface $event
      * @param \ArrayObject $data
+     * @param \ArrayObject $options
+     *
      * @return void
      */
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options): void
@@ -140,6 +143,7 @@ class FileStorageBehavior extends Behavior
      * @param \Cake\Event\EventInterface $event
      * @param \Cake\Datasource\EntityInterface $entity
      * @param \ArrayObject $options
+     *
      * @return void
      */
     public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
@@ -152,7 +156,7 @@ class FileStorageBehavior extends Behavior
 
         $this->dispatchEvent('FileStorage.beforeSave', [
             'entity' => $entity,
-            'storageAdapter' => $this->getStorageAdapter($entity->get('adapter'))
+            'storageAdapter' => $this->getStorageAdapter($entity->get('adapter')),
         ], $this->getTable());
     }
 
@@ -162,6 +166,9 @@ class FileStorageBehavior extends Behavior
      * @param \Cake\Event\EventInterface $event
      * @param \Cake\Datasource\EntityInterface $entity
      * @param \ArrayObject $options
+     *
+     * @throws \Exception
+     *
      * @return void
      */
     public function afterSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
@@ -173,27 +180,50 @@ class FileStorageBehavior extends Behavior
         if ($entity->isNew()) {
             try {
                 $file = $this->entityToFileObject($entity);
+
+                $this->dispatchEvent('FileStorage.beforeStoringFile', [
+                    'entity' => $entity,
+                    'file' => $file,
+                ], $this->getTable());
+
                 $file = $this->fileStorage->store($file);
+
+                $this->dispatchEvent('FileStorage.afterStoringFile', [
+                    'entity' => $entity,
+                    'file' => $file,
+                ], $this->getTable());
+
                 $file = $this->processImages($file, $entity);
 
-                foreach ($this->processors as $processor) {
-                    $file = $processor->process($file);
-                }
+                $processor = $this->getFileProcessor();
+
+                $this->dispatchEvent('FileStorage.beforeFileProcessing', [
+                    'entity' => $entity,
+                    'file' => $file,
+                ], $this->getTable());
+
+                $file = $processor->process($file);
+
+                $this->dispatchEvent('FileStorage.afterFileProcessing', [
+                    'entity' => $entity,
+                    'file' => $file
+                ], $this->getTable());
 
                 $entity = $this->fileObjectToEntity($file, $entity);
-                $this->getTable()->save(
+                $this->getTable()->saveOrFail(
                     $entity,
                     ['callbacks' => false]
                 );
             } catch (Throwable $exception) {
                 $this->getTable()->delete($entity);
+
                 throw $exception;
             }
         }
 
         $this->dispatchEvent('FileStorage.afterSave', [
             'entity' => $entity,
-            'storageAdapter' => $this->getStorageAdapter($entity->get('adapter'))
+            'storageAdapter' => $this->getStorageAdapter($entity->get('adapter')),
         ], $this->getTable());
     }
 
@@ -201,13 +231,14 @@ class FileStorageBehavior extends Behavior
      * checkEntityBeforeSave
      *
      * @param \Cake\Datasource\EntityInterface $entity
+     *
      * @return void
      */
     protected function checkEntityBeforeSave(EntityInterface $entity)
     {
         if ($entity->isNew()) {
             if (!$entity->has('model')) {
-                $entity->set('model', $this->getTable()->getTable());
+                $entity->set('model', $this->getTable()->getAlias());
             }
 
             if (!$entity->has('adapter')) {
@@ -222,6 +253,7 @@ class FileStorageBehavior extends Behavior
      * @param \Cake\Event\EventInterface $event
      * @param \Cake\Datasource\EntityInterface $entity
      * @param \ArrayObject $options
+     *
      * @return void
      */
     public function afterDelete(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
@@ -243,6 +275,7 @@ class FileStorageBehavior extends Behavior
      *
      * @param array|\ArrayAccess $upload
      * @param string $field
+     *
      * @return void
      */
     protected function getFileInfoFromUpload(&$upload, $field = 'file')
@@ -252,7 +285,7 @@ class FileStorageBehavior extends Behavior
         if (!is_array($uploadedFile)) {
             $upload['filesize'] = $uploadedFile->getSize();
             $upload['mime_type'] = $uploadedFile->getClientMediaType();
-            $upload['extension'] = pathinfo($uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
+            $upload['extension'] = pathinfo((string)$uploadedFile->getClientFilename(), PATHINFO_EXTENSION);
             $upload['filename'] = $uploadedFile->getClientFilename();
         } else {
             $upload['filesize'] = $uploadedFile['size'];
@@ -268,9 +301,10 @@ class FileStorageBehavior extends Behavior
      * callbacks. So the events that will remove the files won't get fired.
      *
      * @param array $conditions Query::where() array structure.
+     *
      * @return int Number of deleted records / files
      */
-    public function deleteAllFiles($conditions)
+    public function deleteAllFiles(array $conditions)
     {
         $table = $this->getTable();
 
@@ -290,6 +324,7 @@ class FileStorageBehavior extends Behavior
 
     /**
      * @param \Cake\Datasource\EntityInterface $entity Entity
+     *
      * @return \Phauthentic\Infrastructure\Storage\FileInterface
      */
     public function entityToFileObject(EntityInterface $entity): FileInterface
@@ -300,6 +335,7 @@ class FileStorageBehavior extends Behavior
     /**
      * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
      * @param \Cake\Datasource\EntityInterface|null $entity
+     *
      * @return \Cake\Datasource\EntityInterface
      */
     public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity)
@@ -312,41 +348,43 @@ class FileStorageBehavior extends Behavior
      *
      * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
      * @param \Cake\Datasource\EntityInterface $entity
+     *
      * @return \Phauthentic\Infrastructure\Storage\FileInterface
      */
     public function processImages(FileInterface $file, EntityInterface $entity): FileInterface
     {
-        $imageSizes = Configure::read('FileStorage.imageVariants');
+        $imageSizes = (array)Configure::read('FileStorage.imageVariants');
         $model = $file->model();
-        $identifier = $entity->get('identifier');
+        $collection = $entity->get('collection');
 
-        if (!isset($imageSizes[$model][$identifier])) {
+        if (!isset($imageSizes[$model][$collection])) {
             return $file;
         }
 
-        $file = $file->withVariants($imageSizes[$model][$identifier]);
-        $file = $this->imageProcessor->process($file);
+        $file = $file->withVariants($imageSizes[$model][$collection]);
 
         return $file;
     }
 
     /**
+     * @throws \RuntimeException
+     *
      * @return \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface
      */
-    protected function getImageProcessor(): ProcessorInterface
+    protected function getFileProcessor(): ProcessorInterface
     {
-        if ($this->imageProcessor !== null) {
-            return $this->imageProcessor;
+        if ($this->processor !== null) {
+            return $this->processor;
         }
 
-        if ($this->getConfig('imageProcessor') instanceOf ProcessorInterface) {
-            $this->imageProcessor = $this->getConfig('imageProcessor');
+        if ($this->getConfig('fileProcessor') instanceof ProcessorInterface) {
+            $this->processor = $this->getConfig('fileProcessor');
         }
 
-        if ($this->imageProcessor === null) {
-            throw new RuntimeException('No image processor found');
+        if ($this->processor === null) {
+            throw new RuntimeException('No processor found');
         }
 
-        return $this->imageProcessor;
+        return $this->processor;
     }
 }

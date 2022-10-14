@@ -1,5 +1,6 @@
 <?php
-declare(strict_types=1);
+
+declare(strict_types = 1);
 
 namespace Burzum\FileStorage\Test\TestCase;
 
@@ -8,6 +9,13 @@ use Cake\Core\Plugin;
 use Cake\Filesystem\Folder;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\TestSuite\TestCase;
+use Intervention\Image\ImageManager;
+use Phauthentic\Infrastructure\Storage\Factories\LocalFactory;
+use Phauthentic\Infrastructure\Storage\FileStorage;
+use Phauthentic\Infrastructure\Storage\PathBuilder\PathBuilder;
+use Phauthentic\Infrastructure\Storage\Processor\Image\ImageProcessor;
+use Phauthentic\Infrastructure\Storage\StorageAdapterFactory;
+use Phauthentic\Infrastructure\Storage\StorageService;
 
 /**
  * FileStorageTestCase
@@ -77,29 +85,26 @@ class FileStorageTestCase extends TestCase
     /**
      * @return void
      */
-    private function configureImageVariants(): void
+    protected function configureImageVariants(): void
     {
         Configure::write('FileStorage.imageVariants', [
-            'Test' => [
-                't50' => [
+            'Photos' => [
+                'Photos' => [
                     'thumbnail' => [
-                        'mode' => 'outbound',
                         'width' => 50,
-                        'height' => 50
-                    ]
+                        'height' => 50,
+                    ],
                 ],
                 't150' => [
                     'thumbnail' => [
-                        'mode' => 'outbound',
                         'width' => 150,
                         'height' => 150,
                     ],
                 ],
             ],
-            'UserAvatar' => [
-                'small' => [
+            'Avatars' => [
+                'Avatars' => [
                     'thumbnail' => [
-                        'mode' => 'inbound',
                         'width' => 80,
                         'height' => 80,
                     ],
@@ -111,44 +116,51 @@ class FileStorageTestCase extends TestCase
     /**
      * @return void
      */
-    private function prepareDependencies(): void
+    protected function prepareDependencies(): void
     {
-        $pathBuilder = new \Phauthentic\Infrastructure\Storage\PathBuilder\PathBuilder([
+        $pathBuilder = new PathBuilder([
             'pathTemplate' => '{model}{ds}{collection}{ds}{randomPath}{ds}{strippedId}{ds}{strippedId}.{extension}',
             'variantPathTemplate' => '{model}{ds}{collection}{ds}{randomPath}{ds}{strippedId}{ds}{strippedId}.{hashedVariant}.{extension}',
         ]);
 
-        $storageService = new \Phauthentic\Infrastructure\Storage\StorageService(
-            new \Phauthentic\Infrastructure\Storage\StorageAdapterFactory()
+        $storageService = new StorageService(
+            new StorageAdapterFactory()
         );
 
         $storageService->setAdapterConfigFromArray([
             'Local' => [
-                'class' => \Phauthentic\Infrastructure\Storage\Factories\LocalFactory::class,
+                'class' => LocalFactory::class,
                 'options' => [
-                    'root' => $this->testPath, true
-                ]
+                    'root' => $this->testPath, true,
+                ],
             ],
         ]);
 
-        $fileStorage = new \Phauthentic\Infrastructure\Storage\FileStorage(
+        $fileStorage = new FileStorage(
             $storageService,
             $pathBuilder
         );
 
-        $imageManager = new \Intervention\Image\ImageManager([
-            'driver' => 'gd'
+        $imageManager = new ImageManager([
+            'driver' => 'gd',
         ]);
 
-        $imageProcessor = new \Phauthentic\Infrastructure\Storage\Processor\Image\ImageProcessor(
+        $imageProcessor = new ImageProcessor(
             $fileStorage,
             $pathBuilder,
             $imageManager
         );
+        $imageDimensionsProcessor = new \TestApp\Storage\Processor\ImageDimensionsProcessor(
+            $this->testPath
+        );
+        $stackProcessor = new \Phauthentic\Infrastructure\Storage\Processor\StackProcessor([
+            $imageProcessor,
+            $imageDimensionsProcessor,
+        ]);
 
         Configure::write('FileStorage.behaviorConfig', [
             'fileStorage' => $fileStorage,
-            'imageProcessor' => $imageProcessor
+            'fileProcessor' => $stackProcessor,
         ]);
     }
 
@@ -169,10 +181,11 @@ class FileStorageTestCase extends TestCase
     /**
      * Creates a file
      *
-     * @string $file File path and name, relative to FileStorageTestCase::$testPath
+     * @param string $file File path and name, relative to FileStorageTestCase::$testPath
+     *
      * @return string
      */
-    protected function _createMockFile($file): string
+    protected function _createMockFile(string $file): string
     {
         if (DS === '/') {
             $file = str_replace('\\', DS, $file);

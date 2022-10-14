@@ -1,8 +1,6 @@
 <?php
-declare(strict_types=1);
-/**
- * Bootstrap
- */
+
+declare(strict_types = 1);
 
 use Cake\Core\Plugin;
 
@@ -14,6 +12,7 @@ $findRoot = function ($root) {
             return $root;
         }
     } while ($root !== $lastRoot);
+
     throw new \Exception('Cannot find the root of the application, unable to run tests');
 };
 
