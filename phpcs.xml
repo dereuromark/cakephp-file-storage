@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <ruleset name="spryker">
     <rule ref="vendor/spryker/code-sniffer/Spryker/ruleset.xml"/>
+
+    <arg value="nps"/>
+
     <file>src/</file>
     <file>tests/</file>
 

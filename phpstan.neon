@@ -1,13 +1,13 @@
 parameters:
-    level: 8
-    paths:
-        - src/
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
-    bootstrapFiles:
-        - tests/bootstrap.php
-    earlyTerminatingMethodCalls:
-        Cake\Console\Shell:
-            - abort
-    ignoreErrors:
-        - '#Cannot cast array\<string\>\|string to string#'
+	level: 8
+	paths:
+		- src/
+	checkMissingIterableValueType: false
+	checkGenericClassInNonGenericObjectType: false
+	bootstrapFiles:
+		- tests/bootstrap.php
+	earlyTerminatingMethodCalls:
+		Cake\Console\Shell:
+			- abort
+	ignoreErrors:
+		- '#Cannot cast array\<string\>\|string to string#'

@@ -8,7 +8,7 @@ This tutorial will assume that we're going to add an avatar image upload for our
 For image processing you'll need the Imagine plugin. If you don't have it already added, add it now:
 
 ```sh
-composer require burzum/cakephp-imagine-plugin
+composer require dereuromark/cakephp-imagine-plugin
 ```
 
 In your applications `config/bootstrap.php` load the plugins:
@@ -28,27 +28,27 @@ To make image processing work you'll have to add this to your applications boots
 /**
  * Image resizing configuration
  */
-Configure::write('FileStorage', array(
+Configure::write('FileStorage', [
 	'imageSizes' => [
 		'Avatar' => [
 			'crop180' => [
 				'squareCenterCrop' => [
-					'size' => 180
-				]
+					'size' => 180,
+				],
 			],
 			'crop100' => [
 				'squareCenterCrop' => [
-					'size' => 100
+					'size' => 100,
 				]
 			],
 			'crop40' => [
 				'squareCenterCrop' => [
-					'size' => 40
-				]
-			]
-		]
-	]
-));
+					'size' => 40,
+				],
+			],
+		],
+	],
+]);
 ```
 
 We now assume that you have a table called `Users` and that you want to attach an avatar image to your users.
@@ -60,8 +60,8 @@ $this->hasOne('Avatars', [
 	'className' => 'FileStorage.FileStorage',
 	'foreignKey' => 'foreign_key',
 	'conditions' => [
-		'Avatars.model' => 'Avatar'
-	]
+		'Avatars.model' => 'Avatar',
+	],
 ]);
 ```
 

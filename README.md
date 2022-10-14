@@ -1,9 +1,10 @@
 # FileStorage Plugin for CakePHP
 
-[![Build Status](https://img.shields.io/travis/dereuromark/cakephp-file-storage/3.0.svg?style=flat-square)](https://travis-ci.org/dereuromark/cakephp-file-storage)
-[![Coverage Status](https://img.shields.io/coveralls/dereuromark/cakephp-file-storage.svg?branch=3.0.svg?style=flat-square)](https://coveralls.io/r/dereuromark/cakephp-file-storage)
-[![Code Quality](https://img.shields.io/scrutinizer/g/dereuromark/cakephp-file-storage.svg?branch=3.0?style=flat-square)](https://coveralls.io/r/dereuromark/cakephp-file-storage)
-[![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.txt)
+[![CI](https://github.com/dereuromark/cakephp-file-storage/workflows/CI/badge.svg?branch=master)](https://github.com/dereuromark/cakephp-file-storage/actions?query=workflow%3ACI+branch%3Amaster)
+[![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat)](https://phpstan.org/)
+[![Latest Stable Version](https://poser.pugx.org/dereuromark/cakephp-file-storage/v/stable.svg)](https://packagist.org/packages/dereuromark/cakephp-file-storage)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.3-8892BF.svg)](https://php.net/)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.txt)
 
 The **File Storage** plugin is giving you the possibility to upload and store files in virtually any kind of storage backend. The plugin features the [FlySystem](https://github.com/thephpleague/flysystem) library in a CakePHP fashion and provides a simple way to use the storage adapters.
 

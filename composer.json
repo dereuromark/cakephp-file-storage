@@ -51,8 +51,8 @@
             "@test",
             "@stan"
         ],
-        "cs-check": "phpcs -p",
-        "cs-fix": "phpcbf -p",
+        "cs-check": "phpcs",
+        "cs-fix": "phpcbf",
         "stan": "phpstan analyse",
         "stan-test": "phpstan analyse tests/",
         "psalm": "psalm --show-info=false",
