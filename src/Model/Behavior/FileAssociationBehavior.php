@@ -46,6 +46,22 @@ class FileAssociationBehavior extends Behavior
             ];
 
             $config['associations'][$association] = $assocConfig + $defaults;
+            if ($associationObject instanceof HasOne) {
+                // Let's create a tmp assoc on the fly for saving/creating
+                $this->table()->hasOne('AvatarsNew', [
+                    'className' => 'FileStorage.FileStorage',
+                    'foreignKey' => 'foreign_key',
+                    'conditions' => [
+                        'AvatarsNew.model' => 'Items',
+                    ],
+                    'joinType' => 'LEFT',
+                ]);
+
+                $associationTmp = $config['associations'][$association];
+                $associationTmp['property'] .= '_new';
+                //$associationTmp['collection'] .= 'New';
+                $config['associations'][$association . 'New'] = $associationTmp;
+            }
         }
 
         $this->setConfig('associations', $config['associations']);
@@ -68,6 +84,10 @@ class FileAssociationBehavior extends Behavior
             $property = $assocConfig['property'];
             if ($entity->{$property} === null) {
                 continue;
+            }
+
+            if (is_array($entity->{$property})) {
+                $entity->{$property} = $this->table()->{$assocConfig['collection']}->newEntity($entity->{$property});
             }
 
             $entity->{$property}->set('collection', $assocConfig['collection']);
