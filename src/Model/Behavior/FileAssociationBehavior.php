@@ -59,8 +59,7 @@ class FileAssociationBehavior extends Behavior
 
                 $associationTmp = $config['associations'][$association];
                 $associationTmp['property'] .= '_new';
-                //$associationTmp['collection'] .= 'New';
-                $config['associations'][$association . 'New'] = $associationTmp;
+                $config['associations'][$association] = $associationTmp;
             }
         }
 
