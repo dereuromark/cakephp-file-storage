@@ -391,7 +391,7 @@ class FileStorageBehavior extends Behavior
 
         if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
             $this->transformer = new DataTransformer(
-                $this->table()
+                $this->table(),
             );
         }
 
