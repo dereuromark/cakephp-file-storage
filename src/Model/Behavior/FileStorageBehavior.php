@@ -67,21 +67,13 @@ class FileStorageBehavior extends Behavior
     {
         parent::initialize($config);
 
-        if ($this->getConfig('fileStorage') instanceof FileStorage) {
-            $this->fileStorage = $this->getConfig('fileStorage');
-        } else {
+        if (!($this->getConfig('fileStorage') instanceof FileStorage)) {
             throw new RuntimeException(
                 'Missing or invalid fileStorage config key',
             );
         }
 
-        if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
-            $this->transformer = new DataTransformer(
-                $this->table(),
-            );
-        }
-
-        //$this->processors = (array)$this->getConfig('processors');
+        $this->fileStorage = $this->getConfig('fileStorage');
     }
 
     /**
@@ -329,7 +321,7 @@ class FileStorageBehavior extends Behavior
      */
     public function entityToFileObject(EntityInterface $entity): FileInterface
     {
-        return $this->transformer->entityToFileObject($entity);
+        return $this->getTransformer()->entityToFileObject($entity);
     }
 
     /**
@@ -340,7 +332,7 @@ class FileStorageBehavior extends Behavior
      */
     public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity)
     {
-        return $this->transformer->fileObjectToEntity($file, $entity);
+        return $this->getTransformer()->fileObjectToEntity($file, $entity);
     }
 
     /**
@@ -386,5 +378,23 @@ class FileStorageBehavior extends Behavior
         }
 
         return $this->processor;
+    }
+
+    /**
+     * @return \FileStorage\FileStorage\DataTransformerInterface
+     */
+    protected function getTransformer(): DataTransformerInterface
+    {
+        if ($this->transformer !== null) {
+            return $this->transformer;
+        }
+
+        if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
+            $this->transformer = new DataTransformer(
+                $this->table()
+            );
+        }
+
+        return $this->transformer;
     }
 }
