@@ -29,7 +29,7 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\FrozenTime $created
  * @property \Cake\I18n\FrozenTime $modified
  * @property string|null $collection
- * @property array $variant_urls
+ * @property array<string, string> $variant_urls !
  */
 class FileStorage extends Entity implements FileStorageEntityInterface
 {
@@ -83,7 +83,8 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     /**
      * Making it backward compatible
      *
-     * @return array
+     * @return array<string, string>
+     * @see \FileStorage\Model\Entity\FileStorage::$variant_urls
      */
     protected function _getVariantUrls()
     {
