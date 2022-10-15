@@ -64,7 +64,7 @@ class FileAssociationBehavior extends Behavior
         ArrayObject $options
     ): void {
         $associations = $this->getConfig('associations');
-        foreach ($associations as $association => $assocConfig) {
+        foreach ($associations as $assocConfig) {
             $property = $assocConfig['property'];
             if ($entity->{$property} === null) {
                 continue;
@@ -108,15 +108,15 @@ class FileAssociationBehavior extends Behavior
                     continue;
                 }
 
-                if ($assocConfig['replace'] === true) {
-                    $this->findAndRemovePreviousFile($entity, $association, $assocConfig);
-                }
-
                 $entity->{$property}->set('collection', $assocConfig['collection']);
                 $entity->{$property}->set('model', $assocConfig['model']);
                 $entity->{$property}->set('foreign_key', $entity->id);
 
                 $this->table()->{$association}->saveOrFail($entity->{$property});
+
+                if ($assocConfig['replace'] === true) {
+                    $this->findAndRemovePreviousFile($entity, $association, $assocConfig);
+                }
             }
         }
     }
