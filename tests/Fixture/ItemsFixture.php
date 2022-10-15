@@ -30,8 +30,7 @@ class ItemsFixture extends TestFixture
     public $fields = [
         'id' => ['type' => 'integer', 'null' => true, 'default' => null, 'autoIncrement' => true],
         'name' => ['type' => 'string', 'null' => true, 'default' => null],
-        'path' => ['type' => 'string', 'null' => true, 'default' => null],
-        'filename' => ['type' => 'string', 'null' => true, 'default' => null],
+        'content' => ['type' => 'string', 'null' => true, 'default' => null],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id']],
         ],

@@ -30,8 +30,7 @@ class UuidItemsFixture extends TestFixture
     public $fields = [
         'id' => ['type' => 'uuid', 'null' => true, 'default' => null, 'length' => 36],
         'name' => ['type' => 'string', 'null' => true, 'default' => null],
-        'path' => ['type' => 'string', 'null' => true, 'default' => null],
-        'filename' => ['type' => 'string', 'null' => true, 'default' => null],
+        'content' => ['type' => 'string', 'null' => true, 'default' => null],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id']],
         ],

@@ -93,7 +93,7 @@ class FileStorageBehavior extends Behavior
      *
      * @return bool
      */
-    protected function isFileUploadPresent($entity)
+    protected function isFileUploadPresent($entity): bool
     {
         $field = $this->getConfig('fileField');
         if ($this->getConfig('ignoreEmptyFile') === true) {
@@ -226,7 +226,7 @@ class FileStorageBehavior extends Behavior
      *
      * @return void
      */
-    protected function checkEntityBeforeSave(EntityInterface $entity)
+    protected function checkEntityBeforeSave(EntityInterface $entity): void
     {
         if ($entity->isNew()) {
             if (!$entity->has('model')) {
@@ -270,7 +270,7 @@ class FileStorageBehavior extends Behavior
      *
      * @return void
      */
-    protected function getFileInfoFromUpload(&$upload, $field = 'file')
+    protected function getFileInfoFromUpload(&$upload, string $field = 'file'): void
     {
         /** @var \Psr\Http\Message\UploadedFileInterface|array $uploadedFile */
         $uploadedFile = $upload[$field];
