@@ -88,6 +88,7 @@ $collection->addNew(\App\Storage\StorageCollections::IMG_CROPPED)
         'behaviorConfig' => [
             'fileStorage' => $fileStorage,
             'fileProcessor' => $stackProcessor,
+            'fileValidator' => \App\FileStorage\Validator\ImageValidator::class,
         ],
     ],
 ]);

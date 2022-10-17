@@ -12,6 +12,7 @@ use Cake\Event\EventInterface;
 use Cake\ORM\Behavior;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
+use FileStorage\Model\Validation\UploadValidatorInterface;
 use League\Flysystem\AdapterInterface;
 use Phauthentic\Infrastructure\Storage\FileInterface;
 use Phauthentic\Infrastructure\Storage\FileStorage;
@@ -56,6 +57,7 @@ class FileStorageBehavior extends Behavior
         'fileField' => 'file',
         'fileStorage' => null,
         'fileProcessor' => null,
+        'fileValidator' => null,
     ];
 
     /**
@@ -124,6 +126,12 @@ class FileStorageBehavior extends Behavior
      */
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options): void
     {
+        if ($this->getConfig('fileValidator')) {
+            $this->configureValidator();
+        }
+
+        //dd($this->table()->getValidator()->getProvider('default'));
+
         if ($this->isFileUploadPresent($data)) {
             $this->getFileInfoFromUpload($data);
         }
@@ -136,12 +144,14 @@ class FileStorageBehavior extends Behavior
      * @param \Cake\Datasource\EntityInterface $entity
      * @param \ArrayObject $options
      *
-     * @return void
+     * @return bool
      */
-    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): bool
     {
         if (!$this->isFileUploadPresent($entity)) {
-            return;
+            $event->stopPropagation();
+
+            return false;
         }
 
         $this->checkEntityBeforeSave($entity);
@@ -150,6 +160,8 @@ class FileStorageBehavior extends Behavior
             'entity' => $entity,
             'storageAdapter' => $this->getStorageAdapter($entity->get('adapter')),
         ], $this->table());
+
+        return true;
     }
 
     /**
@@ -169,7 +181,7 @@ class FileStorageBehavior extends Behavior
             return;
         }
 
-        if ($entity->isNew()) {
+        if ($entity->isDirty()) {
             try {
                 $file = $this->entityToFileObject($entity);
 
@@ -202,10 +214,14 @@ class FileStorageBehavior extends Behavior
                 ], $this->table());
 
                 $entity = $this->fileObjectToEntity($file, $entity);
+
+                $tableConfig = $this->table()->behaviors()->get('FileStorage')->getConfig();
+                $this->table()->removeBehavior('FileStorage');
                 $this->table()->saveOrFail(
                     $entity,
                     ['callbacks' => false],
                 );
+                $this->table()->addBehavior('FileStorage.FileStorage', $tableConfig);
             } catch (Throwable $exception) {
                 $this->table()->delete($entity);
 
@@ -403,5 +419,25 @@ class FileStorageBehavior extends Behavior
         }
 
         return $this->transformer;
+    }
+
+    /**
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
+    protected function configureValidator(): void
+    {
+        /** @var \FileStorage\Model\Validation\UploadValidatorInterface|class-string<\FileStorage\Model\Validation\UploadValidatorInterface>|null $validator */
+        $validator = $this->getConfig('fileValidator');
+        if (is_string($validator)) {
+            $validator = new $validator();
+        }
+
+        if (!($validator instanceof UploadValidatorInterface)) {
+            throw new RuntimeException('Validator must implement ' . UploadValidatorInterface::class);
+        }
+
+        $validator->configure($this->table()->getValidator());
     }
 }

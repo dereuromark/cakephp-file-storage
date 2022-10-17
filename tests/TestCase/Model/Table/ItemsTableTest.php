@@ -87,7 +87,7 @@ class ItemsTableTest extends FileStorageTestCase
     {
         $entity = $this->table->newEntity([
             'name' => 'Test',
-            'avatar_new' => [
+            'avatar' => [
                 'file' => new UploadedFile(
                     $this->fileFixtures . 'titus.jpg',
                     filesize($this->fileFixtures . 'titus.jpg'),
@@ -121,7 +121,7 @@ class ItemsTableTest extends FileStorageTestCase
         // Upload first pic
         $entity = $this->table->newEntity([
             'name' => 'Test',
-            'avatar_new' => [
+            'avatar' => [
                 'file' => new UploadedFile(
                     $this->fileFixtures . 'titus.jpg',
                     filesize($this->fileFixtures . 'titus.jpg'),
@@ -139,6 +139,7 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->assertNotEmpty($entity->avatar);
 
+        unset($entity->avatar->metadata['thumbnail']);
         $expected = [
             'width' => 512,
             'height' => 768,
@@ -147,7 +148,7 @@ class ItemsTableTest extends FileStorageTestCase
 
         // Upload second pic
         $entity = $this->table->patchEntity($entity, [
-            'avatar_new' => [
+            'avatar' => [
                 'file' => new UploadedFile(
                     $this->fileFixtures . 'demo.png',
                     filesize($this->fileFixtures . 'demo.png'),
@@ -173,6 +174,7 @@ class ItemsTableTest extends FileStorageTestCase
         $this->assertNotEmpty($entity->avatar->variants);
         //$this->assertStringStartsWith('Avatars', $entity->avatar->path);
 
+        unset($entity->avatar->metadata['thumbnail']);
         $expected = [
             'width' => 512,
             'height' => 512, // !!!
