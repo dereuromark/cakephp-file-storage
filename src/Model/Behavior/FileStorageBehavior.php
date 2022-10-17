@@ -352,8 +352,8 @@ class FileStorageBehavior extends Behavior
             $imageSizes[$model . 'New'] = $collection;
         }
 
-        //$model = $file->model();
         $collection = $entity->get('collection');
+        //$model = $file->model();
         $model = $collection;
 
         if (!isset($imageSizes[$model][$collection])) {
