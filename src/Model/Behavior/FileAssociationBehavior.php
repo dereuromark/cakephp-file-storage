@@ -165,7 +165,7 @@ class FileAssociationBehavior extends Behavior
         array $assocConfig
     ): void {
         // Remove suffix
-        $newEntity = $entity->get($assocConfig['property'] . '_new') ?: $entity->get($association['property']);
+        $newEntity = $entity->get($assocConfig['property'] . '_new') ?: $entity->get($assocConfig['property']);
 
         // Use existing assoc
         $existingAssociation = substr($association, -3) === 'New' ? substr($association, 0, -3) : $association;
