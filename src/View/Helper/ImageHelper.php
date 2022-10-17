@@ -98,7 +98,7 @@ class ImageHelper extends Helper
             throw new VariantDoesNotExistException(sprintf(
                 'A variant with the name `%s` does not exists for ID `%s`',
                 (string)$variant,
-                (string)$image->id
+                (string)$image->id,
             ));
         }
 
