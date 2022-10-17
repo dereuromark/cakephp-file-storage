@@ -44,34 +44,8 @@ class FileAssociationBehavior extends Behavior
                 'collection' => $association,
                 'property' => $this->table()->getAssociation($association)->getProperty(),
             ];
-             /* e.g.
-                'EventImages' => [
-                    'collection' => 'EventImages',
-                    'replace' => true,
-                    'model' => 'Events',
-                    'property' => 'event_image',
-                 ],
-             */
 
             $config['associations'][$association] = $assocConfig + $defaults;
-
-            if ($associationObject instanceof HasOne) {
-                // Let's create a tmp assoc on the fly for saving/creating
-                $this->table()->hasOne($association . 'New', [
-                    'className' => 'FileStorage.FileStorage',
-                    'foreignKey' => 'foreign_key',
-                    'conditions' => [
-                        $association . 'New.model' => 'Events',
-                    ],
-                    'joinType' => 'LEFT',
-                ]);
-
-                $associationTmp = $config['associations'][$association];
-                $associationTmp['collection'] .= 'New';
-                $associationTmp['property'] .= '_new';
-                $associationTmp['link'] = $association;
-                $config['associations'][$association . 'New'] = $associationTmp;
-            }
         }
 
         $this->setConfig('associations', $config['associations']);
@@ -164,18 +138,14 @@ class FileAssociationBehavior extends Behavior
         string $association,
         array $assocConfig
     ): void {
-        // Remove suffix
-        $newEntity = $entity->get($assocConfig['property'] . '_new') ?: $entity->get($assocConfig['property']);
-
-        // Use existing assoc
-        $existingAssociation = substr($association, -3) === 'New' ? substr($association, 0, -3) : $association;
-
+        /** @var \FileStorage\Model\Entity\FileStorage $fileEntity */
+        $fileEntity = $entity->get($assocConfig['property']);
         $entities = $this->table()->{$association}->find()->where(
             [
                 'model' => $assocConfig['model'],
                 'collection' => $assocConfig['collection'] ?? null,
                 'foreign_key' => $entity->get((string)$this->table()->getPrimaryKey()),
-                'id !=' => $newEntity->get((string)$this->table()->{$existingAssociation}->getPrimaryKey()),
+                'id !=' => $fileEntity->get((string)$this->table()->{$association}->getPrimaryKey()),
             ],
         )->all()->toArray();
         foreach ($entities as $entity) {

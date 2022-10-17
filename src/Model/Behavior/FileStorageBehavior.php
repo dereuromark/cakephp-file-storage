@@ -363,11 +363,6 @@ class FileStorageBehavior extends Behavior
     {
         $imageSizes = (array)Configure::read('FileStorage.imageVariants');
 
-        // Lets duplicate for now
-        foreach ($imageSizes as $model => $collection) {
-            $imageSizes[$model . 'New'] = $collection;
-        }
-
         $collection = $entity->get('collection');
         //$model = $file->model();
         $model = $collection;
