@@ -130,8 +130,6 @@ class FileStorageBehavior extends Behavior
             $this->configureValidator();
         }
 
-        //dd($this->table()->getValidator()->getProvider('default'));
-
         if ($this->isFileUploadPresent($data)) {
             $this->getFileInfoFromUpload($data);
         }

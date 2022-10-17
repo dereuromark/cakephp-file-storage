@@ -58,7 +58,7 @@ class ImageValidator implements UploadValidatorInterface
      *
      * @return false
      */
-    public function isUnderPhpSizeLimit($data): bool
+    public static function isUnderPhpSizeLimit($data): bool
     {
         ...
     }

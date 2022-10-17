@@ -32,16 +32,34 @@ class ImageValidator implements UploadValidatorInterface
             'rule' => ['isAboveMinHeight', 50],
             'message' => 'This image should at least be 50px high',
             'provider' => 'upload',
+            'on' => function ($context) {
+                /** @var \Psr\Http\Message\UploadedFileInterface|null $file */
+                $file = $context['data']['file'] ?? null;
+
+                return $file && $file->getError() == UPLOAD_ERR_OK;
+            },
         ]);
         $validator->add('file', 'fileAboveMinWidth', [
             'rule' => ['isAboveMinWidth', 50],
             'message' => 'This image should at least be 50px wide',
             'provider' => 'upload',
+            'on' => function ($context) {
+                /** @var \Psr\Http\Message\UploadedFileInterface|null $file */
+                $file = $context['data']['file'] ?? null;
+
+                return $file && $file->getError() == UPLOAD_ERR_OK;
+            },
         ]);
         $validator->add('file', 'fileBelowMaxWidth', [
             'rule' => ['isBelowMaxWidth', 400],
             'message' => 'This image should at max 400px wide',
             'provider' => 'upload',
+            'on' => function ($context) {
+                /** @var \Psr\Http\Message\UploadedFileInterface|null $file */
+                $file = $context['data']['file'] ?? null;
+
+                return $file && $file->getError() == UPLOAD_ERR_OK;
+            },
         ]);
 
         $validator->add('file', 'customName', [
@@ -49,7 +67,10 @@ class ImageValidator implements UploadValidatorInterface
             'message' => 'yourErrorMessage',
             'provider' => 'upload',
             'on' => function ($context) {
-                return !empty($context['data']['file']);
+                /** @var \Psr\Http\Message\UploadedFileInterface|null $file */
+                $file = $context['data']['file'] ?? null;
+
+                return $file && $file->getError() == UPLOAD_ERR_OK;
             },
         ]);
     }
