@@ -170,13 +170,16 @@ class FileAssociationBehavior extends Behavior
         // Use existing assoc
         $existingAssociation = substr($association, -3) === 'New' ? substr($association, 0, -3) : $association;
 
-        $this->table()->{$association}->deleteAll(
+        $entities = $this->table()->{$association}->find()->where(
             [
                 'model' => $assocConfig['model'],
                 'collection' => $assocConfig['collection'] ?? null,
                 'foreign_key' => $entity->get((string)$this->table()->getPrimaryKey()),
                 'id !=' => $newEntity->get((string)$this->table()->{$existingAssociation}->getPrimaryKey()),
             ],
-        );
+        )->all()->toArray();
+        foreach ($entities as $entity) {
+            $this->table()->{$association}->delete($entity);
+        }
     }
 }
