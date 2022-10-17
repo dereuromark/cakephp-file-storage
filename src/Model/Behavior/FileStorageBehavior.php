@@ -346,6 +346,12 @@ class FileStorageBehavior extends Behavior
     public function processImages(FileInterface $file, EntityInterface $entity): FileInterface
     {
         $imageSizes = (array)Configure::read('FileStorage.imageVariants');
+
+        // Lets duplicate for now
+        foreach ($imageSizes as $model => $collection) {
+            $imageSizes[$model . 'New'] = $collection;
+        }
+
         //$model = $file->model();
         $collection = $entity->get('collection');
         $model = $collection;

@@ -5,55 +5,97 @@ It is required that you have at least a basic understanding of how the event sys
 
 This tutorial will assume that we're going to add an avatar image upload for our users.
 
-For image processing you'll need the Imagine plugin. If you don't have it already added, add it now:
+For image processing you'll need the phauthentic/file-storage-image-processor library. If you don't have it already added, add it now:
 
 ```sh
-composer require dereuromark/cakephp-imagine-plugin
+composer require phauthentic/file-storage-image-processor
 ```
 
 In your applications `config/bootstrap.php` load the plugins:
 
 ```php
 Plugin::load('FileStorage', [
-	'bootstrap' => true
+	'bootstrap' => true,
 ]);
-Plugin::load('Burzum/Imagine');
 ```
 
 This will load the `bootstrap.php` of the File Storage plugin. The default configuration in there will load the LocalStorage listener and the ImageProcessing listener. You can also skip that bootstrap part and configure your own listeners in your apps bootstrap.php or a new file.
 
-To make image processing work you'll have to add this to your applications bootstrap.php as well:
+To make image processing work you'll have to add this to your applications bootstrap (or use a dedicated storage.php):
 
 ```php
-/**
- * Image resizing configuration
- */
-Configure::write('FileStorage', [
-	'imageSizes' => [
-		'Avatar' => [
-			'crop180' => [
-				'squareCenterCrop' => [
-					'size' => 180,
-				],
-			],
-			'crop100' => [
-				'squareCenterCrop' => [
-					'size' => 100,
-				]
-			],
-			'crop40' => [
-				'squareCenterCrop' => [
-					'size' => 40,
-				],
-			],
-		],
-	],
+<?php
+// Container
+$container = \App\Container\Container::getSingletonInstance();
+$container->delegate(
+    new League\Container\ReflectionContainer(),
+);
+
+// Storage setup
+$storageFactory = new \Phauthentic\Infrastructure\Storage\StorageAdapterFactory($container);
+$storageService = new \Phauthentic\Infrastructure\Storage\StorageService(
+    $storageFactory,
+);
+$storageService->addAdapterConfig(
+    'Local',
+    \Phauthentic\Infrastructure\Storage\Factories\LocalFactory::class,
+    [
+        'root' => WWW_ROOT . 'img' . DS . 'thumbs' . DS,
+    ],
+);
+
+$pathBuilder = new \Phauthentic\Infrastructure\Storage\PathBuilder\PathBuilder([
+    'randomPathLevels' => 1,
+    'sanitizer' => new \Phauthentic\Infrastructure\Storage\Utility\FilenameSanitizer([
+        'urlSafe' => true,
+        'removeUriReservedChars' => true,
+        'maxLength' => 190,
+    ]),
+]);
+$fileStorage = new \Phauthentic\Infrastructure\Storage\FileStorage(
+    $storageService,
+    $pathBuilder,
+);
+
+// Image Manager and Processor
+$imageManager = new \Intervention\Image\ImageManager();
+$imageProcessor = new \Phauthentic\Infrastructure\Storage\Processor\Image\ImageProcessor(
+    $fileStorage,
+    $pathBuilder,
+    $imageManager,
+);
+$imageDimensionsProcessor = new \App\Storage\Processor\ImageDimensionsProcessor();
+$stackProcessor = new \Phauthentic\Infrastructure\Storage\Processor\StackProcessor([
+    $imageProcessor,
+    $imageDimensionsProcessor,
+]);
+
+// Configure variants
+$collection = \Phauthentic\Infrastructure\Storage\Processor\Image\ImageVariantCollection::create();
+$collection->addNew(\App\Storage\StorageCollections::IMG_RESIZED)
+    ->resize(300, 300)
+    ->optimize();
+$collection->addNew(\App\Storage\StorageCollections::IMG_CROPPED)
+    ->crop(100, 100);
+
+\Cake\Core\Configure::write([
+    'FileStorage' => [
+        'imageVariants' => [
+            'Avatars' => [
+                'EventImages' => $collection->toArray(),
+            ],
+        ],
+        'behaviorConfig' => [
+            'fileStorage' => $fileStorage,
+            'fileProcessor' => $stackProcessor,
+        ],
+    ],
 ]);
 ```
 
 We now assume that you have a table called `Users` and that you want to attach an avatar image to your users.
 
-In your `App\Model\Table\UsersTable.php` file is a method called `inititalize()`. Add the avatar file assocation there:
+In your `App\Model\Table\UsersTable.php` file is a method called `inititalize()`. Add the avatar file association there:
 
 ```php
 $this->hasOne('Avatars', [
@@ -69,9 +111,9 @@ Especially pay attention to the `conditions` key in the config array of the asso
 
 Either save it through the association along with your users save call or save it separate. However, whatever you do, it is important that you set the `foreign_key` and `model` field for the associated file storage entity.
 
-If you don't specify the model field it will use the file storage tables table name by default and your has one association won't find it.
+If you don't specify the model field it will use the file storage table name by default and your has one association won't find it.
 
-Inside the `edit.ctp` view file of your users edit method:
+Inside the `edit.php` template view file of your Users::edit action:
 
 ```php
 echo $this->Form->create($user);
@@ -101,15 +143,11 @@ class UsersController extends AppController {
 
 		if ($this->request->is(['post', 'put'])) {
 			$user = $this->Users->patchEntity($user, $this->request->data());
-			if (!empty($users->avatar->file)) {
-				$users->avatar->set('user_id', $userId); // Optional
-				$users->avatar->set('model', 'Avatars');
-			}
 
 			if ($this->Users->save($user)) {
-				$this->Flash->success('User saved');
+				$this->Flash->success('User updated');
 			} else {
-				$this->Flash->error('There was a problem saving the user.');
+				$this->Flash->error('There was a problem updating the user.');
 			}
 		}
 

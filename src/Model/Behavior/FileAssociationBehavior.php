@@ -44,22 +44,33 @@ class FileAssociationBehavior extends Behavior
                 'collection' => $association,
                 'property' => $this->table()->getAssociation($association)->getProperty(),
             ];
+             /* e.g.
+                'EventImages' => [
+                    'collection' => 'EventImages',
+                    'replace' => true,
+                    'model' => 'Events',
+                    'property' => 'event_image',
+                 ],
+             */
 
             $config['associations'][$association] = $assocConfig + $defaults;
+
             if ($associationObject instanceof HasOne) {
                 // Let's create a tmp assoc on the fly for saving/creating
-                $this->table()->hasOne('AvatarsNew', [
+                $this->table()->hasOne($association . 'New', [
                     'className' => 'FileStorage.FileStorage',
                     'foreignKey' => 'foreign_key',
                     'conditions' => [
-                        'AvatarsNew.model' => 'Items',
+                        $association . 'New.model' => 'Events',
                     ],
                     'joinType' => 'LEFT',
                 ]);
 
                 $associationTmp = $config['associations'][$association];
+                $associationTmp['collection'] .= 'New';
                 $associationTmp['property'] .= '_new';
-                $config['associations'][$association] = $associationTmp;
+                $associationTmp['link'] = $association;
+                $config['associations'][$association . 'New'] = $associationTmp;
             }
         }
 
@@ -106,8 +117,9 @@ class FileAssociationBehavior extends Behavior
         ArrayObject $options
     ): void {
         $associations = $this->getConfig('associations');
-
         foreach ($associations as $association => $assocConfig) {
+            $linkedAssoc = $assocConfig['link'] ?? $association;
+            $linkedAssocConfig = $associations[$linkedAssoc];
             $property = $assocConfig['property'];
             if ($entity->{$property} === null) {
                 continue;
@@ -127,14 +139,14 @@ class FileAssociationBehavior extends Behavior
                     continue;
                 }
 
-                $entity->{$property}->set('collection', $assocConfig['collection']);
-                $entity->{$property}->set('model', $assocConfig['model']);
+                $entity->{$property}->set('collection', $linkedAssocConfig['collection']);
+                $entity->{$property}->set('model', $linkedAssocConfig['model']);
                 $entity->{$property}->set('foreign_key', $entity->id);
 
                 $this->table()->{$association}->saveOrFail($entity->{$property});
 
                 if ($assocConfig['replace'] === true) {
-                    $this->findAndRemovePreviousFile($entity, $association, $assocConfig);
+                    $this->findAndRemovePreviousFile($entity, $association, $linkedAssocConfig);
                 }
             }
         }
@@ -152,17 +164,19 @@ class FileAssociationBehavior extends Behavior
         string $association,
         array $assocConfig
     ): void {
-        $result = $this->table()->{$association}->find()
-            ->where([
+        // Remove suffix
+        $newEntity = $entity->get($assocConfig['property'] . '_new') ?: $entity->get($association['property']);
+
+        // Use existing assoc
+        $existingAssociation = substr($association, -3) === 'New' ? substr($association, 0, -3) : $association;
+
+        $this->table()->{$association}->deleteAll(
+            [
                 'model' => $assocConfig['model'],
                 'collection' => $assocConfig['collection'] ?? null,
                 'foreign_key' => $entity->get((string)$this->table()->getPrimaryKey()),
-                'id !=' => $entity->get($assocConfig['property'])->get((string)$this->table()->{$association}->getPrimaryKey()),
-            ])
-            ->first();
-
-        if ($result) {
-            $this->table()->{$association}->delete($result);
-        }
+                'id !=' => $newEntity->get((string)$this->table()->{$existingAssociation}->getPrimaryKey()),
+            ],
+        );
     }
 }
