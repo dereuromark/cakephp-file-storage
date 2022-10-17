@@ -4,7 +4,9 @@ declare(strict_types = 1);
 
 namespace FileStorage\View\Helper;
 
+use Cake\Log\Log;
 use Cake\View\Helper;
+use Exception;
 use FileStorage\Model\Entity\FileStorageEntityInterface;
 use Phauthentic\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
 
@@ -51,7 +53,12 @@ class ImageHelper extends Helper
             return $this->fallbackImage($options, $version);
         }
 
-        $url = $this->imageUrl($image, $version, $options);
+        try {
+            $url = $this->imageUrl($image, $version, $options);
+        } catch (Exception $e) {
+            Log::write('debug', $e->getMessage());
+            $url = null;
+        }
         if ($url !== null) {
             return $this->Html->image($url, $options);
         }
@@ -88,7 +95,11 @@ class ImageHelper extends Helper
         }
 
         if (!$path) {
-            throw VariantDoesNotExistException::withName((string)$variant);
+            throw new VariantDoesNotExistException(sprintf(
+                'A variant with the name `%s` does not exists for ID `%s`',
+                (string)$variant,
+                (string)$image->id
+            ));
         }
 
         $options = array_merge($this->getConfig(), $options);
