@@ -213,12 +213,11 @@ class FileStorageBehavior extends Behavior
                 $entity = $this->fileObjectToEntity($file, $entity);
 
                 $tableConfig = $this->table()->behaviors()->get('FileStorage')->getConfig();
-                $this->getEventManager()->off('Model.afterSave');
+                //$this->getEventManager()->off('Model.afterSave');
                 $this->table()->removeBehavior('FileStorage');
                 $this->table()->saveOrFail($entity, ['checkRules' => false]);
                 $this->table()->addBehavior('FileStorage.FileStorage', $tableConfig);
-                $this->getEventManager()->on('Model.afterSave');
-                //unset($entity->file);
+                //$this->getEventManager()->on('Model.afterSave');
             } catch (Throwable $exception) {
                 $this->table()->delete($entity);
 

@@ -173,7 +173,6 @@ class ItemsTableTest extends FileStorageTestCase
         $this->assertNotEmpty($entity->avatar->variants);
         $this->assertStringStartsWith('Items/Avatars/', $entity->avatar->path);
 
-        debug($entity);
         $expected = [
             'width' => 512,
             'height' => 512, // !!!
