@@ -83,10 +83,11 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     /**
      * Making it backward compatible
      *
-     * @return array<string, string>
      * @see \FileStorage\Model\Entity\FileStorage::$variant_urls
+     *
+     * @return array<string, string>
      */
-    protected function _getVariantUrls()
+    protected function _getVariantUrls(): array
     {
         $variants = (array)$this->get('variants');
         $list = [
