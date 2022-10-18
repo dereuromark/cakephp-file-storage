@@ -110,7 +110,7 @@ class ItemsTableTest extends FileStorageTestCase
         $this->assertSame('Avatars', $entity->avatar->collection);
         $this->assertNotEmpty($entity->avatar->metadata);
         $this->assertNotEmpty($entity->avatar->variants);
-        //$this->assertStringStartsWith('Avatars', $entity->avatar->path);
+        $this->assertStringStartsWith('Items/Avatars/', $entity->avatar->path);
     }
 
     /**
@@ -138,6 +138,7 @@ class ItemsTableTest extends FileStorageTestCase
         $entity = $this->table->get($entity->id, ['contain' => 'Avatars']);
 
         $this->assertNotEmpty($entity->avatar);
+        $this->assertStringStartsWith('Items/Avatars/', $entity->avatar->path);
 
         $expected = [
             'width' => 512,
@@ -170,9 +171,8 @@ class ItemsTableTest extends FileStorageTestCase
         $this->assertSame('Avatars', $entity->avatar->collection);
         $this->assertNotEmpty($entity->avatar->metadata);
         $this->assertNotEmpty($entity->avatar->variants);
-        //$this->assertStringStartsWith('Avatars', $entity->avatar->path);
+        $this->assertStringStartsWith('Items/Avatars/', $entity->avatar->path);
 
-        debug($entity);
         $expected = [
             'width' => 512,
             'height' => 512, // !!!
