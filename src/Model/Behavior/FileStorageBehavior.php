@@ -91,7 +91,7 @@ class FileStorageBehavior extends Behavior
     /**
      * Checks if a file upload is present.
      *
-     * @param \Cake\Datasource\EntityInterface|\ArrayObject $entity
+     * @param \FileStorage\Model\Entity\FileStorage|\ArrayObject $entity
      *
      * @return bool
      */
@@ -139,7 +139,7 @@ class FileStorageBehavior extends Behavior
      * beforeSave callback
      *
      * @param \Cake\Event\EventInterface $event
-     * @param \Cake\Datasource\EntityInterface $entity
+     * @param \FileStorage\Model\Entity\FileStorage $entity
      * @param \ArrayObject $options
      *
      * @return bool
@@ -166,7 +166,7 @@ class FileStorageBehavior extends Behavior
      * afterSave callback
      *
      * @param \Cake\Event\EventInterface $event
-     * @param \Cake\Datasource\EntityInterface $entity
+     * @param \FileStorage\Model\Entity\FileStorage $entity
      * @param \ArrayObject $options
      *
      * @throws \Exception
@@ -230,8 +230,6 @@ class FileStorageBehavior extends Behavior
     }
 
     /**
-     * checkEntityBeforeSave
-     *
      * @param \FileStorage\Model\Entity\FileStorage $entity
      *
      * @return void
@@ -258,7 +256,7 @@ class FileStorageBehavior extends Behavior
      * afterDelete callback
      *
      * @param \Cake\Event\EventInterface $event
-     * @param \Cake\Datasource\EntityInterface $entity
+     * @param \FileStorage\Model\Entity\FileStorage $entity
      * @param \ArrayObject $options
      *
      * @return void
@@ -311,7 +309,7 @@ class FileStorageBehavior extends Behavior
      *
      * @return int Number of deleted records / files
      */
-    public function deleteAllFiles(array $conditions)
+    public function deleteAllFiles(array $conditions): int
     {
         $table = $this->table();
 
@@ -354,7 +352,7 @@ class FileStorageBehavior extends Behavior
      * Processes images
      *
      * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
-     * @param \Cake\Datasource\EntityInterface $entity
+     * @param \FileStorage\Model\Entity\FileStorage $entity
      *
      * @return \Phauthentic\Infrastructure\Storage\FileInterface
      */
@@ -363,7 +361,6 @@ class FileStorageBehavior extends Behavior
         $imageSizes = (array)Configure::read('FileStorage.imageVariants');
 
         $collection = $entity->get('collection');
-        //$model = $file->model();
         $model = $collection;
 
         if (!isset($imageSizes[$model][$collection])) {
