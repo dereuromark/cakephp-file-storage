@@ -36,7 +36,7 @@ class DataTransformer implements DataTransformerInterface
             (int)$entity->get('filesize'),
             (string)$entity->get('mime_type'),
             (string)$entity->get('adapter'),
-            (string)$entity->get('identifier'),
+            (string)$entity->get('collection'),
             (string)$entity->get('model'),
             (string)$entity->get('foreign_key'),
             (array)$entity->get('variants'),
@@ -76,6 +76,7 @@ class DataTransformer implements DataTransformerInterface
             'id' => $file->uuid(), //FIXME
             'model' => $file->model(),
             'foreign_key' => $file->modelId(),
+            'collection' => $file->collection(), // aka alias
             'filesize' => $file->filesize(),
             'filename' => $file->filename(),
             'mime_type' => $file->mimeType(),

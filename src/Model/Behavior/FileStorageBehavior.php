@@ -240,18 +240,12 @@ class FileStorageBehavior extends Behavior
     protected function checkEntityBeforeSave(EntityInterface $entity): void
     {
         if ($entity->isNew()) {
-            if (!$entity->has('model')) {
-                $entity->set('model', $this->table()->getAlias());
-            }
-
             if (!$entity->has('adapter')) {
                 $entity->set('adapter', $this->getConfig('defaultStorageConfig'));
             }
 
             return;
         }
-
-        //$entity->set('model', $this->table()->getAlias());
 
         $entity->variants = [];
         $entity->metadata = [];
