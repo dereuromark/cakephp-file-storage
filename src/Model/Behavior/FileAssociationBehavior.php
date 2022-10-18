@@ -7,6 +7,7 @@ namespace FileStorage\Model\Behavior;
 use ArrayObject;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\EventInterface;
+use Cake\ORM\Association\HasMany;
 use Cake\ORM\Association\HasOne;
 use Cake\ORM\Behavior;
 use Laminas\Diactoros\UploadedFile;
@@ -70,11 +71,22 @@ class FileAssociationBehavior extends Behavior
                 continue;
             }
 
-            if (is_array($entity->{$property})) {
-                $entity->{$property} = $this->table()->{$assocConfig['collection']}->newEntity($entity->{$property});
-            }
+            $association = $this->table()->{$assocConfig['collection']};
+            if ($association instanceof HasOne) {
+                if (is_array($entity->{$property})) {
+                    $entity->{$property} = $this->table()->{$assocConfig['collection']}->newEntity($entity->{$property});
+                }
 
-            $entity->{$property}->set('collection', $assocConfig['collection']);
+                $entity->{$property}->set('collection', $assocConfig['collection']);
+            } elseif ($association instanceof HasMany) {
+                foreach ($entity->{$property} as &$v) {
+                    if (is_array($v)) {
+                        $v = $this->table()->{$assocConfig['collection']}->newEntity($v);
+                    }
+
+                    $v->set('collection', $assocConfig['collection']);
+                }
+            }
         }
     }
 
@@ -91,37 +103,102 @@ class FileAssociationBehavior extends Behavior
         ArrayObject $options
     ): void {
         $associations = $this->getConfig('associations');
-        foreach ($associations as $association => $assocConfig) {
-            $linkedAssoc = $assocConfig['link'] ?? $association;
-            $linkedAssocConfig = $associations[$linkedAssoc];
+        foreach ($associations as $assocName => $assocConfig) {
             $property = $assocConfig['property'];
             if ($entity->{$property} === null) {
                 continue;
             }
+            $association = $this->table()->{$assocConfig['collection']};
 
-            if ($entity->id && $entity->{$property} && $entity->{$property}->file) {
-                $file = $entity->{$property}->file;
+            if (!$entity->id || !$entity->{$property}) {
+                continue;
+            }
 
-                $ok = false;
-                if (is_array($file) && $file['error'] === UPLOAD_ERR_OK) {
-                    $ok = true;
-                } elseif ($file instanceof UploadedFile && $file->getError() === UPLOAD_ERR_OK) {
-                    $ok = true;
-                }
+            if ($association instanceof HasOne) {
+                $this->processOne($entity, $assocName, $assocConfig);
 
-                if (!$ok) {
-                    continue;
-                }
+                return;
+            }
 
-                $entity->{$property}->set('collection', $linkedAssocConfig['collection']);
-                $entity->{$property}->set('model', $linkedAssocConfig['model']);
-                $entity->{$property}->set('foreign_key', $entity->id);
+            $this->processMany($entity, $assocName, $assocConfig);
+        }
+    }
 
-                $this->table()->{$association}->saveOrFail($entity->{$property});
+    /**
+     * @param \Cake\Datasource\EntityInterface $entity
+     * @param string $assocName
+     * @param array $assocConfig
+     *
+     * @return void
+     */
+    protected function processOne(EntityInterface $entity, string $assocName, array $assocConfig)
+    {
+        $property = $assocConfig['property'];
 
-                if ($assocConfig['replace'] === true) {
-                    $this->findAndRemovePreviousFile($entity, $association, $linkedAssocConfig);
-                }
+        $fileEntity = $entity->{$property};
+        if (!$fileEntity->file) {
+            return;
+        }
+
+        $file = $fileEntity->file;
+
+        $ok = false;
+        if (is_array($file) && $file['error'] === UPLOAD_ERR_OK) {
+            $ok = true;
+        } elseif ($file instanceof UploadedFile && $file->getError() === UPLOAD_ERR_OK) {
+            $ok = true;
+        }
+
+        if (!$ok) {
+            return;
+        }
+
+        $fileEntity->set('collection', $assocConfig['collection']);
+        $fileEntity->set('model', $assocConfig['model']);
+        $fileEntity->set('foreign_key', $entity->id);
+        $this->table()->{$assocName}->saveOrFail($fileEntity);
+
+        if ($assocConfig['replace'] === true) {
+            $this->findAndRemovePreviousFile($entity, $assocName, $assocConfig);
+        }
+    }
+
+    /**
+     * @param \Cake\Datasource\EntityInterface $entity
+     * @param string $assocName
+     * @param array $assocConfig
+     *
+     * @return void
+     */
+    protected function processMany(EntityInterface $entity, string $assocName, array $assocConfig)
+    {
+        $property = $assocConfig['property'];
+
+        foreach ($entity->{$property} as &$fileEntity) {
+            if (!$fileEntity->file) {
+                continue;
+            }
+
+            $file = $fileEntity->file;
+
+            $ok = false;
+            if (is_array($file) && $file['error'] === UPLOAD_ERR_OK) {
+                $ok = true;
+            } elseif ($file instanceof UploadedFile && $file->getError() === UPLOAD_ERR_OK) {
+                $ok = true;
+            }
+
+            if (!$ok) {
+                continue;
+            }
+
+            $fileEntity->set('collection', $assocConfig['collection']);
+            $fileEntity->set('model', $assocConfig['model']);
+            $fileEntity->set('foreign_key', $entity->id);
+            $this->table()->{$assocName}->saveOrFail($fileEntity);
+
+            if ($assocConfig['replace'] === true) {
+                $this->findAndRemovePreviousFile($entity, $assocName, $assocConfig);
             }
         }
     }
