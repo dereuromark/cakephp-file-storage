@@ -70,6 +70,10 @@ class FileAssociationBehavior extends Behavior
                 continue;
             }
 
+            if (is_array($entity->{$property})) {
+                $entity->{$property} = $this->table()->{$assocConfig['collection']}->newEntity($entity->{$property});
+            }
+
             $entity->{$property}->set('collection', $assocConfig['collection']);
         }
     }
@@ -87,8 +91,9 @@ class FileAssociationBehavior extends Behavior
         ArrayObject $options
     ): void {
         $associations = $this->getConfig('associations');
-
         foreach ($associations as $association => $assocConfig) {
+            $linkedAssoc = $assocConfig['link'] ?? $association;
+            $linkedAssocConfig = $associations[$linkedAssoc];
             $property = $assocConfig['property'];
             if ($entity->{$property} === null) {
                 continue;
@@ -108,14 +113,14 @@ class FileAssociationBehavior extends Behavior
                     continue;
                 }
 
-                $entity->{$property}->set('collection', $assocConfig['collection']);
-                $entity->{$property}->set('model', $assocConfig['model']);
+                $entity->{$property}->set('collection', $linkedAssocConfig['collection']);
+                $entity->{$property}->set('model', $linkedAssocConfig['model']);
                 $entity->{$property}->set('foreign_key', $entity->id);
 
                 $this->table()->{$association}->saveOrFail($entity->{$property});
 
                 if ($assocConfig['replace'] === true) {
-                    $this->findAndRemovePreviousFile($entity, $association, $assocConfig);
+                    $this->findAndRemovePreviousFile($entity, $association, $linkedAssocConfig);
                 }
             }
         }
@@ -133,17 +138,18 @@ class FileAssociationBehavior extends Behavior
         string $association,
         array $assocConfig
     ): void {
-        $result = $this->table()->{$association}->find()
-            ->where([
+        /** @var \FileStorage\Model\Entity\FileStorage $fileEntity */
+        $fileEntity = $entity->get($assocConfig['property']);
+        $entities = $this->table()->{$association}->find()->where(
+            [
                 'model' => $assocConfig['model'],
                 'collection' => $assocConfig['collection'] ?? null,
                 'foreign_key' => $entity->get((string)$this->table()->getPrimaryKey()),
-                'id !=' => $entity->get($assocConfig['property'])->get((string)$this->table()->{$association}->getPrimaryKey()),
-            ])
-            ->first();
-
-        if ($result) {
-            $this->table()->{$association}->delete($result);
+                'id !=' => $fileEntity->get((string)$this->table()->{$association}->getPrimaryKey()),
+            ],
+        )->all()->toArray();
+        foreach ($entities as $entity) {
+            $this->table()->{$association}->delete($entity);
         }
     }
 }
