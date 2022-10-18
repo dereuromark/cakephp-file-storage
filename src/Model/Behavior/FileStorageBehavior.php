@@ -213,9 +213,12 @@ class FileStorageBehavior extends Behavior
                 $entity = $this->fileObjectToEntity($file, $entity);
 
                 $tableConfig = $this->table()->behaviors()->get('FileStorage')->getConfig();
+                $this->getEventManager()->off('Model.afterSave');
                 $this->table()->removeBehavior('FileStorage');
                 $this->table()->saveOrFail($entity, ['checkRules' => false]);
                 $this->table()->addBehavior('FileStorage.FileStorage', $tableConfig);
+                $this->getEventManager()->on('Model.afterSave');
+                //unset($entity->file);
             } catch (Throwable $exception) {
                 $this->table()->delete($entity);
 
@@ -247,6 +250,8 @@ class FileStorageBehavior extends Behavior
 
             return;
         }
+
+        //$entity->set('model', $this->table()->getAlias());
 
         $entity->variants = [];
         $entity->metadata = [];
