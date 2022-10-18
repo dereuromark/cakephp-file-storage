@@ -114,7 +114,6 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $this->assertSame($entity->adapter, 'Local');
         $this->assertSame($entity->filesize, 332643);
         $this->assertSame($entity->mime_type, 'image/jpeg');
-        $this->assertSame($entity->model, 'FileStorage');
     }
 
     /**
@@ -143,6 +142,5 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $this->assertSame($entity->adapter, 'Local');
         $this->assertSame($entity->filesize, 332643);
         $this->assertSame($entity->mime_type, 'image/jpeg');
-        $this->assertSame($entity->model, 'FileStorage');
     }
 }
