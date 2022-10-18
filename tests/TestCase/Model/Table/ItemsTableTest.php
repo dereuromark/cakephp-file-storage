@@ -40,6 +40,8 @@ class ItemsTableTest extends FileStorageTestCase
                 'Avatars.model' => 'Items',
             ],
             'joinType' => 'LEFT',
+            'dependent' => true,
+            'cascadeCallbacks' => true,
         ]);
 
         $this->table->hasMany('Photos', [
@@ -49,6 +51,8 @@ class ItemsTableTest extends FileStorageTestCase
                 'Photos.model' => 'Items',
             ],
             'joinType' => 'LEFT',
+            'dependent' => true,
+            'cascadeCallbacks' => true,
         ]);
 
         $this->table->addBehavior(
@@ -257,5 +261,39 @@ class ItemsTableTest extends FileStorageTestCase
             'height' => 512, // !!!
         ];
         $this->assertSame($expected, $entity->avatar->metadata);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUploadHasOneDelete()
+    {
+        $entity = $this->table->newEntity([
+            'name' => 'Test',
+            'avatar' => [
+                'file' => new UploadedFile(
+                    $this->fileFixtures . 'titus.jpg',
+                    filesize($this->fileFixtures . 'titus.jpg'),
+                    UPLOAD_ERR_OK,
+                    'tituts.jpg',
+                    'image/jpeg',
+                ),
+            ],
+        ]);
+        $this->assertSame([], $entity->getErrors());
+
+        $this->table->saveOrFail($entity);
+
+        $entity = $this->table->get($entity->id, ['contain' => 'Avatars']);
+
+        $this->assertNotEmpty($entity->avatar);
+        $this->assertNotEmpty($entity->avatar->metadata);
+        $this->assertNotEmpty($entity->avatar->variants);
+
+        $result = $this->table->delete($entity);
+        $this->assertTrue($result);
+
+        $count = $this->table->Avatars->find()->count();
+        $this->assertSame(0, $count);
     }
 }

@@ -39,8 +39,8 @@ class DataTransformer implements DataTransformerInterface
             (string)$entity->get('collection'),
             (string)$entity->get('model'),
             (string)$entity->get('foreign_key'),
-            (array)$entity->get('variants'),
             (array)$entity->get('metadata'),
+            (array)$entity->get('variants'),
         );
 
         $file = $file->withUuid((string)$entity->get('id'));
