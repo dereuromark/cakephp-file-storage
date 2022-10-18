@@ -139,7 +139,6 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->assertNotEmpty($entity->avatar);
 
-        unset($entity->avatar->metadata['thumbnail']);
         $expected = [
             'width' => 512,
             'height' => 768,
@@ -166,7 +165,6 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->assertNotEmpty($entity->avatar);
 
-        debug($entity);
         $this->assertSame('Items', $entity->avatar->model);
         $this->assertNotEmpty($entity->avatar->foreign_key);
         $this->assertSame('Avatars', $entity->avatar->collection);
@@ -174,7 +172,7 @@ class ItemsTableTest extends FileStorageTestCase
         $this->assertNotEmpty($entity->avatar->variants);
         //$this->assertStringStartsWith('Avatars', $entity->avatar->path);
 
-        unset($entity->avatar->metadata['thumbnail']);
+        debug($entity);
         $expected = [
             'width' => 512,
             'height' => 512, // !!!

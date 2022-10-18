@@ -210,15 +210,11 @@ class FileStorageBehavior extends Behavior
                     'entity' => $entity,
                     'file' => $file,
                 ], $this->table());
-
                 $entity = $this->fileObjectToEntity($file, $entity);
 
                 $tableConfig = $this->table()->behaviors()->get('FileStorage')->getConfig();
                 $this->table()->removeBehavior('FileStorage');
-                $this->table()->saveOrFail(
-                    $entity,
-                    ['callbacks' => false],
-                );
+                $this->table()->saveOrFail($entity, ['checkRules' => false]);
                 $this->table()->addBehavior('FileStorage.FileStorage', $tableConfig);
             } catch (Throwable $exception) {
                 $this->table()->delete($entity);
@@ -236,7 +232,7 @@ class FileStorageBehavior extends Behavior
     /**
      * checkEntityBeforeSave
      *
-     * @param \Cake\Datasource\EntityInterface $entity
+     * @param \FileStorage\Model\Entity\FileStorage $entity
      *
      * @return void
      */
@@ -250,7 +246,12 @@ class FileStorageBehavior extends Behavior
             if (!$entity->has('adapter')) {
                 $entity->set('adapter', $this->getConfig('defaultStorageConfig'));
             }
+
+            return;
         }
+
+        $entity->variants = [];
+        $entity->metadata = [];
     }
 
     /**
