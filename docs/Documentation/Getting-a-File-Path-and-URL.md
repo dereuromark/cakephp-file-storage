@@ -20,7 +20,8 @@ $entity->path(); // Gets you the path in the used storage backend to the file
 $entity->url(); // Gets you the URL to the file if possible
 ```
 
-Or do it in the constructor of the entity. Pay attention to the two properties `_pathBuilderClass` and `_pathBuilderOptions`. Set whatever you need here. If you're inheriting `Burzum\FileStorage\Model\Entity\FileStorage` these options and the code below will be already present.
+Or do it in the constructor of the entity. Pay attention to the two properties `_pathBuilderClass` and `_pathBuilderOptions`.
+Set whatever you need here. If you're inheriting `FileStorage\Model\Entity\FileStorage` these options and the code below will be already present.
 
 ```php
 namespace App\Model\Entity;

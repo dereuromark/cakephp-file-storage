@@ -40,7 +40,7 @@ Configure::write('FileStorage', array(
 	)
 );
 
-\Burzum\FileStorage\Lib\FileStorageUtils::generateHashes();
+\FileStorage\Lib\FileStorageUtils::generateHashes();
 ```
 
 Calling ```generateHashes()``` is important, it will create the hash values for each versioned image and store them in Media.imageHashes in the configuration.

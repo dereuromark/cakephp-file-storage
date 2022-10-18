@@ -9,19 +9,19 @@ Using Composer
 Installing the plugin via [Composer](https://getcomposer.org/) is very simple, just run in your project folder:
 
 ```
-composer require burzum/file-storage:^4.0
+composer require dereuromark/file-storage:^3.0
 ```
 
 Database Setup
 --------------
 
-You need to setup the plugin database using [the official migrations plugin for CakePHP](https://github.com/cakephp/migrations).
+You need to set up the plugin database using [the official migrations plugin for CakePHP](https://github.com/cakephp/migrations).
 
 ```
 cake migrations migrate -p FileStorage
 ```
 
-If you're coming from the CakePHP 2.0 version of the plugin, the support for the CakeDC Migrations plugin has been dropped in favor of [the official migrations plugin](https://github.com/cakephp/migrations).
+You can also copy over the migrations and manually adjust them to your needs and run local `migrations migrate` instead.
 
 CakePHP Bootstrap
 -----------------
@@ -30,13 +30,10 @@ Add the following part to your applications ```config/bootstrap.php```.
 
 ```php
 use Cake\Event\EventManager;
-use Burzum\FileStorage\Lib\FileStorageUtils;
-use Burzum\FileStorage\Lib\StorageManager;
-use Burzum\FileStorage\Event\ImageProcessingListener;
-use Burzum\FileStorage\Event\LocalFileStorageListener;
-
-// Only required if you're *NOT* using composer or another autoloader!
-spl_autoload_register(__NAMESPACE__ .'\FileStorageUtils::gaufretteLoader');
+use FileStorage\Lib\FileStorageUtils;
+use FileStorage\Lib\StorageManager;
+use FileStorage\Event\ImageProcessingListener;
+use FileStorage\Event\LocalFileStorageListener;
 
 $listener = new LocalFileStorageListener();
 EventManager::instance()->on($listener);
