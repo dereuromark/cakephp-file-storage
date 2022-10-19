@@ -31,5 +31,3 @@ $config = [
     'path' => dirname(__FILE__, 2) . DS,
 ];
 Plugin::getCollection()->add(new \FileStorage\Plugin($config));
-
-error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);

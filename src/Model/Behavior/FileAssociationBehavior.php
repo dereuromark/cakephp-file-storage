@@ -77,6 +77,7 @@ class FileAssociationBehavior extends Behavior
                     $entity->{$property} = $this->table()->{$assocConfig['collection']}->newEntity($entity->{$property});
                 }
 
+                $entity->{$property}->set('model', $assocConfig['model']);
                 $entity->{$property}->set('collection', $assocConfig['collection']);
             } elseif ($association instanceof HasMany) {
                 foreach ($entity->{$property} as &$v) {
@@ -84,6 +85,7 @@ class FileAssociationBehavior extends Behavior
                         $v = $this->table()->{$assocConfig['collection']}->newEntity($v);
                     }
 
+                    $v->set('model', $assocConfig['model']);
                     $v->set('collection', $assocConfig['collection']);
                 }
             }
@@ -153,8 +155,6 @@ class FileAssociationBehavior extends Behavior
             return;
         }
 
-        $fileEntity->set('collection', $assocConfig['collection']);
-        $fileEntity->set('model', $assocConfig['model']);
         $fileEntity->set('foreign_key', $entity->id);
         $this->table()->{$assocName}->saveOrFail($fileEntity);
 
@@ -192,8 +192,6 @@ class FileAssociationBehavior extends Behavior
                 continue;
             }
 
-            $fileEntity->set('collection', $assocConfig['collection']);
-            $fileEntity->set('model', $assocConfig['model']);
             $fileEntity->set('foreign_key', $entity->id);
             $this->table()->{$assocName}->saveOrFail($fileEntity);
 
