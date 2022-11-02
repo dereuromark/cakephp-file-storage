@@ -12,4 +12,5 @@ phpunit.xml.dist export-ignore
 .gitattributes export-ignore
 .editorconfig export-ignore
 tests/test_app export-ignore
+tests/Fixture/File export-ignore
 tests/bootstrap.php export-ignore
