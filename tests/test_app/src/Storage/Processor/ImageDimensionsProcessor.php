@@ -41,8 +41,8 @@ class ImageDimensionsProcessor implements ProcessorInterface
             return $file;
         }
 
-        $file = $file->withMetadataKey('width', $dimensions[0])
-            ->withMetadataKey('height', $dimensions[1]);
+        $file = $file->withMetadataByKey('width', $dimensions[0])
+            ->withMetadataByKey('height', $dimensions[1]);
 
         return $file;
     }
