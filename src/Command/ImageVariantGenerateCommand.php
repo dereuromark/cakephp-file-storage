@@ -9,11 +9,27 @@ use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;
+use Cake\Core\InstanceConfigTrait;
+use Cake\Datasource\EntityInterface;
+use Cake\Event\EventDispatcherTrait;
+use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Exception;
+use FileStorage\FileStorage\DataTransformer;
+use FileStorage\FileStorage\DataTransformerInterface;
+use FileStorage\Model\Entity\FileStorage;
+use Phauthentic\Infrastructure\Storage\FileInterface;
+use Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface;
+use RuntimeException;
 
+/**
+ * TODO: Fix force option to only overwrite if set.
+ */
 class ImageVariantGenerateCommand extends Command
 {
+    use EventDispatcherTrait;
+    use InstanceConfigTrait;
+
     /**
      * Storage Table Object
      *
@@ -27,6 +43,30 @@ class ImageVariantGenerateCommand extends Command
     protected $limit = 10;
 
     /**
+     * Default config
+     *
+     * @var array<string, mixed>
+     */
+    protected $_defaultConfig = [
+        'defaultStorageConfig' => 'Local',
+        'ignoreEmptyFile' => true,
+        'fileField' => 'file',
+        'fileStorage' => null,
+        'fileProcessor' => null,
+        'fileValidator' => null,
+    ];
+
+    /**
+     * @var \FileStorage\FileStorage\DataTransformerInterface|null
+     */
+    protected $transformer;
+
+    /**
+     * @var \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface|null
+     */
+    protected $processor;
+
+    /**
      * Implement this method with your command's logic.
      *
      * @param \Cake\Console\Arguments $args The command arguments.
@@ -36,6 +76,8 @@ class ImageVariantGenerateCommand extends Command
      */
     public function execute(Arguments $args, ConsoleIo $io)
     {
+        $this->setConfig(Configure::read('FileStorage.behaviorConfig'));
+
         $storageTable = (string)$args->getOption('storage');
         try {
             $this->Table = TableRegistry::getTableLocator()->get($storageTable);
@@ -49,6 +91,7 @@ class ImageVariantGenerateCommand extends Command
 
         $model = $args->getArgumentAt(0);
         $collection = $args->getArgumentAt(1);
+        $variant = $args->getArgumentAt(2);
         $key = $model;
         // Hack for now
         if ($key) {
@@ -56,6 +99,9 @@ class ImageVariantGenerateCommand extends Command
         }
         if ($collection) {
             $key .= '.' . $collection;
+        }
+        if ($variant) {
+            $key .= '.' . $variant;
         }
 
         if ($key) {
@@ -69,6 +115,10 @@ class ImageVariantGenerateCommand extends Command
         }
 
         if ($key) {
+            if ($variant) {
+                $operations = [$variant => $operations];
+            }
+
             $operations = [
                 $model => [
                     $collection => $operations,
@@ -143,17 +193,110 @@ class ImageVariantGenerateCommand extends Command
                         'table' => $this->Table,
                         'options' => $options,
                     ];
-
                     //$Event = new Event('ImageVariant.generate', $this->Table, $payload);
                     //EventManager::instance()->dispatch($Event);
 
-                    // Generate
+                    if (empty($options['dryRun'])) {
+                        $this->_processEntity($image, $operations);
+                    }
 
                     $io->verbose(__('- ID {0} processed', $image->id));
                 }
             }
             $offset += $limit;
         } while ($images);
+    }
+
+    /**
+     * @throws \RuntimeException
+     *
+     * @return \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface
+     */
+    protected function getFileProcessor(): ProcessorInterface
+    {
+        if ($this->processor !== null) {
+            return $this->processor;
+        }
+
+        if ($this->getConfig('fileProcessor') instanceof ProcessorInterface) {
+            $this->processor = $this->getConfig('fileProcessor');
+        }
+
+        if ($this->processor === null) {
+            throw new RuntimeException('No processor found');
+        }
+
+        return $this->processor;
+    }
+
+    /**
+     * Processes images
+     *
+     * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
+     * @param \FileStorage\Model\Entity\FileStorage $entity
+     * @param array $operations
+     *
+     * @return \Phauthentic\Infrastructure\Storage\FileInterface
+     */
+    public function processImages(FileInterface $file, EntityInterface $entity, array $operations): FileInterface
+    {
+        if (!$operations) {
+            return $file;
+        }
+
+        $file = $file->withVariants($operations, false);
+
+        return $file;
+    }
+
+    /**
+     * @param \Cake\Datasource\EntityInterface $entity Entity
+     *
+     * @return \Phauthentic\Infrastructure\Storage\FileInterface
+     */
+    public function entityToFileObject(EntityInterface $entity): FileInterface
+    {
+        return $this->getTransformer()->entityToFileObject($entity);
+    }
+
+    /**
+     * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
+     * @param \Cake\Datasource\EntityInterface|null $entity
+     *
+     * @return \Cake\Datasource\EntityInterface
+     */
+    public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity)
+    {
+        return $this->getTransformer()->fileObjectToEntity($file, $entity);
+    }
+
+    /**
+     * @return \FileStorage\FileStorage\DataTransformerInterface
+     */
+    protected function getTransformer(): DataTransformerInterface
+    {
+        if ($this->transformer !== null) {
+            return $this->transformer;
+        }
+
+        if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
+            $this->transformer = new DataTransformer(
+                $this->table(),
+            );
+        }
+
+        /** @var \FileStorage\FileStorage\DataTransformerInterface */
+        return $this->transformer;
+    }
+
+    /**
+     * Get the table instance this behavior is bound to.
+     *
+     * @return \Cake\ORM\Table The bound table instance.
+     */
+    public function table(): Table
+    {
+        return $this->Table;
     }
 
     /**
@@ -177,19 +320,8 @@ class ImageVariantGenerateCommand extends Command
         $parser->addOption('dryRun', [
             'short' => 'd',
             'help' => __('Dry-Run only.'),
+            'boolean' => true,
         ]);
-        $parser->addArguments(
-            [
-                'model' => [
-                    'help' => __('Value of the model property of the images to generate'),
-                    'required' => false,
-                ],
-                'collection' => [
-                    'help' => __('The image collection.'),
-                    'required' => false,
-                ],
-            ],
-        );
         $parser->addOptions(
             [
                 'adapter' => [
@@ -199,8 +331,24 @@ class ImageVariantGenerateCommand extends Command
                 ],
                 'force' => [
                     'short' => 'f',
-                    'help' => __('Force overwriting of existing versions (e.g. after a config change).'),
+                    'help' => __('Force overwriting of existing files (e.g. after a config change).'),
                     'boolean' => true,
+                ],
+            ],
+        );
+        $parser->addArguments(
+            [
+                'model' => [
+                    'help' => __('Model name of the images to generate'),
+                    'required' => false,
+                ],
+                'collection' => [
+                    'help' => __('Collection name of the images to generate.'),
+                    'required' => false,
+                ],
+                'variant' => [
+                    'help' => __('The image variant (omit for all).'),
+                    'required' => false,
                 ],
             ],
         );
@@ -257,5 +405,39 @@ class ImageVariantGenerateCommand extends Command
             ->offset($offset)
             ->all()
             ->toArray();
+    }
+
+    /**
+     * @param \FileStorage\Model\Entity\FileStorage $image
+     * @param array $operations
+     *
+     * @return void
+     */
+    protected function _processEntity(FileStorage $image, array $operations): void
+    {
+        $file = $this->entityToFileObject($image);
+
+        $file = $this->processImages($file, $image, $operations);
+
+        $processor = $this->getFileProcessor();
+
+        $this->dispatchEvent('FileStorage.beforeFileProcessing', [
+            'entity' => $image,
+            'file' => $file,
+        ], $this->table());
+
+        $file = $processor->process($file);
+
+        $this->dispatchEvent('FileStorage.afterFileProcessing', [
+            'entity' => $image,
+            'file' => $file,
+        ], $this->table());
+
+        $image = $this->fileObjectToEntity($file, $image);
+
+        $tableConfig = $this->table()->behaviors()->get('FileStorage')->getConfig();
+        $this->table()->removeBehavior('FileStorage');
+        $this->table()->saveOrFail($image);
+        $this->table()->addBehavior('FileStorage.FileStorage', $tableConfig);
     }
 }

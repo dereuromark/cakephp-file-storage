@@ -14,7 +14,7 @@ use Cake\ORM\TableRegistry;
 use Exception;
 
 /**
- * ImageShell
+ * TODO: Remove in favor of commands
  *
  * @author Florian Krämer
  * @copyright 2012 - 2020 Florian Krämer
@@ -43,28 +43,28 @@ class ImageVersionShell extends Shell
     {
         $parser = parent::getOptionParser();
         $parser->setDescription([
-            __d('file_storage', 'Shell command for generating and removing image versions.'),
+            __('Shell command for generating and removing image versions.'),
         ]);
         $parser->addOption('storageTable', [
             'short' => 's',
-            'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
+            'help' => __('The storage table for image processing you want to use.'),
             'default' => 'FileStorage.FileStorage',
         ]);
         $parser->addOption('limit', [
             'short' => 'l',
-            'help' => __d('file_storage', 'Limits the amount of records to be processed in one batch'),
+            'help' => __('Limits the amount of records to be processed in one batch'),
         ]);
         $parser->addSubcommands([
             'generate' => [
-                'help' => __d('file_storage', '<model> <identifier> Generate a new image version'),
+                'help' => __('<model> <identifier> Generate a new image version'),
                 'parser' => [
                     'arguments' => [
                         'model' => [
-                            'help' => __d('file_storage', 'Value of the model property of the images to generate'),
+                            'help' => __('Value of the model property of the images to generate'),
                             'required' => true,
                         ],
                         'identifier' => [
-                            'help' => __d('file_storage', 'The image identifier (`model` field in `file_storage` table).'),
+                            'help' => __('The image identifier (`model` field in `file_storage` table).'),
                             'required' => true,
                         ],
                     ],
@@ -76,31 +76,31 @@ class ImageVersionShell extends Shell
                         ],
                         'storageTable' => [
                             'short' => 's',
-                            'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
+                            'help' => __('The storage table for image processing you want to use.'),
                             'default' => 'FileStorage.FileStorage',
                         ],
                         'limit' => [
                             'short' => 'l',
-                            'help' => __d('file_storage', 'Limits the amount of records to be processed in one batch'),
+                            'help' => __('Limits the amount of records to be processed in one batch'),
                         ],
                         'keep-old-versions' => [
                             'short' => 'k',
-                            'help' => __d('file_storage', 'Use this switch if you do not want to overwrite existing versions.'),
+                            'help' => __('Use this switch if you do not want to overwrite existing versions.'),
                             'boolean' => true,
                         ],
                     ],
                 ],
             ],
             'remove' => [
-                'help' => __d('file_storage', '<model> <version> Remove an new image version'),
+                'help' => __('<model> <version> Remove an new image version'),
                 'parser' => [
                     'arguments' => [
                         'model' => [
-                            'help' => __d('file_storage', 'Value of the model property of the images to remove'),
+                            'help' => __('Value of the model property of the images to remove'),
                             'required' => true,
                         ],
                         'version' => [
-                            'help' => __d('file_storage', 'Image version to remove'),
+                            'help' => __('Image version to remove'),
                             'required' => true,
                         ],
                     ],
@@ -112,23 +112,23 @@ class ImageVersionShell extends Shell
                         ],
                         'storageTable' => [
                             'short' => 's',
-                            'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
+                            'help' => __('The storage table for image processing you want to use.'),
                             'default' => 'FileStorage.FileStorage',
                         ],
                         'limit' => [
                             'short' => 'l',
-                            'help' => __d('file_storage', 'Limits the amount of records to be processed in one batch'),
+                            'help' => __('Limits the amount of records to be processed in one batch'),
                         ],
                     ],
                 ],
             ],
             'regenerate' => [
-                'help' => __d('file_storage', '<model> Generates all image versions.'),
+                'help' => __('<model> Generates all image versions.'),
                 'parser' => [
                     'arguments' => [
                         'model' => [
-                            'help' => __d('file_storage', 'Value of the model property of the images to generate'),
-                            'required' => true,
+                            'help' => __('Value of the model property of the images to generate'),
+                            'required' => false,
                         ],
                     ],
                     'options' => [
@@ -139,16 +139,16 @@ class ImageVersionShell extends Shell
                         ],
                         'storageTable' => [
                             'short' => 's',
-                            'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
+                            'help' => __('The storage table for image processing you want to use.'),
                             'default' => 'FileStorage.FileStorage',
                         ],
                         'limit' => [
                             'short' => 'l',
-                            'help' => __d('file_storage', 'Limits the amount of records to be processed in one batch'),
+                            'help' => __('Limits the amount of records to be processed in one batch'),
                         ],
                         'keep-old-versions' => [
                             'short' => 'k',
-                            'help' => __d('file_storage', 'Use this switch if you do not want to overwrite existing versions.'),
+                            'help' => __('Use this switch if you do not want to overwrite existing versions.'),
                             'boolean' => true,
                         ],
                     ],
@@ -176,7 +176,7 @@ class ImageVersionShell extends Shell
 
         if (isset($this->params['limit'])) {
             if (!is_numeric($this->params['limit'])) {
-                $this->abort(__d('file_storage', '--limit must be an integer!'));
+                $this->abort(__('--limit must be an integer!'));
             }
             $this->limit = (int)$this->params['limit'];
         }
@@ -189,13 +189,17 @@ class ImageVersionShell extends Shell
      */
     public function regenerate(): void
     {
-        $operations = Configure::read('FileStorage.imageSizes.' . $this->args[0]);
+        if ($this->args) {
+            $operations = Configure::read('FileStorage.imageVariants.' . $this->args[0]);
+        } else {
+            $operations = Configure::read('FileStorage.imageVariants');
+        }
         $options = [
             'overwrite' => !$this->params['keep-old-versions'],
         ];
 
         if (!$operations) {
-            $this->abort(__d('file_storage', 'Invalid table or version.'));
+            $this->abort(__('Invalid table or version.'));
         }
 
         foreach ($operations as $version => $operation) {
@@ -214,24 +218,24 @@ class ImageVersionShell extends Shell
      * Generate a given image version.
      *
      * @param string $model
-     * @param string $version
+     * @param string $collection
      *
      * @return void
      */
-    public function generate(string $model, string $version): void
+    public function generate(string $model, string $collection): void
     {
-        $operations = Configure::read('FileStorage.imageVariants.' . $model . '.' . $version);
+        $operations = Configure::read('FileStorage.imageVariants.' . $model . '.' . $collection);
         $options = [
             'overwrite' => !$this->params['keep-old-versions'],
         ];
 
         if (!$operations) {
-            $this->out(__d('file_storage', 'Invalid table or version.'));
+            $this->out(__('Invalid table or version.'));
             $this->_stop();
         }
 
         try {
-            $this->_loop('generate', $model, [$version => $operations], $options);
+            $this->_loop('generate', $model, [$collection => $operations], $options);
         } catch (Exception $e) {
             $this->abort($e->getMessage());
         }
@@ -247,10 +251,10 @@ class ImageVersionShell extends Shell
      */
     public function remove(string $model, string $version): void
     {
-        $operations = Configure::read('FileStorage.imageSizes.' . $model . '.' . $version);
+        $operations = Configure::read('FileStorage.imageVariants.' . $model . '.' . $version);
 
         if (!$operations) {
-            $this->out(__d('file_storage', 'Invalid table or version.'));
+            $this->out(__('Invalid table or version.'));
             $this->_stop();
         }
 
@@ -281,11 +285,11 @@ class ImageVersionShell extends Shell
         $totalImageCount = $this->_getCount($model);
 
         if ($totalImageCount === 0) {
-            $this->out(__d('file_storage', 'No Images for model {0} found', $model));
+            $this->out(__('No Images for model {0} found', $model));
             $this->_stop();
         }
 
-        $this->out(__d('file_storage', '{0} image file(s) will be processed' . "\n", $totalImageCount));
+        $this->out(__('{0} image file(s) will be processed' . "\n", $totalImageCount));
 
         $offset = 0;
         $limit = $this->limit;

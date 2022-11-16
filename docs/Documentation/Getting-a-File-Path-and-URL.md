@@ -38,7 +38,7 @@ class SomeEntityInYourApp extends Entity {
 	 * This is named $_pathBuilderClass because $_pathBuilder is already used by
 	 * the trait to store the path builder instance.
 	 *
-	 * @param array
+	 * @param string|null
 	 */
 	protected $_pathBuilderClass = null;
 
@@ -63,7 +63,7 @@ class SomeEntityInYourApp extends Entity {
 
 		parent::__construct($properties, $options);
 
-		if (!empty($options['pathBuilder'])) {
+		if ($options['pathBuilder']) {
 			$this->pathBuilder(
 				$options['pathBuilder'],
 				$options['pathBuilderOptions']

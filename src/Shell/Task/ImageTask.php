@@ -76,7 +76,7 @@ class ImageTask extends Shell
         $offset = 0;
         $limit = $this->params['limit'];
 
-        $this->out(__d('file_storage', '{0} record(s) will be processed.' . "\n", $count));
+        $this->out(__('{0} record(s) will be processed.' . "\n", $count));
 
         do {
             $records = $this->_getRecords($identifier, $limit, $offset);
@@ -91,7 +91,7 @@ class ImageTask extends Shell
                 }
             }
             $offset += $limit;
-            $this->out(__d('file_storage', '{0} of {1} records processed.', [$limit, $count]));
+            $this->out(__('{0} of {1} records processed.', [$limit, $count]));
         } while ($records->count() > 0);
     }
 
@@ -159,7 +159,7 @@ class ImageTask extends Shell
     {
         $count = $this->_getCountQuery($identifier)->count();
         if ($count === 0) {
-            $this->out(__d('file_storage', 'No records for identifier "{0}" found.', $identifier));
+            $this->out(__('No records for identifier "{0}" found.', $identifier));
             $this->_stop();
         }
 

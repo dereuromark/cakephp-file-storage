@@ -1,8 +1,6 @@
 Installation
 ============
 
-Make sure you've checked the [requirements](Requirements.md) first!
-
 Using Composer
 --------------
 
@@ -11,6 +9,27 @@ Installing the plugin via [Composer](https://getcomposer.org/) is very simple, j
 ```
 composer require dereuromark/file-storage:^3.0
 ```
+
+## Load Plugin
+Run
+```
+bin/cake plugin load FileStorage
+```
+
+or manually add this to your `Application` class:
+```php
+$this->addPlugin('FileStorage');
+```
+
+[Make sure to disable routing if you do not have authentication set up:
+```php
+$this->addPlugin('FileStorage', ['routes' => false]);
+```
+You do not want visitors to be able to browse to the file storage backend.
+
+This backend is also optional, you can always replace it with your own.]()
+
+
 
 Database Setup
 --------------
@@ -23,25 +42,6 @@ cake migrations migrate -p FileStorage
 
 You can also copy over the migrations and manually adjust them to your needs and run local `migrations migrate` instead.
 
-CakePHP Bootstrap
------------------
-
-Add the following part to your applications ```config/bootstrap.php```.
-
-```php
-use Cake\Event\EventManager;
-use FileStorage\Lib\FileStorageUtils;
-use FileStorage\Lib\StorageManager;
-use FileStorage\Event\ImageProcessingListener;
-use FileStorage\Event\LocalFileStorageListener;
-
-$listener = new LocalFileStorageListener();
-EventManager::instance()->on($listener);
-
-// For automated image processing you'll have to attach this listener as well
-$listener = new ImageProcessingListener();
-EventManager::instance()->on($listener);
-```
 
 Adapter Specific Configuration
 ------------------------------
@@ -49,6 +49,21 @@ Adapter Specific Configuration
 Depending on the storage backend of your choice, for example Amazon S3 or Dropbox, you'll very likely need additional vendor libs and extended adapter configuration.
 
 Please see the [Specific Adapter Configuration](Specific-Adapter-Configurations.md) page of the documentation for more information about then. It is also worth checking the Gaufrette documentation for additonal adapters.
+
+
+## Setting up backend auth
+
+You can set up backend auth using Authentication/Authorization plugins or e.g. TinyAuth.
+
+With the latter it is just the following in `config/auth_acl.ini`:
+```
+[FileStorage.Admin/FileStorage]
+* = admin
+```
+With `admin` being your role that should be able to access it as `/admin/file-storage` via URL.
+
+WARNING: Do not expose the controller actions without any proper auth in place.
+You do not want to make the uploaded content accessible publicly.
 
 Running Tests
 -------------
@@ -58,5 +73,5 @@ The plugin tests are set up in a way that you can run them without putting the p
 ```
 cd <file-storage-plugin-folder>
 composer update
-phpunit
+composer test
 ```

@@ -20,6 +20,7 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=7.4",
+        "brick/varexporter": "^0.3.5",
         "cakephp/cakephp": "^4.3",
         "phauthentic/file-storage": "^1.0.0"
     },
