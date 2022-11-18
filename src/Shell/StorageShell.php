@@ -12,7 +12,7 @@ use FileStorage\Utility\StorageUtils;
 /**
  * Class StorageShell
  *
- * @property \FileStorage\Shell\Task\ImageTask $Image
+ * @deprecated Rewrite to command?
  */
 class StorageShell extends Shell
 {
@@ -45,10 +45,6 @@ class StorageShell extends Shell
             'short' => 'm',
             'help' => __('The model / table to use.'),
             'default' => 'FileStorage.FileStorage',
-        ]);
-        $parser->addSubcommand('image', [
-            'help' => __('Image Processing Task.'),
-            'parser' => $this->Image->getOptionParser(),
         ]);
         $parser->addSubcommand('store', [
             'help' => __('Stores a file in the DB.'),

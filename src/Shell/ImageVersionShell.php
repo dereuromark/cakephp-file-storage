@@ -16,6 +16,7 @@ use Exception;
 /**
  * TODO: Remove in favor of commands
  *
+ * @deprecated Rewrite to command
  * @author Florian Krämer
  * @copyright 2012 - 2020 Florian Krämer
  * @license MIT

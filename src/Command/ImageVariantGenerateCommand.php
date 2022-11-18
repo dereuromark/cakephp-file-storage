@@ -329,11 +329,13 @@ class ImageVariantGenerateCommand extends Command
                     'help' => __('The adapter config name to use.'),
                     'default' => 'Local',
                 ],
+                /*
                 'force' => [
                     'short' => 'f',
                     'help' => __('Force overwriting of existing files (e.g. after a config change).'),
                     'boolean' => true,
                 ],
+                */
             ],
         );
         $parser->addArguments(
@@ -347,7 +349,7 @@ class ImageVariantGenerateCommand extends Command
                     'required' => false,
                 ],
                 'variant' => [
-                    'help' => __('The image variant (omit for all).'),
+                    'help' => __('The image variant (omit for all). Careful: This currently wipes the other variants.'),
                     'required' => false,
                 ],
             ],
