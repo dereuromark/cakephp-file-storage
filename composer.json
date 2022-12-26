@@ -2,12 +2,20 @@
     "name": "dereuromark/cakephp-file-storage",
     "type": "cakephp-plugin",
     "description": "This plugin is giving you the possibility to store files in virtually any kind of storage backend. This plugin is wrapping the Gaufrette library (https://github.com/KnpLabs/Gaufrette) library in a CakePHP fashion and provides a simple way to use the storage adapters through the StorageManager class.",
-    "keywords": ["file", "filesystem", "media", "abstraction", "upload", "cakephp", "storage"],
+    "keywords": [
+        "file",
+        "filesystem",
+        "media",
+        "abstraction",
+        "upload",
+        "cakephp",
+        "storage"
+    ],
     "homepage": "https://github.com/dereuromark/cakephp-file-storage-plugin",
     "license": "MIT",
     "authors": [
         {
-            "name": "Florian Krämer",
+            "name": "Florian Kr\u00e4mer",
             "homepage": "https://florian-kraemer.net"
         },
         {
@@ -52,8 +60,8 @@
             "@test",
             "@stan"
         ],
-        "cs-check": "phpcs",
-        "cs-fix": "phpcbf",
+        "cs-check": "phpcs --extensions=php",
+        "cs-fix": "phpcbf --extensions=php",
         "stan": "phpstan analyse",
         "stan-test": "phpstan analyse tests/",
         "stan-setup": "cp composer.json composer.backup && composer require --dev phpstan/phpstan:^1.2.0 && mv composer.backup composer.json",
