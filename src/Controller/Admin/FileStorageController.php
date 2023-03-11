@@ -73,12 +73,17 @@ class FileStorageController extends AppController
     {
         $this->request->allowMethod(['post', 'delete']);
         $fileStorage = $this->FileStorage->get($id);
+        $redirect = $this->request->getQuery('redirect');
         if ($this->FileStorage->delete($fileStorage)) {
             $this->Flash->success(__('The file storage has been deleted.'));
         } else {
             $this->Flash->error(__('The file storage could not be deleted. Please, try again.'));
         }
 
-        return $this->redirect(['action' => 'index']);
+        if ($redirect === 'ref') {
+            return $this->redirect($this->referer(['action' => 'index']));
+        }
+
+        return $this->redirect($redirect ?: ['action' => 'index']);
     }
 }
