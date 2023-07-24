@@ -3,8 +3,8 @@
 
 	<php>
 		<ini name="memory_limit" value="-1"/>
-        <!-- E_ALL & ~E_USER_DEPRECATED => 16383 -->
-        <ini name="error_reporting" value="16383"/>
+		<!-- E_ALL & ~E_USER_DEPRECATED => 16383 -->
+		<ini name="error_reporting" value="16383"/>
 	</php>
 
 	<testsuites>
@@ -38,19 +38,19 @@
 		<!--<log type="testdox-text" target=".//tmp/tests/testdox.txt"/>-->
 	</logging>
 
-    <coverage>
-        <include>
-            <directory suffix=".php">src/</directory>
-        </include>
-        <exclude>
-            <file>src/Storage/PathBuilder/PathBuilderInterface.php</file>
-            <directory>src/Model/Entity/</directory>
-            <directory>src/Event/</directory>
-            <directory>src/Lib/</directory>
-        </exclude>
-        <report>
-            <html outputDirectory="./tmp/tests/report" lowUpperBound="35" highLowerBound="70"/>
-        </report>
-    </coverage>
+	<coverage>
+		<include>
+			<directory suffix=".php">src/</directory>
+		</include>
+		<exclude>
+			<file>src/Storage/PathBuilder/PathBuilderInterface.php</file>
+			<directory>src/Model/Entity/</directory>
+			<directory>src/Event/</directory>
+			<directory>src/Lib/</directory>
+		</exclude>
+		<report>
+			<html outputDirectory="./tmp/tests/report" lowUpperBound="35" highLowerBound="70"/>
+		</report>
+	</coverage>
 
 </phpunit>
