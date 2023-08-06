@@ -7,6 +7,7 @@ use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
 use Cake\Filesystem\Folder;
+use FileStorage\FileStoragePlugin;
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -28,7 +29,7 @@ require CORE_PATH . 'config/bootstrap.php';
 $config = [
     'path' => dirname(__FILE__, 2) . DS,
 ];
-Plugin::getCollection()->add(new \FileStorage\Plugin($config));
+Plugin::getCollection()->add(new FileStoragePlugin($config));
 
 Configure::write('App', [
     'namespace' => 'TestApp',

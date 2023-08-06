@@ -10,7 +10,7 @@ use Cake\Routing\RouteBuilder;
 /**
  * FileStorage Plugin for CakePHP
  */
-class Plugin extends BasePlugin
+class FileStoragePlugin extends BasePlugin
 {
     /**
      * Do bootstrapping or not
