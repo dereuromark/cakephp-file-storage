@@ -4,8 +4,8 @@ declare(strict_types = 1);
 
 namespace TestApp\Storage\Processor;
 
-use Phauthentic\Infrastructure\Storage\FileInterface;
-use Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface;
+use FileStorage\Storage\FileInterface;
+use FileStorage\Storage\Processor\ProcessorInterface;
 use RuntimeException;
 
 class ImageDimensionsProcessor implements ProcessorInterface

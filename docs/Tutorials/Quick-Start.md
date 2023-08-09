@@ -32,46 +32,46 @@ $container->delegate(
 );
 
 // Storage setup
-$storageFactory = new \Phauthentic\Infrastructure\Storage\StorageAdapterFactory($container);
-$storageService = new \Phauthentic\Infrastructure\Storage\StorageService(
+$storageFactory = new \FileStorage\Storage\StorageAdapterFactory($container);
+$storageService = new \FileStorage\Storage\StorageService(
     $storageFactory,
 );
 $storageService->addAdapterConfig(
     'Local',
-    \Phauthentic\Infrastructure\Storage\Factories\LocalFactory::class,
+    \FileStorage\Storage\Factories\LocalFactory::class,
     [
         'root' => WWW_ROOT . 'img' . DS . 'thumbs' . DS,
     ],
 );
 
-$pathBuilder = new \Phauthentic\Infrastructure\Storage\PathBuilder\PathBuilder([
+$pathBuilder = new \FileStorage\Storage\PathBuilder\PathBuilder([
     'randomPathLevels' => 1,
-    'sanitizer' => new \Phauthentic\Infrastructure\Storage\Utility\FilenameSanitizer([
+    'sanitizer' => new \FileStorage\Storage\Utility\FilenameSanitizer([
         'urlSafe' => true,
         'removeUriReservedChars' => true,
         'maxLength' => 190,
     ]),
 ]);
-$fileStorage = new \Phauthentic\Infrastructure\Storage\FileStorage(
+$fileStorage = new \FileStorage\Storage\FileStorage(
     $storageService,
     $pathBuilder,
 );
 
 // Image Manager and Processor
 $imageManager = new \Intervention\Image\ImageManager();
-$imageProcessor = new \Phauthentic\Infrastructure\Storage\Processor\Image\ImageProcessor(
+$imageProcessor = new \FileStorage\Storage\Processor\Image\ImageProcessor(
     $fileStorage,
     $pathBuilder,
     $imageManager,
 );
 $imageDimensionsProcessor = new \App\Storage\Processor\ImageDimensionsProcessor();
-$stackProcessor = new \Phauthentic\Infrastructure\Storage\Processor\StackProcessor([
+$stackProcessor = new \FileStorage\Storage\Processor\StackProcessor([
     $imageProcessor,
     $imageDimensionsProcessor,
 ]);
 
 // Configure variants
-$collection = \Phauthentic\Infrastructure\Storage\Processor\Image\ImageVariantCollection::create();
+$collection = \FileStorage\Storage\Processor\Image\ImageVariantCollection::create();
 $collection->addNew(\App\Storage\StorageCollections::IMG_RESIZED)
     ->resize(300, 300)
     ->optimize();

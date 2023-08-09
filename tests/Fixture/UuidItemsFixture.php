@@ -20,7 +20,7 @@ class UuidItemsFixture extends TestFixture
      *
      * @var string
      */
-    public $table = 'items';
+    public string $table = 'items';
 
     /**
      * Fields
@@ -41,7 +41,7 @@ class UuidItemsFixture extends TestFixture
      *
      * @var array
      */
-    public $records = [
+    public array $records = [
         [
             'id' => 'item-1',
             'name' => 'Cake',

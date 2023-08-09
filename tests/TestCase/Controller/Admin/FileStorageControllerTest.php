@@ -15,19 +15,19 @@ class FileStorageControllerTest extends TestCase
     use IntegrationTestTrait;
 
     /**
-     * @var array<string>
-     */
-    protected $fixtures = [
-        'plugin.FileStorage.FileStorage',
-    ];
-
-    /**
      * @return void
      */
     public function testIndex(): void
     {
         $this->markTestIncomplete('Not implemented yet.');
     }
+
+    /**
+     * @var array<string>
+     */
+    protected array $fixtures = [
+        'plugin.FileStorage.FileStorage',
+    ];
 
     /**
      * @return void

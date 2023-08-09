@@ -48,10 +48,10 @@ class_alias(TestApp\View\AppView::class, 'App\View\AppView');
 
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 
-$Tmp = new Folder(TMP);
-$Tmp->create(TMP . 'cache/models', 0770);
-$Tmp->create(TMP . 'cache/persistent', 0770);
-$Tmp->create(TMP . 'cache/views', 0770);
+//$Tmp = new Folder(TMP);
+//$Tmp->create(TMP . 'cache/models', 0770);
+//$Tmp->create(TMP . 'cache/persistent', 0770);
+//$Tmp->create(TMP . 'cache/views', 0770);
 
 $cache = [
     'default' => [

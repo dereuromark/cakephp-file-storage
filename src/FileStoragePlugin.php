@@ -17,19 +17,19 @@ class FileStoragePlugin extends BasePlugin
      *
      * @var bool
      */
-    protected $bootstrapEnabled = true;
+    protected bool $bootstrapEnabled = true;
 
     /**
      * @var bool
      */
-    protected $middlewareEnabled = false;
+    protected bool $middlewareEnabled = false;
 
     /**
      * Register container services
      *
      * @var bool
      */
-    protected $servicesEnabled = false;
+    protected bool $servicesEnabled = false;
 
     /**
      * @param \Cake\Routing\RouteBuilder $routes The route builder to update.
@@ -38,8 +38,8 @@ class FileStoragePlugin extends BasePlugin
      */
     public function routes(RouteBuilder $routes): void
     {
-        $routes->prefix('Admin', function (RouteBuilder $routes) {
-            $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes) {
+        $routes->prefix('Admin', function (RouteBuilder $routes): void {
+            $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes): void {
                 $routes->connect('/', ['controller' => 'FileStorage', 'action' => 'index']);
 
                 $routes->fallbacks();

@@ -10,7 +10,7 @@ use Cake\View\Helper\HtmlHelper;
 use Cake\View\View;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use FileStorage\View\Helper\ImageHelper;
-use Phauthentic\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
+use FileStorage\Storage\Processor\Exception\VariantDoesNotExistException;
 
 /**
  * ImageHelperTest

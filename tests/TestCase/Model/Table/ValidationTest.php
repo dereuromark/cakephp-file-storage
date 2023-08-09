@@ -16,7 +16,7 @@ class ValidationTest extends FileStorageTestCase
      *
      * @var array
      */
-    protected $fixtures = [
+    protected array $fixtures = [
         'plugin.FileStorage.Items',
         'plugin.FileStorage.FileStorage',
     ];

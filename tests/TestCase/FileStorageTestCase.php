@@ -10,13 +10,13 @@ use Cake\Filesystem\Folder;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\TestSuite\TestCase;
 use Intervention\Image\ImageManager;
-use Phauthentic\Infrastructure\Storage\Factories\LocalFactory;
-use Phauthentic\Infrastructure\Storage\FileStorage;
-use Phauthentic\Infrastructure\Storage\PathBuilder\PathBuilder;
-use Phauthentic\Infrastructure\Storage\Processor\Image\ImageProcessor;
-use Phauthentic\Infrastructure\Storage\Processor\StackProcessor;
-use Phauthentic\Infrastructure\Storage\StorageAdapterFactory;
-use Phauthentic\Infrastructure\Storage\StorageService;
+use FileStorage\Storage\Factories\LocalFactory;
+use FileStorage\Storage\FileStorage;
+use FileStorage\Storage\PathBuilder\PathBuilder;
+use FileStorage\Storage\Processor\Image\ImageProcessor;
+use FileStorage\Storage\Processor\StackProcessor;
+use FileStorage\Storage\StorageAdapterFactory;
+use FileStorage\Storage\StorageService;
 use TestApp\Storage\Processor\ImageDimensionsProcessor;
 
 /**
@@ -35,7 +35,7 @@ class FileStorageTestCase extends TestCase
      *
      * @var array
      */
-    protected $fixtures = [
+    protected array $fixtures = [
         'plugin.FileStorage.FileStorage',
     ];
 

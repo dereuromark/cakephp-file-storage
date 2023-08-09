@@ -20,7 +20,7 @@ class UuidFileStorageFixture extends TestFixture
      *
      * @var string
      */
-    public $table = 'file_storage';
+    public string $table = 'file_storage';
 
     /**
      * Fields definition
@@ -54,7 +54,7 @@ class UuidFileStorageFixture extends TestFixture
      *
      * @var array
      */
-    public $records = [
+    public array $records = [
         [
             'id' => 'file-storage-1',
             'user_id' => 'user-1',
