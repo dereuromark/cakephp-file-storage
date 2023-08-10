@@ -13,8 +13,6 @@ use Cake\Routing\RouteBuilder;
 class FileStoragePlugin extends BasePlugin
 {
     /**
-     * Do bootstrapping or not
-     *
      * @var bool
      */
     protected bool $bootstrapEnabled = true;

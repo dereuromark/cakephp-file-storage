@@ -1,23 +1,11 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage;
 
-use League\Flysystem\AdapterInterface;
 use FileStorage\Storage\Exception\AdapterFactoryNotFoundException;
+use League\Flysystem\AdapterInterface;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -44,6 +32,7 @@ class StorageAdapterFactory implements StorageAdapterFactoryInterface
      *
      * @param string $adapterClass Adapter alias or classname
      * @param array $options Options
+     *
      * @return \League\Flysystem\AdapterInterface
      */
     public function buildStorageAdapter(
@@ -61,6 +50,9 @@ class StorageAdapterFactory implements StorageAdapterFactoryInterface
 
     /**
      * @param string $adapterClass Adapter Class name or string
+     *
+     * @throws \FileStorage\Storage\Exception\AdapterFactoryNotFoundException
+     *
      * @return string
      */
     protected function checkAndResolveAdapterClass(string $adapterClass): string

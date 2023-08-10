@@ -1,18 +1,6 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage\Utility;
 
@@ -216,6 +204,7 @@ class MimeType
     /**
      * @param string $extension Extension
      * @param string $mimeType Mime Type
+     *
      * @return void
      */
     public static function addMimeTypeToMap(string $extension, string $mimeType): void
@@ -227,6 +216,9 @@ class MimeType
      * Detects MIME Type based on given content.
      *
      * @param string $content
+     *
+     * @throws \RuntimeException
+     *
      * @return string|null MIME Type or NULL if no mime type detected
      */
     public static function byContent(string $content): ?string
@@ -246,12 +238,14 @@ class MimeType
 
         return null;
     }
+
     // @codeCoverageIgnoreEnd
 
     /**
      * Detects MIME Type based on file extension.
      *
      * @param string $extension
+     *
      * @return string|null MIME Type or NULL if no extension detected
      */
     public static function byExtension($extension): ?string
@@ -261,13 +255,14 @@ class MimeType
 
     /**
      * @param string $filename
+     *
      * @return string|null MIME Type or NULL if no extension detected
      */
     public static function byFilename($filename): ?string
     {
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        return empty($extension) ? 'text/plain' : static::byExtension($extension);
+        return !$extension ? 'text/plain' : static::byExtension($extension);
     }
 
     /**

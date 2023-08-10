@@ -1,25 +1,13 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage;
 
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\Config;
 use FileStorage\Storage\Exception\StorageException;
 use FileStorage\Storage\Factories\Exception\FactoryNotFoundException;
+use League\Flysystem\AdapterInterface;
+use League\Flysystem\Config;
 use RuntimeException;
 
 /**
@@ -80,6 +68,8 @@ class StorageService implements StorageServiceInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \FileStorage\Storage\Factories\Exception\FactoryNotFoundException
      */
     public function adapter(string $name): AdapterInterface
     {
@@ -102,13 +92,14 @@ class StorageService implements StorageServiceInterface
      * @param string $name Name
      * @param string $adapter Adapter
      * @param array $options
+     *
      * @return \League\Flysystem\AdapterInterface
      */
     public function loadAdapter(string $name, string $adapter, array $options): AdapterInterface
     {
         $adapter = $this->adapterFactory->buildStorageAdapter(
             $adapter,
-            $options
+            $options,
         );
 
         $this->adapterCollection->add($name, $adapter);
@@ -122,13 +113,14 @@ class StorageService implements StorageServiceInterface
      * @param string $name
      * @param string $class
      * @param array $options
+     *
      * @return void
      */
     public function addAdapterConfig(string $name, string $class, array $options)
     {
         $this->adapterConfig[$name] = [
             'class' => $class,
-            'options' => $options
+            'options' => $options,
         ];
     }
 
@@ -136,6 +128,9 @@ class StorageService implements StorageServiceInterface
      * Sets the adapter configuration to lazy load them later
      *
      * @param array $config Config
+     *
+     * @throws \RuntimeException
+     *
      * @return void
      */
     public function setAdapterConfigFromArray(array $config): void
@@ -155,6 +150,7 @@ class StorageService implements StorageServiceInterface
 
     /**
      * @param \League\Flysystem\Config|null $config Config
+     *
      * @return \League\Flysystem\Config
      */
     protected function makeConfigIfNeeded(?Config $config)
@@ -168,6 +164,8 @@ class StorageService implements StorageServiceInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \FileStorage\Storage\Exception\StorageException
      */
     public function storeResource(string $adapter, string $path, $resource, ?Config $config = null): array
     {
@@ -178,7 +176,7 @@ class StorageService implements StorageServiceInterface
             throw new StorageException(sprintf(
                 'Failed to store resource stream to in `%s` with path `%s`',
                 $adapter,
-                $path
+                $path,
             ));
         }
 
@@ -187,6 +185,8 @@ class StorageService implements StorageServiceInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \FileStorage\Storage\Exception\StorageException
      */
     public function storeFile(string $adapter, string $path, string $file, ?Config $config = null): array
     {
@@ -198,7 +198,7 @@ class StorageService implements StorageServiceInterface
                 'Failed to store file `%s` in `%s` with path `%s`',
                 $file,
                 $adapter,
-                $path
+                $path,
             ));
         }
 
@@ -208,6 +208,7 @@ class StorageService implements StorageServiceInterface
     /**
      * @param string $adapter Adapter
      * @param string $path Path
+     *
      * @return bool
      */
     public function fileExists(string $adapter, string $path): bool
@@ -218,6 +219,7 @@ class StorageService implements StorageServiceInterface
     /**
      * @param string $adapter Name
      * @param string $path File to delete
+     *
      * @return bool
      */
     public function removeFile(string $adapter, string $path): bool

@@ -1,24 +1,12 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage;
 
-use JsonSerializable;
 use FileStorage\Storage\PathBuilder\PathBuilderInterface;
 use FileStorage\Storage\UrlBuilder\UrlBuilderInterface;
+use JsonSerializable;
 
 /**
  * File Interface
@@ -49,21 +37,21 @@ interface FileInterface extends JsonSerializable
     /**
      * Mime Type
      *
-     * @return null|string
+     * @return string|null
      */
     public function mimeType(): ?string;
 
     /**
      * Model name
      *
-     * @return null|string
+     * @return string|null
      */
     public function model(): ?string;
 
     /**
      * Model ID
      *
-     * @return string
+     * @return string|null
      */
     public function modelId(): ?string;
 
@@ -84,7 +72,7 @@ interface FileInterface extends JsonSerializable
     /**
      * Collection name
      *
-     * @return null|string
+     * @return string|null
      */
     public function collection(): ?string;
 
@@ -92,14 +80,16 @@ interface FileInterface extends JsonSerializable
      * Adds the file to a collection
      *
      * @param string $collection Collection
+     *
      * @return $this
      */
-    public function addToCollection(string $collection): FileInterface;
+    public function addToCollection(string $collection): self;
 
     /**
      * Get a variant
      *
      * @param string $name
+     *
      * @return array
      */
     public function variant(string $name): array;
@@ -115,6 +105,7 @@ interface FileInterface extends JsonSerializable
      * Checks if the file has a specific variant
      *
      * @param string $name
+     *
      * @return bool
      */
     public function hasVariant(string $name): bool;
@@ -129,16 +120,18 @@ interface FileInterface extends JsonSerializable
     /**
      * @param string $name Name
      * @param array $data Data
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withVariant(string $name, array $data): FileInterface;
+    public function withVariant(string $name, array $data): self;
 
     /**
      * @param array $variants Variants
      * @param bool $merge Merge variants, default is false
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withVariants(array $variants, bool $merge = true): FileInterface;
+    public function withVariants(array $variants, bool $merge = true): self;
 
     /**
      * Gets the paths for all variants
@@ -159,48 +152,54 @@ interface FileInterface extends JsonSerializable
      *
      * @param array<mixed, mixed> $metadata Metadata
      * @param bool $overwrite
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withMetadata(array $metadata, bool $overwrite = false): FileInterface;
+    public function withMetadata(array $metadata, bool $overwrite = false): self;
 
     /**
      * Removes all metadata
      *
-     * @return \FileStorage\Storage\FileInterface
+     * @return self
      */
-    public function withoutMetadata(): FileInterface;
+    public function withoutMetadata(): self;
 
     /**
      * Adds a single key and value to the metadata array
      *
      * @param string $key Key
      * @param mixed $data
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withMetadataByKey(string $key, $data): FileInterface;
+    public function withMetadataByKey(string $key, $data): self;
 
     /**
      * Removes a key from the metadata array
+     *
      * @param string $name Name
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withoutMetadataByKey(string $name): FileInterface;
+    public function withoutMetadataByKey(string $name): self;
 
     /**
      * Stream resource of the file to be stored
      *
-     * @param resource  $resource
-     * @return \FileStorage\Storage\FileInterface
+     * @param resource $resource
+     *
+     * @return self
      */
-    public function withResource($resource): FileInterface;
+    public function withResource($resource): self;
 
     /**
      * Same as withResource() but takes a file path
      *
      * @param string $file File
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withFile(string $file): FileInterface;
+    public function withFile(string $file): self;
 
     /**
      * Returns the path for the file in the storage system
@@ -216,9 +215,10 @@ interface FileInterface extends JsonSerializable
      * Sets the path, immutable
      *
      * @param string $path Path to the file
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withPath(string $path): FileInterface;
+    public function withPath(string $path): self;
 
     /**
      * Builds the path for this file
@@ -227,9 +227,10 @@ interface FileInterface extends JsonSerializable
      * The resulting path depends on the builder!
      *
      * @param \FileStorage\Storage\PathBuilder\PathBuilderInterface $pathBuilder Path Builder
+     *
      * @return $this
      */
-    public function buildPath(PathBuilderInterface $pathBuilder): FileInterface;
+    public function buildPath(PathBuilderInterface $pathBuilder): self;
 
     /**
      * Builds the URL for this file
@@ -238,9 +239,10 @@ interface FileInterface extends JsonSerializable
      * The resulting URL depends on the builder!
      *
      * @param \FileStorage\Storage\UrlBuilder\UrlBuilderInterface $urlBuilder URL Builder
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function buildUrl(UrlBuilderInterface $urlBuilder): FileInterface;
+    public function buildUrl(UrlBuilderInterface $urlBuilder): self;
 
     /**
      * Gets the URL for the file
@@ -253,9 +255,10 @@ interface FileInterface extends JsonSerializable
      * Sets a URL
      *
      * @param string $url URL
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withUrl(string $url): FileInterface;
+    public function withUrl(string $url): self;
 
     /**
      * Storage name
@@ -275,9 +278,10 @@ interface FileInterface extends JsonSerializable
      * UUID of the file
      *
      * @param string $uuid UUID string
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withUuid(string $uuid): FileInterface;
+    public function withUuid(string $uuid): self;
 
     /**
      * Filename
@@ -286,16 +290,18 @@ interface FileInterface extends JsonSerializable
      * file in the storage backend!
      *
      * @param string $filename Filename
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function withFilename(string $filename): FileInterface;
+    public function withFilename(string $filename): self;
 
     /**
      * Assign a model and model id to a file
      *
      * @param string $model Model
      * @param string|int $modelId Model ID, UUID string or integer
-     * @return \FileStorage\Storage\FileInterface
+     *
+     * @return self
      */
-    public function belongsToModel(string $model, $modelId): FileInterface;
+    public function belongsToModel(string $model, $modelId): self;
 }

@@ -1,18 +1,6 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage\Factories;
 
@@ -26,8 +14,11 @@ use OpenCloud\Rackspace;
 class RackspaceFactory extends AbstractFactory
 {
     protected string $alias = 'rackspace';
+
     protected ?string $package = 'league/flysystem-rackspace';
+
     protected string $className = RackspaceAdapter::class;
+
     protected array $defaults = [
         'identityEndpoint' => Rackspace::UK_IDENTITY_ENDPOINT,
         'username' => '',
@@ -35,7 +26,7 @@ class RackspaceFactory extends AbstractFactory
         'objectStoreService' => 'cloudFiles',
         'serviceRegion' => 'LON',
         'container' => 'flysystem',
-        'serviceName' => 'cloudFiles'
+        'serviceName' => 'cloudFiles',
     ];
 
     /**
@@ -54,13 +45,14 @@ class RackspaceFactory extends AbstractFactory
 
     /**
      * @param array $config Config
+     *
      * @return \OpenCloud\Rackspace
      */
     protected function buildClient(array $config): Rackspace
     {
-        return new Rackspace($config['identityEndpoint'], array(
+        return new Rackspace($config['identityEndpoint'], [
             'username' => $config['username'],
             'apiKey' => $config['apiKey'],
-        ));
+        ]);
     }
 }

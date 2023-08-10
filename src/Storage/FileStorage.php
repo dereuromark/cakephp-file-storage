@@ -1,28 +1,16 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage;
 
-use InvalidArgumentException;
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\Config;
 use FileStorage\Storage\PathBuilder\PathBuilderInterface;
 use FileStorage\Storage\Processor\Exception\VariantDoesNotExistException;
 use FileStorage\Storage\Processor\Exception\VariantException;
 use FileStorage\Storage\UrlBuilder\UrlBuilderInterface;
+use InvalidArgumentException;
+use League\Flysystem\AdapterInterface;
+use League\Flysystem\Config;
 use RuntimeException;
 
 /**
@@ -74,6 +62,9 @@ class FileStorage implements FileStorageInterface
 
     /**
      * @param string $name Name of the callback
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     protected function checkCallbackName(string $name): void
@@ -82,7 +73,7 @@ class FileStorage implements FileStorageInterface
             throw new InvalidArgumentException(sprintf(
                 'Invalid callback `%s`, only %s are valid',
                 $name,
-                implode(', ', array_keys($this->callbacks))
+                implode(', ', array_keys($this->callbacks)),
             ));
         }
     }
@@ -92,6 +83,7 @@ class FileStorage implements FileStorageInterface
      *
      * @param string $name
      * @param callable $callable Callable
+     *
      * @return void
      */
     public function addCallback($name, callable $callable): void
@@ -103,6 +95,7 @@ class FileStorage implements FileStorageInterface
     /**
      * @param string $name Name of the callback
      * @param \FileStorage\Storage\FileInterface $file File
+     *
      * @return \FileStorage\Storage\FileInterface
      */
     public function runCallbacks(string $name, FileInterface $file): FileInterface
@@ -118,6 +111,7 @@ class FileStorage implements FileStorageInterface
 
     /**
      * @inheritDoc
+     *
      * @throws \RuntimeException
      */
     public function store(FileInterface $file, ?Config $config = null): FileInterface
@@ -168,6 +162,9 @@ class FileStorage implements FileStorageInterface
 
     /**
      * @inheritDoc
+     *
+     * @throws \FileStorage\Storage\Processor\Exception\VariantDoesNotExistException
+     * @throws \FileStorage\Storage\Processor\Exception\VariantException
      */
     public function removeVariant(FileInterface $file, string $name): FileInterface
     {
@@ -179,7 +176,7 @@ class FileStorage implements FileStorageInterface
         if (empty($variant['path'])) {
             throw new VariantException(sprintf(
                 'Variant `%s` is missing a path',
-                $name
+                $name,
             ));
         }
 
@@ -195,6 +192,7 @@ class FileStorage implements FileStorageInterface
      * Gets the storage abstraction to use
      *
      * @param string $storage Storage name to use
+     *
      * @return \League\Flysystem\AdapterInterface
      */
     public function getStorage(string $storage): AdapterInterface

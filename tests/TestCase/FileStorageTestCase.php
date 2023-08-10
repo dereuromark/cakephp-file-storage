@@ -9,7 +9,6 @@ use Cake\Core\Plugin;
 use Cake\Filesystem\Folder;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\TestSuite\TestCase;
-use Intervention\Image\ImageManager;
 use FileStorage\Storage\Factories\LocalFactory;
 use FileStorage\Storage\FileStorage;
 use FileStorage\Storage\PathBuilder\PathBuilder;
@@ -17,6 +16,7 @@ use FileStorage\Storage\Processor\Image\ImageProcessor;
 use FileStorage\Storage\Processor\StackProcessor;
 use FileStorage\Storage\StorageAdapterFactory;
 use FileStorage\Storage\StorageService;
+use Intervention\Image\ImageManager;
 use TestApp\Storage\Processor\ImageDimensionsProcessor;
 
 /**

@@ -26,14 +26,14 @@ class ImageHelper extends Helper
      *
      * @var array<mixed>
      */
-    protected $helpers = [
+    protected array $helpers = [
         'Html',
     ];
 
     /**
      * @var array<string, mixed>
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'pathPrefix' => '',
     ];
 
@@ -98,7 +98,7 @@ class ImageHelper extends Helper
             throw new VariantDoesNotExistException(sprintf(
                 'A variant with the name `%s` does not exists for ID `%s`',
                 (string)$variant,
-                (string)$image->id,
+                (string)$image->get('id'),
             ));
         }
 

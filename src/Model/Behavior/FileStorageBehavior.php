@@ -13,10 +13,10 @@ use Cake\ORM\Behavior;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Validation\UploadValidatorInterface;
-use League\Flysystem\AdapterInterface;
 use FileStorage\Storage\FileInterface;
 use FileStorage\Storage\FileStorage;
 use FileStorage\Storage\Processor\ProcessorInterface;
+use League\Flysystem\AdapterInterface;
 use RuntimeException;
 use Throwable;
 
@@ -51,7 +51,7 @@ class FileStorageBehavior extends Behavior
      *
      * @var array<string, mixed>
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'defaultStorageConfig' => 'Local',
         'ignoreEmptyFile' => true,
         'fileField' => 'file',

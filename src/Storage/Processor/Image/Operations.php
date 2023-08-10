@@ -1,24 +1,12 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage\Processor\Image;
 
+use FileStorage\Storage\Processor\Image\Exception\UnsupportedOperationException;
 use Intervention\Image\Image;
 use InvalidArgumentException;
-use FileStorage\Storage\Processor\Image\Exception\UnsupportedOperationException;
 
 /**
  * Operations
@@ -41,6 +29,9 @@ class Operations
     /**
      * @param string $name Name
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \FileStorage\Storage\Processor\Image\Exception\UnsupportedOperationException
+     *
      * @return mixed
      */
     public function __call(string $name, array $arguments): mixed
@@ -52,7 +43,11 @@ class Operations
      * Crops the image
      *
      * @link http://image.intervention.io/api/fit
+     *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function fit(array $arguments): void
@@ -71,7 +66,7 @@ class Operations
                 if ($preventUpscale) {
                     $constraint->upsize();
                 }
-            }
+            },
         );
     }
 
@@ -79,7 +74,11 @@ class Operations
      * Crops the image
      *
      * @link http://image.intervention.io/api/crop
+     *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function crop(array $arguments): void
@@ -101,6 +100,7 @@ class Operations
      * Flips the image horizontal
      *
      * @link http://image.intervention.io/api/flip
+     *
      * @return void
      */
     public function flipHorizontal(): void
@@ -112,6 +112,7 @@ class Operations
      * Flips the image vertical
      *
      * @link http://image.intervention.io/api/flip
+     *
      * @return void
      */
     public function flipVertical(): void
@@ -123,7 +124,11 @@ class Operations
      * Flips the image
      *
      * @link http://image.intervention.io/api/flip
+     *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function flip(array $arguments): void
@@ -134,7 +139,7 @@ class Operations
 
         if ($arguments['direction'] !== 'v' && $arguments['direction'] !== 'h') {
             throw new InvalidArgumentException(
-                'Invalid argument, you must provide h or v'
+                'Invalid argument, you must provide h or v',
             );
         }
 
@@ -145,14 +150,18 @@ class Operations
      * Resizes the image
      *
      * @link http://image.intervention.io/api/resize
+     *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function resize(array $arguments): void
     {
         if (!isset($arguments['height'], $arguments['width'])) {
             throw new InvalidArgumentException(
-                'Missing height or width'
+                'Missing height or width',
             );
         }
 
@@ -169,20 +178,24 @@ class Operations
                 if ($preventUpscale) {
                     $constraint->upsize();
                 }
-            }
+            },
         );
     }
 
     /**
      * @link http://image.intervention.io/api/widen
+     *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function widen(array $arguments): void
     {
         if (!isset($arguments['width'])) {
             throw new InvalidArgumentException(
-                'Missing width'
+                'Missing width',
             );
         }
 
@@ -197,14 +210,18 @@ class Operations
 
     /**
      * @link http://image.intervention.io/api/heighten
+     *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function heighten(array $arguments): void
     {
         if (!isset($arguments['height'])) {
             throw new InvalidArgumentException(
-                'Missing height'
+                'Missing height',
             );
         }
 
@@ -219,14 +236,18 @@ class Operations
 
     /**
      * @link http://image.intervention.io/api/rotate
+     *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function rotate(array $arguments): void
     {
         if (!isset($arguments['angle'])) {
             throw new InvalidArgumentException(
-                'Missing angle'
+                'Missing angle',
             );
         }
 
@@ -235,14 +256,18 @@ class Operations
 
     /**
      * @link http://image.intervention.io/api/rotate
+     *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function sharpen(array $arguments): void
     {
         if (!isset($arguments['amount'])) {
             throw new InvalidArgumentException(
-                'Missing amount'
+                'Missing amount',
             );
         }
 
@@ -254,19 +279,22 @@ class Operations
      * and the arguments passed to it.
      *
      * @param array<string, mixed> $arguments Arguments
+     *
+     * @throws \InvalidArgumentException
+     *
      * @return void
      */
     public function callback(array $arguments): void
     {
         if (!isset($arguments['callback'])) {
             throw new InvalidArgumentException(
-                'Missing callback argument'
+                'Missing callback argument',
             );
         }
 
         if (!is_callable($arguments['callback'])) {
             throw new InvalidArgumentException(
-                'Provided value for callback is not a callable'
+                'Provided value for callback is not a callable',
             );
         }
 

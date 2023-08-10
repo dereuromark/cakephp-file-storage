@@ -1,24 +1,12 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage;
 
+use ArrayIterator;
 use Iterator;
 use League\Flysystem\AdapterInterface;
-use ArrayIterator;
 use RuntimeException;
 
 /**
@@ -42,6 +30,9 @@ class AdapterCollection implements AdapterCollectionInterface
     /**
      * @param string $name Name
      * @param \League\Flysystem\AdapterInterface $adapter Adapter
+     *
+     * @throws \RuntimeException
+     *
      * @return void
      */
     public function add($name, AdapterInterface $adapter)
@@ -49,7 +40,7 @@ class AdapterCollection implements AdapterCollectionInterface
         if ($this->has($name)) {
             throw new RuntimeException(sprintf(
                 'An adapter with the name `%s` already exists in the collection',
-                $name
+                $name,
             ));
         }
 
@@ -58,6 +49,7 @@ class AdapterCollection implements AdapterCollectionInterface
 
     /**
      * @param string $name Name
+     *
      * @return void
      */
     public function remove(string $name): void
@@ -67,6 +59,7 @@ class AdapterCollection implements AdapterCollectionInterface
 
     /**
      * @param string $name Name
+     *
      * @return bool
      */
     public function has(string $name): bool
@@ -76,6 +69,9 @@ class AdapterCollection implements AdapterCollectionInterface
 
     /**
      * @param string $name Name
+     *
+     * @throws \RuntimeException
+     *
      * @return \League\Flysystem\AdapterInterface
      */
     public function get(string $name): AdapterInterface
@@ -83,7 +79,7 @@ class AdapterCollection implements AdapterCollectionInterface
         if (!$this->has($name)) {
             throw new RuntimeException(sprintf(
                 'A factory registered with the name `%s` is not part of the collection.',
-                $name
+                $name,
             ));
         }
 
@@ -105,7 +101,7 @@ class AdapterCollection implements AdapterCollectionInterface
      */
     public function getNameToClassmap(): array
     {
-        if (empty($this->adapters)) {
+        if (!$this->adapters) {
             return [];
         }
 

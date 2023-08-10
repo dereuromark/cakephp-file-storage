@@ -47,12 +47,14 @@ class FileStorageTable extends Table
     /**
      * @inheritDoc
      */
-    public function _initializeSchema(TableSchemaInterface $schema): TableSchemaInterface
+    public function getSchema(): TableSchemaInterface
     {
+        $schema = parent::getSchema();
+
         $schema->addColumn('variants', 'json');
         $schema->addColumn('metadata', 'json');
 
-        return parent::_initializeSchema($schema);
+        return $schema;
     }
 
     /**

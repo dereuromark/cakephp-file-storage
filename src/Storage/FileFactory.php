@@ -1,18 +1,6 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage;
 
@@ -42,11 +30,11 @@ class FileFactory implements FileFactoryInterface
             (string)$uploadedFile->getClientFilename(),
             (int)$uploadedFile->getSize(),
             (string)$uploadedFile->getClientMediaType(),
-            $storage
+            $storage,
         );
 
         return $file->withResource(
-            StreamWrapper::getResource($uploadedFile->getStream())
+            StreamWrapper::getResource($uploadedFile->getStream()),
         );
     }
 
@@ -77,6 +65,9 @@ class FileFactory implements FileFactoryInterface
      * Checks if the uploaded file is a valid upload
      *
      * @param \Psr\Http\Message\UploadedFileInterface $uploadedFile Uploaded File
+     *
+     * @throws \RuntimeException
+     *
      * @return void
      */
     protected static function checkUploadedFile(UploadedFileInterface $uploadedFile): void
@@ -84,13 +75,17 @@ class FileFactory implements FileFactoryInterface
         if ($uploadedFile->getError() !== UPLOAD_ERR_OK) {
             throw new RuntimeException(sprintf(
                 'Can\'t create storage object from upload with error code: %d',
-                $uploadedFile->getError()
+                $uploadedFile->getError(),
             ));
         }
     }
 
     /**
      * @param string $path Path
+     *
+     * @throws \FileStorage\Storage\Exception\FileDoesNotExistException
+     * @throws \FileStorage\Storage\Exception\FileNotReadableException
+     *
      * @return void
      */
     protected static function checkFile(string $path): void

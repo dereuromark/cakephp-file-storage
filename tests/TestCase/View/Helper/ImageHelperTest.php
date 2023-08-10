@@ -8,9 +8,9 @@ use Cake\Core\Configure;
 use Cake\Http\ServerRequest as Request;
 use Cake\View\Helper\HtmlHelper;
 use Cake\View\View;
+use FileStorage\Storage\Processor\Exception\VariantDoesNotExistException;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use FileStorage\View\Helper\ImageHelper;
-use FileStorage\Storage\Processor\Exception\VariantDoesNotExistException;
 
 /**
  * ImageHelperTest

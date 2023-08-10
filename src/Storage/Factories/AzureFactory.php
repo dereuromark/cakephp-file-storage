@@ -1,27 +1,13 @@
 <?php
 
-/**
- * Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright Copyright (c) Florian Krämer (https://florian-kraemer.net)
- * @author    Florian Krämer
- * @link      https://github.com/Phauthentic
- * @license   https://opensource.org/licenses/MIT MIT License
- */
-
-declare(strict_types=1);
+declare(strict_types = 1);
 
 namespace FileStorage\Storage\Factories;
 
+use FileStorage\Storage\Factories\Exception\FactoryConfigException;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\AzureBlobStorage\AzureBlobStorageAdapter;
-use MicrosoftAzure\Storage\Common\ServicesBuilder;
 use MicrosoftAzure\Storage\Blob\BlobRestProxy;
-use FileStorage\Storage\Factories\Exception\FactoryConfigException;
-use FileStorage\Storage\Factories\Exception\FactoryException;
 
 /**
  * Azure Factory
@@ -34,7 +20,9 @@ use FileStorage\Storage\Factories\Exception\FactoryException;
 class AzureFactory extends AbstractFactory
 {
     protected string $alias = 'azure';
+
     protected ?string $package = 'league/flysystem-azure-blob-storage';
+
     protected string $className = AzureBlobStorageAdapter::class;
 
     protected $endpoint = 'DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s';
@@ -50,7 +38,7 @@ class AzureFactory extends AbstractFactory
         $endpoint = sprintf(
             $this->endpoint,
             base64_encode($config['accountName']),
-            base64_encode($config['apiKey'])
+            base64_encode($config['apiKey']),
         );
 
         $client = BlobRestProxy::createBlobService($endpoint);
@@ -58,6 +46,11 @@ class AzureFactory extends AbstractFactory
         return new AzureBlobStorageAdapter($client, $config['accountName']);
     }
 
+    /**
+     * @throws \FileStorage\Storage\Factories\Exception\FactoryConfigException
+     *
+     * @return void
+     */
     protected function checkConfig(array $config): void
     {
         if (empty($config['accountName'])) {

@@ -6,7 +6,6 @@ use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
-use Cake\Filesystem\Folder;
 use FileStorage\FileStoragePlugin;
 
 if (!defined('DS')) {
@@ -25,6 +24,7 @@ define('CAKE', CORE_PATH . APP_DIR . DS);
 
 require PLUGIN_ROOT . '/vendor/autoload.php';
 require CORE_PATH . 'config/bootstrap.php';
+require CAKE_CORE_INCLUDE_PATH . '/src/functions.php';
 
 $config = [
     'path' => dirname(__FILE__, 2) . DS,
