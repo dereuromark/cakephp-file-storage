@@ -19,8 +19,8 @@
         </properties>
     </rule>
 
-    <rule ref="Spryker">
-        <exclude name="Spryker.Formatting.MethodSignatureParametersLineBreakMethod"/>
+    <rule ref="PhpCollective">
+        <exclude name="PhpCollective.Formatting.MethodSignatureParametersLineBreakMethod"/>
     </rule>
 
 </ruleset>
