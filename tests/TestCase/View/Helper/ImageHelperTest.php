@@ -125,10 +125,10 @@ class ImageHelperTest extends FileStorageTestCase
         Configure::write('Media.fallbackImages.Test.t150', 't150fallback.png');
 
         $result = $this->helper->fallbackImage(['fallback' => true], 't150');
-        $this->assertSame('<img src="/img/placeholder/t150.jpg" alt=""/>', $result);
+        $this->assertSame('<img src="/img/placeholder/t150.jpg" alt="">', $result);
 
         $result = $this->helper->fallbackImage(['fallback' => 'something.png'], 't150');
-        $this->assertSame('<img src="/img/something.png" alt=""/>', $result);
+        $this->assertSame('<img src="/img/something.png" alt="">', $result);
 
         $result = $this->helper->fallbackImage([], 't150');
         $this->assertSame('', $result);
