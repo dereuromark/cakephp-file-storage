@@ -6,3 +6,4 @@
 /clover.xml
 /composer.lock
 /.phpunit.result.cache
+/.phpunit.cache/
