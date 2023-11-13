@@ -87,7 +87,7 @@ if (getenv('DB_URL')) {
     return;
 }
 
-if (!getenv('DB_CLASS')) {
+if (!getenv('DB_URL')) {
     putenv('DB_CLASS=Cake\Database\Driver\Sqlite');
     putenv('DB_URL=sqlite:///:memory:');
 }
