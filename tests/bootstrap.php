@@ -75,28 +75,12 @@ $cache = [
 
 Cache::setConfig($cache);
 
-// Allow local overwrite
-// E.g. in your console: export DB_URL="mysql://root:secret@127.0.0.1/cake_test"
-if (getenv('DB_URL')) {
-    ConnectionManager::setConfig('test', [
-        'url' => getenv('DB_URL'),
-        'quoteIdentifiers' => false,
-        'cacheMetadata' => true,
-    ]);
-
-    return;
-}
-
 if (!getenv('DB_URL')) {
-    putenv('DB_CLASS=Cake\Database\Driver\Sqlite');
     putenv('DB_URL=sqlite:///:memory:');
 }
 
-// Uses Travis config then (MySQL, Postgres, ...)
 ConnectionManager::setConfig('test', [
-    'className' => 'Cake\Database\Connection',
-    'driver' => getenv('DB_CLASS') ?: null,
-    'dsn' => getenv('DB_URL') ?: null,
+    'url' => getenv('DB_URL') ?: null,
     'timezone' => 'UTC',
     'quoteIdentifiers' => false,
     'cacheMetadata' => true,
