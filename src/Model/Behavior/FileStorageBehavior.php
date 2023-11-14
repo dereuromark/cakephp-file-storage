@@ -245,8 +245,8 @@ class FileStorageBehavior extends Behavior
             return;
         }
 
-        $entity->variants = [];
-        $entity->metadata = [];
+        //$entity->variants = [];
+        //$entity->metadata = [];
     }
 
     /**
