@@ -1,13 +1,12 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\FileStorage;
 
 use Cake\Datasource\EntityInterface;
 use Cake\ORM\Table;
-use Phauthentic\Infrastructure\Storage\File;
-use Phauthentic\Infrastructure\Storage\FileInterface;
+use PhpCollective\Infrastructure\Storage\File;
+use PhpCollective\Infrastructure\Storage\FileInterface;
 
 /**
  * Converts the Cake Entity to a File Storage Object and vice versa
@@ -27,7 +26,7 @@ class DataTransformer implements DataTransformerInterface
     /**
      * @param \Cake\Datasource\EntityInterface $entity
      *
-     * @return \Phauthentic\Infrastructure\Storage\FileInterface
+     * @return \PhpCollective\Infrastructure\Storage\FileInterface
      */
     public function entityToFileObject(EntityInterface $entity): FileInterface
     {
@@ -65,7 +64,7 @@ class DataTransformer implements DataTransformerInterface
     }
 
     /**
-     * @param \Phauthentic\Infrastructure\Storage\FileInterface $file
+     * @param \PhpCollective\Infrastructure\Storage\FileInterface $file
      * @param \Cake\Datasource\EntityInterface|null $entity
      *
      * @return \Cake\Datasource\EntityInterface

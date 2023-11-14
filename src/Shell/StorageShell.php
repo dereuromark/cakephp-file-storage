@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Shell;
@@ -71,7 +70,7 @@ class StorageShell extends Shell
             $this->abort('The file does not exist!');
         }
 
-        /** @var \Phauthentic\Infrastructure\Storage\FileStorage|null $storage */
+        /** @var \PhpCollective\Infrastructure\Storage\FileStorage|null $storage */
         $storage = Configure::read('FileStorage.behaviorConfig.fileStorage');
         if (!$storage) {
             $this->abort(sprintf('Invalid adapter config `%s` provided!', $this->params['adapter']));

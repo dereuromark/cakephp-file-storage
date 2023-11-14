@@ -3,14 +3,14 @@
 [![CI](https://github.com/dereuromark/cakephp-file-storage/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/dereuromark/cakephp-file-storage/actions/workflows/ci.yml?query=branch%3Amaster)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat)](https://phpstan.org/)
 [![Latest Stable Version](https://poser.pugx.org/dereuromark/cakephp-file-storage/v/stable.svg)](https://packagist.org/packages/dereuromark/cakephp-file-storage)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%207.4-8892BF.svg)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%208.1-8892BF.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE.txt)
 
 The **FileStorage** plugin is giving you the possibility to upload and store files in virtually any kind of storage backend. The plugin features the [FlySystem](https://github.com/thephpleague/flysystem) library in a CakePHP fashion and provides a simple way to use the storage adapters.
 
 Storage adapters are a unified interface that allow you to store file data to your local file system, in memory, in a database or into a zip file and remote systems. There is a database table keeping track of what you stored where. You can always write your own adapter or extend and overload existing ones.
 
-This branch is for use with **CakePHP 4.3+**. See [version map](https://github.com/dereuromark/cakephp-file-storage/wiki#cakephp-version-map) for details.
+This branch is for use with **CakePHP 5.0+**. See [version map](https://github.com/dereuromark/cakephp-file-storage/wiki#cakephp-version-map) for details.
 
 ## How it works
 

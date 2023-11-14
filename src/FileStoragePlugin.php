@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage;
@@ -10,26 +9,24 @@ use Cake\Routing\RouteBuilder;
 /**
  * FileStorage Plugin for CakePHP
  */
-class Plugin extends BasePlugin
+class FileStoragePlugin extends BasePlugin
 {
     /**
-     * Do bootstrapping or not
-     *
      * @var bool
      */
-    protected $bootstrapEnabled = true;
+    protected bool $bootstrapEnabled = true;
 
     /**
      * @var bool
      */
-    protected $middlewareEnabled = false;
+    protected bool $middlewareEnabled = false;
 
     /**
      * Register container services
      *
      * @var bool
      */
-    protected $servicesEnabled = false;
+    protected bool $servicesEnabled = false;
 
     /**
      * @param \Cake\Routing\RouteBuilder $routes The route builder to update.
@@ -38,8 +35,8 @@ class Plugin extends BasePlugin
      */
     public function routes(RouteBuilder $routes): void
     {
-        $routes->prefix('Admin', function (RouteBuilder $routes) {
-            $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes) {
+        $routes->prefix('Admin', function (RouteBuilder $routes): void {
+            $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes): void {
                 $routes->connect('/', ['controller' => 'FileStorage', 'action' => 'index']);
 
                 $routes->fallbacks();

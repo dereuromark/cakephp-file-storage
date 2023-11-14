@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Command;
@@ -18,8 +17,8 @@ use Exception;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Entity\FileStorage;
-use Phauthentic\Infrastructure\Storage\FileInterface;
-use Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface;
+use PhpCollective\Infrastructure\Storage\FileInterface;
+use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
 use RuntimeException;
 
 /**
@@ -62,7 +61,7 @@ class ImageVariantGenerateCommand extends Command
     protected $transformer;
 
     /**
-     * @var \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface|null
+     * @var \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface|null
      */
     protected $processor;
 
@@ -175,7 +174,7 @@ class ImageVariantGenerateCommand extends Command
         $offset = 0;
         $limit = $this->limit;
 
-        /** @var \Phauthentic\Infrastructure\Storage\FileStorage|null $storage */
+        /** @var \PhpCollective\Infrastructure\Storage\FileStorage|null $storage */
         $storage = Configure::read('FileStorage.behaviorConfig.fileStorage');
         if (!$storage) {
             $io->abort(sprintf('Invalid adapter config `%s` provided!', $options['adapter']));
@@ -210,7 +209,7 @@ class ImageVariantGenerateCommand extends Command
     /**
      * @throws \RuntimeException
      *
-     * @return \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface
+     * @return \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface
      */
     protected function getFileProcessor(): ProcessorInterface
     {
@@ -232,11 +231,11 @@ class ImageVariantGenerateCommand extends Command
     /**
      * Processes images
      *
-     * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
+     * @param \PhpCollective\Infrastructure\Storage\FileInterface $file File
      * @param \FileStorage\Model\Entity\FileStorage $entity
      * @param array $operations
      *
-     * @return \Phauthentic\Infrastructure\Storage\FileInterface
+     * @return \PhpCollective\Infrastructure\Storage\FileInterface
      */
     public function processImages(FileInterface $file, EntityInterface $entity, array $operations): FileInterface
     {
@@ -252,7 +251,7 @@ class ImageVariantGenerateCommand extends Command
     /**
      * @param \Cake\Datasource\EntityInterface $entity Entity
      *
-     * @return \Phauthentic\Infrastructure\Storage\FileInterface
+     * @return \PhpCollective\Infrastructure\Storage\FileInterface
      */
     public function entityToFileObject(EntityInterface $entity): FileInterface
     {
@@ -260,7 +259,7 @@ class ImageVariantGenerateCommand extends Command
     }
 
     /**
-     * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
+     * @param \PhpCollective\Infrastructure\Storage\FileInterface $file File
      * @param \Cake\Datasource\EntityInterface|null $entity
      *
      * @return \Cake\Datasource\EntityInterface

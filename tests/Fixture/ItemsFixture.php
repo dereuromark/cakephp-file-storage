@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Test\Fixture;
@@ -20,7 +19,7 @@ class ItemsFixture extends TestFixture
      *
      * @var string
      */
-    public $table = 'items';
+    public string $table = 'items';
 
     /**
      * Fields
@@ -41,7 +40,7 @@ class ItemsFixture extends TestFixture
      *
      * @var array
      */
-    public $records = [
+    public array $records = [
         [
             'name' => 'Cake',
         ],

@@ -32,46 +32,46 @@ $container->delegate(
 );
 
 // Storage setup
-$storageFactory = new \Phauthentic\Infrastructure\Storage\StorageAdapterFactory($container);
-$storageService = new \Phauthentic\Infrastructure\Storage\StorageService(
+$storageFactory = new \PhpCollective\Infrastructure\Storage\StorageAdapterFactory($container);
+$storageService = new \PhpCollective\Infrastructure\Storage\StorageService(
     $storageFactory,
 );
 $storageService->addAdapterConfig(
     'Local',
-    \Phauthentic\Infrastructure\Storage\Factories\LocalFactory::class,
+    \PhpCollective\Infrastructure\Storage\Factories\LocalFactory::class,
     [
         'root' => WWW_ROOT . 'img' . DS . 'thumbs' . DS,
     ],
 );
 
-$pathBuilder = new \Phauthentic\Infrastructure\Storage\PathBuilder\PathBuilder([
+$pathBuilder = new \PhpCollective\Infrastructure\Storage\PathBuilder\PathBuilder([
     'randomPathLevels' => 1,
-    'sanitizer' => new \Phauthentic\Infrastructure\Storage\Utility\FilenameSanitizer([
+    'sanitizer' => new \PhpCollective\Infrastructure\Storage\Utility\FilenameSanitizer([
         'urlSafe' => true,
         'removeUriReservedChars' => true,
         'maxLength' => 190,
     ]),
 ]);
-$fileStorage = new \Phauthentic\Infrastructure\Storage\FileStorage(
+$fileStorage = new \PhpCollective\Infrastructure\Storage\FileStorage(
     $storageService,
     $pathBuilder,
 );
 
 // Image Manager and Processor
 $imageManager = new \Intervention\Image\ImageManager();
-$imageProcessor = new \Phauthentic\Infrastructure\Storage\Processor\Image\ImageProcessor(
+$imageProcessor = new \PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor(
     $fileStorage,
     $pathBuilder,
     $imageManager,
 );
 $imageDimensionsProcessor = new \App\Storage\Processor\ImageDimensionsProcessor();
-$stackProcessor = new \Phauthentic\Infrastructure\Storage\Processor\StackProcessor([
+$stackProcessor = new \PhpCollective\Infrastructure\Storage\Processor\StackProcessor([
     $imageProcessor,
     $imageDimensionsProcessor,
 ]);
 
 // Configure variants
-$collection = \Phauthentic\Infrastructure\Storage\Processor\Image\ImageVariantCollection::create();
+$collection = \PhpCollective\Infrastructure\Storage\Processor\Image\ImageVariantCollection::create();
 $collection->addNew(\App\Storage\StorageCollections::IMG_RESIZED)
     ->resize(300, 300)
     ->optimize();

@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Model\Behavior;
@@ -14,9 +13,9 @@ use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Validation\UploadValidatorInterface;
 use League\Flysystem\AdapterInterface;
-use Phauthentic\Infrastructure\Storage\FileInterface;
-use Phauthentic\Infrastructure\Storage\FileStorage;
-use Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface;
+use PhpCollective\Infrastructure\Storage\FileInterface;
+use PhpCollective\Infrastructure\Storage\FileStorage;
+use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
 use RuntimeException;
 use Throwable;
 
@@ -32,7 +31,7 @@ class FileStorageBehavior extends Behavior
     use EventDispatcherTrait;
 
     /**
-     * @var \Phauthentic\Infrastructure\Storage\FileStorage
+     * @var \PhpCollective\Infrastructure\Storage\FileStorage
      */
     protected $fileStorage;
 
@@ -42,7 +41,7 @@ class FileStorageBehavior extends Behavior
     protected $transformer;
 
     /**
-     * @var \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface
+     * @var \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface
      */
     protected $processor;
 
@@ -51,7 +50,7 @@ class FileStorageBehavior extends Behavior
      *
      * @var array<string, mixed>
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'defaultStorageConfig' => 'Local',
         'ignoreEmptyFile' => true,
         'fileField' => 'file',
@@ -328,7 +327,7 @@ class FileStorageBehavior extends Behavior
     /**
      * @param \Cake\Datasource\EntityInterface $entity Entity
      *
-     * @return \Phauthentic\Infrastructure\Storage\FileInterface
+     * @return \PhpCollective\Infrastructure\Storage\FileInterface
      */
     public function entityToFileObject(EntityInterface $entity): FileInterface
     {
@@ -336,7 +335,7 @@ class FileStorageBehavior extends Behavior
     }
 
     /**
-     * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
+     * @param \PhpCollective\Infrastructure\Storage\FileInterface $file File
      * @param \Cake\Datasource\EntityInterface|null $entity
      *
      * @return \Cake\Datasource\EntityInterface
@@ -349,10 +348,10 @@ class FileStorageBehavior extends Behavior
     /**
      * Processes images
      *
-     * @param \Phauthentic\Infrastructure\Storage\FileInterface $file File
+     * @param \PhpCollective\Infrastructure\Storage\FileInterface $file File
      * @param \FileStorage\Model\Entity\FileStorage $entity
      *
-     * @return \Phauthentic\Infrastructure\Storage\FileInterface
+     * @return \PhpCollective\Infrastructure\Storage\FileInterface
      */
     public function processImages(FileInterface $file, EntityInterface $entity): FileInterface
     {
@@ -373,7 +372,7 @@ class FileStorageBehavior extends Behavior
     /**
      * @throws \RuntimeException
      *
-     * @return \Phauthentic\Infrastructure\Storage\Processor\ProcessorInterface
+     * @return \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface
      */
     protected function getFileProcessor(): ProcessorInterface
     {

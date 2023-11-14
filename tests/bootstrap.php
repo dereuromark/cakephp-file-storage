@@ -6,7 +6,7 @@ use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
-use Cake\Filesystem\Folder;
+use FileStorage\FileStoragePlugin;
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -24,11 +24,12 @@ define('CAKE', CORE_PATH . APP_DIR . DS);
 
 require PLUGIN_ROOT . '/vendor/autoload.php';
 require CORE_PATH . 'config/bootstrap.php';
+require CAKE_CORE_INCLUDE_PATH . '/src/functions.php';
 
 $config = [
     'path' => dirname(__FILE__, 2) . DS,
 ];
-Plugin::getCollection()->add(new \FileStorage\Plugin($config));
+Plugin::getCollection()->add(new FileStoragePlugin($config));
 
 Configure::write('App', [
     'namespace' => 'TestApp',
@@ -47,10 +48,10 @@ class_alias(TestApp\View\AppView::class, 'App\View\AppView');
 
 error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
 
-$Tmp = new Folder(TMP);
-$Tmp->create(TMP . 'cache/models', 0770);
-$Tmp->create(TMP . 'cache/persistent', 0770);
-$Tmp->create(TMP . 'cache/views', 0770);
+//$Tmp = new Folder(TMP);
+//$Tmp->create(TMP . 'cache/models', 0770);
+//$Tmp->create(TMP . 'cache/persistent', 0770);
+//$Tmp->create(TMP . 'cache/views', 0770);
 
 $cache = [
     'default' => [
@@ -85,3 +86,8 @@ ConnectionManager::setConfig('test', [
     'quoteIdentifiers' => false,
     'cacheMetadata' => true,
 ]);
+
+if (env('FIXTURE_SCHEMA_METADATA')) {
+    $loader = new Cake\TestSuite\Fixture\SchemaLoader();
+    $loader->loadInternalFile(env('FIXTURE_SCHEMA_METADATA'));
+}

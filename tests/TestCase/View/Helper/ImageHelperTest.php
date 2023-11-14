@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Test\TestCase\View\Helper;
@@ -10,7 +9,7 @@ use Cake\View\Helper\HtmlHelper;
 use Cake\View\View;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use FileStorage\View\Helper\ImageHelper;
-use Phauthentic\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
+use PhpCollective\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
 
 /**
  * ImageHelperTest

@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Test\TestCase\Model\Table;
@@ -16,7 +15,7 @@ class ValidationTest extends FileStorageTestCase
      *
      * @var array
      */
-    protected $fixtures = [
+    protected array $fixtures = [
         'plugin.FileStorage.Items',
         'plugin.FileStorage.FileStorage',
     ];

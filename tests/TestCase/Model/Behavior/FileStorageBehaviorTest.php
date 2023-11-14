@@ -1,12 +1,10 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Test\TestCase\Model\Behavior;
 
 use ArrayObject;
 use Cake\Core\Configure;
-use Cake\Core\Plugin;
 use Cake\Event\Event;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use FileStorage\Test\TestCase\FileStorageTestTable;
@@ -46,7 +44,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
             Configure::read('FileStorage.behaviorConfig'),
         );
 
-        $this->testFilePath = Plugin::path('FileStorage') . 'Test' . DS . 'Fixture' . DS . 'File' . DS;
+        //$this->testFilePath = Plugin::path('FileStorage') . 'Test' . DS . 'Fixture' . DS . 'File' . DS;
     }
 
     /**

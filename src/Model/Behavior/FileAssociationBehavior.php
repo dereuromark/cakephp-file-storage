@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Model\Behavior;
@@ -24,7 +23,7 @@ class FileAssociationBehavior extends Behavior
     /**
      * @var array<string, mixed>
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'associations' => [],
     ];
 
@@ -112,7 +111,7 @@ class FileAssociationBehavior extends Behavior
             }
             $association = $this->table()->{$assocConfig['collection']};
 
-            if (!$entity->id || !$entity->{$property}) {
+            if (!$entity->get('id') || !$entity->{$property}) {
                 continue;
             }
 
@@ -155,7 +154,7 @@ class FileAssociationBehavior extends Behavior
             return;
         }
 
-        $fileEntity->set('foreign_key', $entity->id);
+        $fileEntity->set('foreign_key', $entity->get('id'));
         $this->table()->{$assocName}->saveOrFail($fileEntity);
 
         if ($assocConfig['replace'] === true) {
@@ -192,7 +191,7 @@ class FileAssociationBehavior extends Behavior
                 continue;
             }
 
-            $fileEntity->set('foreign_key', $entity->id);
+            $fileEntity->set('foreign_key', $entity->get('id'));
             $this->table()->{$assocName}->saveOrFail($fileEntity);
 
             if ($assocConfig['replace'] === true) {

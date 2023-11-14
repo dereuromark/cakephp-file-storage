@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Model\Entity;
@@ -38,7 +37,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
      *
      * @var array<string, bool>
      */
-    protected $_accessible = [
+    protected array $_accessible = [
         '*' => true,
         'id' => false,
     ];
@@ -46,7 +45,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     /**
      * @var array<string>
      */
-    protected $_virtual = [
+    protected array $_virtual = [
         'variantUrls',
     ];
 

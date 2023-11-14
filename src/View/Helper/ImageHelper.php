@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\View\Helper;
@@ -8,7 +7,7 @@ use Cake\Log\Log;
 use Cake\View\Helper;
 use Exception;
 use FileStorage\Model\Entity\FileStorageEntityInterface;
-use Phauthentic\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
+use PhpCollective\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
 
 /**
  * ImageHelper
@@ -26,14 +25,14 @@ class ImageHelper extends Helper
      *
      * @var array<mixed>
      */
-    protected $helpers = [
+    protected array $helpers = [
         'Html',
     ];
 
     /**
      * @var array<string, mixed>
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'pathPrefix' => '',
     ];
 
@@ -74,7 +73,7 @@ class ImageHelper extends Helper
      * @param string|null $variant Image version string
      * @param array $options HtmlHelper::image(), 2nd arg options array
      *
-     * @throws \Phauthentic\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException
+     * @throws \PhpCollective\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException
      *
      * @return string|null
      */
@@ -98,7 +97,7 @@ class ImageHelper extends Helper
             throw new VariantDoesNotExistException(sprintf(
                 'A variant with the name `%s` does not exists for ID `%s`',
                 (string)$variant,
-                (string)$image->id,
+                (string)$image->get('id'),
             ));
         }
 
