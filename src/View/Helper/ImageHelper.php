@@ -8,7 +8,7 @@ use Cake\Log\Log;
 use Cake\View\Helper;
 use Exception;
 use FileStorage\Model\Entity\FileStorageEntityInterface;
-use FileStorage\Storage\Processor\Exception\VariantDoesNotExistException;
+use PhpCollective\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
 
 /**
  * ImageHelper
@@ -74,7 +74,7 @@ class ImageHelper extends Helper
      * @param string|null $variant Image version string
      * @param array $options HtmlHelper::image(), 2nd arg options array
      *
-     * @throws \FileStorage\Storage\Processor\Exception\VariantDoesNotExistException
+     * @throws \PhpCollective\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException
      *
      * @return string|null
      */

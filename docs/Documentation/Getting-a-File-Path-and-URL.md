@@ -26,7 +26,7 @@ Set whatever you need here. If you're inheriting `FileStorage\Model\Entity\FileS
 ```php
 namespace App\Model\Entity;
 
-use FileStorage\Storage\PathBuilder\PathBuilderTrait;
+use PhpCollective\Infrastructure\Storage\PathBuilder\PathBuilderTrait;
 
 class SomeEntityInYourApp extends Entity {
 

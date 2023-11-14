@@ -295,7 +295,7 @@ class ImageVersionShell extends Shell
         $offset = 0;
         $limit = $this->limit;
 
-        /** @var \FileStorage\Storage\FileStorage|null $storage */
+        /** @var \PhpCollective\Infrastructure\Storage\FileStorage|null $storage */
         $storage = Configure::read('FileStorage.behaviorConfig.fileStorage');
         if (!$storage) {
             $this->abort(sprintf('Invalid adapter config `%s` provided!', $this->params['adapter']));
