@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Model\Behavior;
@@ -13,10 +12,10 @@ use Cake\ORM\Behavior;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Validation\UploadValidatorInterface;
+use League\Flysystem\AdapterInterface;
 use PhpCollective\Infrastructure\Storage\FileInterface;
 use PhpCollective\Infrastructure\Storage\FileStorage;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
-use League\Flysystem\AdapterInterface;
 use RuntimeException;
 use Throwable;
 

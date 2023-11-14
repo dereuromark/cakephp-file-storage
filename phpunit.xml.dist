@@ -5,22 +5,19 @@
 		<ini name="memory_limit" value="-1"/>
 		<!-- E_ALL & ~E_USER_DEPRECATED => 16383 -->
 		<ini name="error_reporting" value="16383"/>
+
+        <env name="FIXTURE_SCHEMA_METADATA" value="tests/schema.php"/>
 	</php>
 
 	<testsuites>
-		<testsuite name="All Tests">
+		<testsuite name="file-storage">
 			<directory>tests/TestCase/</directory>
 		</testsuite>
-		<!-- Add plugin test suites here. -->
 	</testsuites>
 
-	<listeners>
-		<listener class="\Cake\TestSuite\Fixture\FixtureInjector">
-			<arguments>
-				<object class="\Cake\TestSuite\Fixture\FixtureManager"/>
-			</arguments>
-		</listener>
-	</listeners>
+    <extensions>
+        <bootstrap class="Cake\TestSuite\Fixture\Extension\PHPUnitExtension"/>
+    </extensions>
 
 	<!--
 		ANY logging MUST be disabled when running selenium tests!
@@ -48,9 +45,6 @@
 			<directory>src/Event/</directory>
 			<directory>src/Lib/</directory>
 		</exclude>
-		<report>
-			<html outputDirectory="./tmp/tests/report" lowUpperBound="35" highLowerBound="70"/>
-		</report>
 	</source>
 
 </phpunit>

@@ -1,14 +1,14 @@
 <?php
-
 declare(strict_types = 1);
 
 namespace FileStorage\Test\TestCase;
 
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
-use Cake\Filesystem\Folder;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\TestSuite\TestCase;
+use FileStorage\Filesystem\Folder;
+use Intervention\Image\ImageManager;
 use PhpCollective\Infrastructure\Storage\Factories\LocalFactory;
 use PhpCollective\Infrastructure\Storage\FileStorage;
 use PhpCollective\Infrastructure\Storage\PathBuilder\PathBuilder;
@@ -16,7 +16,6 @@ use PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor;
 use PhpCollective\Infrastructure\Storage\Processor\StackProcessor;
 use PhpCollective\Infrastructure\Storage\StorageAdapterFactory;
 use PhpCollective\Infrastructure\Storage\StorageService;
-use Intervention\Image\ImageManager;
 use TestApp\Storage\Processor\ImageDimensionsProcessor;
 
 /**
