@@ -48,7 +48,7 @@
         }
     },
     "suggest": {
-        "phauthentic/file-storage-image-processor": "Required if you want to use the image processing feature of FileStorage"
+        "php-collective/file-storage-image-processor": "Required if you want to use the image processing feature of FileStorage"
     },
     "scripts": {
         "check": [

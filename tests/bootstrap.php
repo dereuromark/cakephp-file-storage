@@ -31,6 +31,8 @@ $config = [
 ];
 Plugin::getCollection()->add(new FileStoragePlugin($config));
 
+Configure::write('debug', true);
+
 Configure::write('App', [
     'namespace' => 'TestApp',
     'encoding' => 'UTF-8',

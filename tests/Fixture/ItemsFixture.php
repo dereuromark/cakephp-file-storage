@@ -27,7 +27,7 @@ class ItemsFixture extends TestFixture
      * @var array
      */
     public $fields = [
-        'id' => ['type' => 'integer', 'null' => true, 'default' => null, 'autoIncrement' => true],
+        'id' => ['type' => 'integer', 'autoIncrement' => true],
         'name' => ['type' => 'string', 'null' => true, 'default' => null],
         'content' => ['type' => 'string', 'null' => true, 'default' => null],
         '_constraints' => [
