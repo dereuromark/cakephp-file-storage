@@ -24,6 +24,11 @@ class FileStorageBehaviorTest extends FileStorageTestCase
     protected $FileStorage;
 
     /**
+     * @var string
+     */
+    protected $testFilePath;
+
+    /**
      * startTest
      *
      * @return void
