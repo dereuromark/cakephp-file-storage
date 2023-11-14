@@ -66,16 +66,14 @@ class ImageHelperTest extends FileStorageTestCase
     }
 
     /**
-     * testImageUrl
-     *
      * @return void
      */
     public function testImageUrl()
     {
         $image = $this->FileStorage->newEntity([
-            'id' => 'e479b480-f60b-11e1-a21f-0800200c9a66',
             'filename' => 'testimage.jpg',
             'model' => 'Test',
+            'foreign_key' => 1,
             'path' => 'test/path/testimage.jpg',
             'extension' => 'jpg',
             'adapter' => 'Local',
@@ -85,7 +83,7 @@ class ImageHelperTest extends FileStorageTestCase
                     'url' => '',
                 ],
             ],
-        ], ['accessibleFields' => ['*' => true]]);
+        ]);
 
         $result = $this->helper->imageUrl($image, 't150', ['pathPrefix' => '/src/']);
         $this->assertEquals('/src/test/path/testimage.c3f33c2a.jpg', $result);
@@ -95,8 +93,6 @@ class ImageHelperTest extends FileStorageTestCase
     }
 
     /**
-     * testImage
-     *
      * @return void
      */
     public function testImageUrlInvalidArgumentException()

@@ -8,6 +8,7 @@ use Cake\Core\Plugin;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\TestSuite\TestCase;
 use FileStorage\Filesystem\Folder;
+use FileStorage\Model\Table\FileStorageTable;
 use Intervention\Image\ImageManager;
 use PhpCollective\Infrastructure\Storage\Factories\LocalFactory;
 use PhpCollective\Infrastructure\Storage\FileStorage;
@@ -80,7 +81,7 @@ class FileStorageTestCase extends TestCase
 
         $this->FileStorage = $this
             ->getTableLocator()
-            ->get(FileStorageTestTable::class);
+            ->get(FileStorageTable::class);
     }
 
     /**

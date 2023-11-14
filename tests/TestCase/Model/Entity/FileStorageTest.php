@@ -11,6 +11,33 @@ class FileStorageTest extends FileStorageTestCase
     /**
      * @return void
      */
+    public function testNew(): void
+    {
+        $image = $this->FileStorage->newEntity([
+            'filename' => 'testimage.jpg',
+            'model' => 'Test',
+            'foreign_key' => 1,
+            'path' => 'test/path/testimage.jpg',
+            'extension' => 'jpg',
+            'adapter' => 'Local',
+            'variants' => [
+                't150' => [
+                    'path' => 'test/path/testimage.c3f33c2a.jpg',
+                    'url' => '',
+                ],
+            ],
+            'metadata' => [
+                'foo' => 'bar',
+            ],
+        ]);
+
+        $this->assertNotEmpty($image->variants);
+        $this->assertNotEmpty($image->metadata);
+    }
+
+    /**
+     * @return void
+     */
     public function testGetVariantUrl(): void
     {
         $fileStorage = new FileStorage();
