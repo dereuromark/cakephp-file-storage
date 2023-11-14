@@ -8,6 +8,9 @@ use FileStorage\Test\TestCase\FileStorageTestCase;
 
 class FileStorageTest extends FileStorageTestCase
 {
+    /**
+     * @return void
+     */
     public function testNew(): void
     {
         $image = $this->FileStorage->newEntity([

@@ -6,8 +6,8 @@ namespace FileStorage\Test\TestCase\Model\Behavior;
 use ArrayObject;
 use Cake\Core\Configure;
 use Cake\Event\Event;
+use FileStorage\Model\Table\FileStorageTable;
 use FileStorage\Test\TestCase\FileStorageTestCase;
-use FileStorage\Test\TestCase\FileStorageTestTable;
 use Laminas\Diactoros\UploadedFile;
 
 /**
@@ -37,7 +37,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         parent::setUp();
 
         $this->getTableLocator()->clear();
-        $this->FileStorage = $this->getTableLocator()->get(FileStorageTestTable::class);
+        $this->FileStorage = $this->getTableLocator()->get(FileStorageTable::class);
 
         $this->FileStorage->addBehavior(
             'FileStorage.FileStorage',
