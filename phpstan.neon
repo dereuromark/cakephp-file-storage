@@ -5,7 +5,7 @@ parameters:
 	checkMissingIterableValueType: false
 	checkGenericClassInNonGenericObjectType: false
 	excludePaths:
-		- src/Storage/
+		- src/Shell/
 	bootstrapFiles:
 		- tests/bootstrap.php
 	earlyTerminatingMethodCalls:

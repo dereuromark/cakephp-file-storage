@@ -6,7 +6,6 @@ namespace FileStorage\Model\Table;
 use Cake\Core\Configure;
 use Cake\Database\Schema\TableSchemaInterface;
 use Cake\ORM\Table;
-use FileStorage\Database\Type\ArrayType;
 
 /**
  * FileStorageTable
