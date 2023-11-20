@@ -3,8 +3,9 @@
 
 	<php>
 		<ini name="memory_limit" value="-1"/>
-		<!-- E_ALL & ~E_USER_DEPRECATED => 16383 -->
-		<ini name="error_reporting" value="16383"/>
+        <!-- E_ALL & ~E_USER_DEPRECATED (16383)-->
+        <!-- E_ALL (32767) -->
+        <ini name="error_reporting" value="32767"/>
 
         <env name="FIXTURE_SCHEMA_METADATA" value="tests/schema.php"/>
 	</php>
@@ -18,22 +19,6 @@
     <extensions>
         <bootstrap class="Cake\TestSuite\Fixture\Extension\PHPUnitExtension"/>
     </extensions>
-
-	<!--
-		ANY logging MUST be disabled when running selenium tests!
-		See https://github.com/rshf/chromedriver/issues/728#issuecomment-93446962
-		En/disable the log as needed.
-	-->
-	<logging>
-		<!--<log type="coverage-clover" target="./tmp/tests/coverage.xml"/>-->
-		<!--<log type="coverage-php" target="/tmp/coverage.serialized"/>-->
-		<!--<log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>-->
-		<!--<log type="json" target="/tmp/logfile.json"/>-->
-		<!--<log type="tap" target="/tmp/logfile.tap"/>-->
-		<!--<log type="junit" target="/tmp/logfile.xml" logIncompleteSkipped="false"/>-->
-		<!--<log type="testdox-html" target=".//tmp/tests/testdox.html"/>-->
-		<!--<log type="testdox-text" target=".//tmp/tests/testdox.txt"/>-->
-	</logging>
 
 	<source>
 		<include>
