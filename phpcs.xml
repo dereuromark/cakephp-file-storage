@@ -17,4 +17,10 @@
         <exclude name="PhpCollective.Formatting.MethodSignatureParametersLineBreakMethod"/>
     </rule>
 
+    <rule ref="PhpCollective.PHP.DeclareStrictTypes">
+        <properties>
+            <property name="declareOnFirstLine" value="yes"/>
+        </properties>
+    </rule>
+
 </ruleset>
