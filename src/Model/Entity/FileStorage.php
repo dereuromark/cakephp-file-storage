@@ -25,8 +25,8 @@ use Cake\ORM\Entity;
  * @property string|null $hash
  * @property string|null $path
  * @property string|null $adapter
- * @property \Cake\I18n\FrozenTime $created
- * @property \Cake\I18n\FrozenTime $modified
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  * @property string|null $collection
  * @property array<string, string> $variant_urls !
  */

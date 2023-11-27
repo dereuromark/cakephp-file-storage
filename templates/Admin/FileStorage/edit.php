@@ -1,7 +1,7 @@
 <?php
 /**
  * @var \App\View\AppView $this
- * @var \Cake\Datasource\EntityInterface $fileStorage
+ * @var \FileStorage\Model\Entity\FileStorage $fileStorage
  */
 ?>
 <div class="row">
