@@ -50,9 +50,9 @@
                     <td><?= $this->Time->nice($fileStorage->modified) ?></td>
 
                     <td class="actions">
-                        <?php echo $this->Html->link($this->Format->icon('view'), ['action' => 'view', $fileStorage->id], ['escapeTitle' => false]); ?>
-                        <?php echo $this->Html->link($this->Format->icon('edit'), ['action' => 'edit', $fileStorage->id], ['escapeTitle' => false]); ?>
-                        <?php echo $this->Form->postLink($this->Format->icon('delete'), ['action' => 'delete', $fileStorage->id], ['escapeTitle' => false, 'confirm' => __('Are you sure you want to delete # {0}?', $fileStorage->id)]); ?>
+                        <?= $this->Html->link(Plugin::isLoaded('Tools') ? $this->Icon->render('view') : __('View'), ['action' => 'view', $fileStorage->id], ['escapeTitle' => false]); ?>
+                        <?= $this->Html->link(Plugin::isLoaded('Tools') ? $this->Icon->render('edit') : __('Edit'), ['action' => 'edit', $fileStorage->id], ['escapeTitle' => false]); ?>
+                        <?= $this->Form->postLink(Plugin::isLoaded('Tools') ? $this->Icon->render('delete') : __('Delete'), ['action' => 'delete', $fileStorage->id], ['escapeTitle' => false, 'confirm' => __('Are you sure you want to delete # {0}?', $fileStorage->id)]); ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
