@@ -42,7 +42,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     ];
 
     /**
-     * @var array<string>
+     * @var list<string>
      */
     protected array $_virtual = [
         'variantUrls',
