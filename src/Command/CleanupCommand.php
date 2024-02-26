@@ -1,4 +1,4 @@
-<?php declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace FileStorage\Command;
 
@@ -7,9 +7,6 @@ use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 
 /**
  * @property \FileStorage\Model\Table\FileStorageTable $FileStorage
@@ -39,6 +36,7 @@ class CleanupCommand extends Command
         /** @var \PhpCollective\Infrastructure\Storage\FileStorage $fileStorage */
         $fileStorage = Configure::read('FileStorage.behaviorConfig.fileStorage');
 
+        /*
         $directory = new RecursiveDirectoryIterator(
             $path,
             FilesystemIterator::SKIP_DOTS,
@@ -47,6 +45,7 @@ class CleanupCommand extends Command
             $directory,
             RecursiveIteratorIterator::SELF_FIRST,
         );
+        */
     }
 
     /**
