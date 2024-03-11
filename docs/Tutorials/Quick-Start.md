@@ -5,11 +5,12 @@ It is required that you have at least a basic understanding of how the event sys
 
 This tutorial will assume that we're going to add an avatar image upload for our users.
 
-For image processing you'll need the phauthentic/file-storage-image-processor library. If you don't have it already added, add it now:
+For image processing you'll need the `php-collective/file-storage-image-processor` library. If you don't have it already added, add it now:
 
 ```sh
-composer require phauthentic/file-storage-image-processor
+composer require php-collective/file-storage-image-processor
 ```
+See also other require-dev dependencies of the plugin, if they could be useful for you.
 
 In your applications `config/bootstrap.php` load the plugins:
 
@@ -19,7 +20,7 @@ Plugin::load('FileStorage', [
 ]);
 ```
 
-This will load the `bootstrap.php` of the File Storage plugin. The default configuration in there will load the LocalStorage listener and the ImageProcessing listener. You can also skip that bootstrap part and configure your own listeners in your apps bootstrap.php or a new file.
+This will load the `bootstrap.php` of the File Storage plugin. The default configuration in there will load the LocalStorage listener and the ImageProcessing listener. You can also skip that bootstrap part and configure your own listeners in your app's bootstrap.php or a new file.
 
 To make image processing work you'll have to add this to your applications bootstrap (or use a dedicated storage.php):
 
@@ -110,9 +111,9 @@ $this->hasOne('Avatars', [
 
 Especially pay attention to the `conditions` key in the config array of the association. You must specify this here or File Storage won't be able to identify that kind of file properly.
 
-Either save it through the association along with your users save call or save it separate. However, whatever you do, it is important that you set the `foreign_key` and `model` field for the associated file storage entity.
+Either save it through the association along with your users save call or save it separately. However, whatever you do, it is important that you set the `foreign_key` and `model` field for the associated file storage entity.
 
-If you don't specify the model field it will use the file storage table name by default and your has one association won't find it.
+If you don't specify the model field it will use the file storage table name by default and your "has one" association won't find it.
 
 Inside the `edit.php` template view file of your Users::edit action:
 
