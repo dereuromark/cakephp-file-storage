@@ -7,7 +7,7 @@ Using Composer
 Installing the plugin via [Composer](https://getcomposer.org/) is very simple, just run in your project folder:
 
 ```
-composer require dereuromark/file-storage:^3.0
+composer require dereuromark/cakephp-file-storage
 ```
 
 ## Load Plugin
