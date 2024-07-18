@@ -33,9 +33,7 @@ class FileStorageController extends AppController
      */
     public function view($id = null)
     {
-        $fileStorage = $this->FileStorage->get($id, [
-            'contain' => [],
-        ]);
+        $fileStorage = $this->FileStorage->get($id);
 
         $this->set(compact('fileStorage'));
     }
@@ -47,9 +45,7 @@ class FileStorageController extends AppController
      */
     public function edit($id = null)
     {
-        $fileStorage = $this->FileStorage->get($id, [
-            'contain' => [],
-        ]);
+        $fileStorage = $this->FileStorage->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $fileStorage = $this->FileStorage->patchEntity($fileStorage, $this->request->getData());
             if ($this->FileStorage->save($fileStorage)) {

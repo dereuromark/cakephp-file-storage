@@ -106,7 +106,7 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->table->saveOrFail($entity);
 
-        $entity = $this->table->get($entity->id, ['contain' => 'Photos']);
+        $entity = $this->table->get($entity->id, contain: ['Photos']);
 
         $this->assertNotEmpty($entity->photos);
 
@@ -143,7 +143,7 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->table->saveOrFail($entity);
 
-        $entity = $this->table->get($entity->id, ['contain' => 'Photos']);
+        $entity = $this->table->get($entity->id, contain: ['Photos']);
         $this->assertCount(2, $entity->photos);
 
         $photo2 = array_pop($entity->photos);
@@ -182,7 +182,7 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->table->saveOrFail($entity);
 
-        $entity = $this->table->get($entity->id, ['contain' => 'Avatars']);
+        $entity = $this->table->get($entity->id, contain: ['Avatars']);
 
         $this->assertNotEmpty($entity->avatar);
 
@@ -216,7 +216,7 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->table->saveOrFail($entity);
 
-        $entity = $this->table->get($entity->id, ['contain' => 'Avatars']);
+        $entity = $this->table->get($entity->id, contain: ['Avatars']);
 
         $this->assertNotEmpty($entity->avatar);
         $this->assertStringStartsWith('Items/Avatars/', $entity->avatar->path);
@@ -243,7 +243,7 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->table->saveOrFail($entity);
 
-        $entity = $this->table->get($entity->id, ['contain' => 'Avatars']);
+        $entity = $this->table->get($entity->id, contain: ['Avatars']);
 
         $this->assertNotEmpty($entity->avatar);
 
@@ -282,7 +282,7 @@ class ItemsTableTest extends FileStorageTestCase
 
         $this->table->saveOrFail($entity);
 
-        $entity = $this->table->get($entity->id, ['contain' => 'Avatars']);
+        $entity = $this->table->get($entity->id, contain: ['Avatars']);
 
         $this->assertNotEmpty($entity->avatar);
         $this->assertNotEmpty($entity->avatar->metadata);
