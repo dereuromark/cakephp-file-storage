@@ -12,4 +12,3 @@ parameters:
 		Cake\Console\Shell:
 			- abort
 	ignoreErrors:
-		- '#Cannot cast array\<string\>\|string to string#'

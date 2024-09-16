@@ -213,12 +213,17 @@ class FileAssociationBehavior extends Behavior
     ): void {
         /** @var \FileStorage\Model\Entity\FileStorage $fileEntity */
         $fileEntity = $entity->get($assocConfig['property']);
+
+        /** @var string $key */
+        $key = $this->table()->{$association}->getPrimaryKey();
+        /** @var string $foreignKey */
+        $foreignKey = $this->table()->getPrimaryKey();
         $entities = $this->table()->{$association}->find()->where(
             [
                 'model' => $assocConfig['model'],
                 'collection' => $assocConfig['collection'] ?? null,
-                'foreign_key' => $entity->get((string)$this->table()->getPrimaryKey()),
-                'id !=' => $fileEntity->get((string)$this->table()->{$association}->getPrimaryKey()),
+                'foreign_key' => $entity->get($foreignKey),
+                'id !=' => $fileEntity->get($key),
             ],
         )->all()->toArray();
         foreach ($entities as $entity) {
