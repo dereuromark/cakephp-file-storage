@@ -22,6 +22,10 @@ define('CAKE_CORE_INCLUDE_PATH', PLUGIN_ROOT . '/vendor/cakephp/cakephp');
 define('CORE_PATH', CAKE_CORE_INCLUDE_PATH . DS);
 define('CAKE', CORE_PATH . APP_DIR . DS);
 
+if (!defined('WWW_ROOT')) {
+    define('WWW_ROOT', ROOT . DS . 'webroot' . DS);
+}
+
 require PLUGIN_ROOT . '/vendor/autoload.php';
 require CORE_PATH . 'config/bootstrap.php';
 require CAKE_CORE_INCLUDE_PATH . '/src/functions.php';

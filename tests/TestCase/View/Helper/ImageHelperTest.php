@@ -84,10 +84,10 @@ class ImageHelperTest extends FileStorageTestCase
             ],
         ]);
 
-        $result = $this->helper->imageUrl($image, 't150', ['pathPrefix' => '/src/']);
+        $result = $this->helper->imageUrl($image, 't150', ['pathPrefix' => 'src/']);
         $this->assertEquals('/src/test/path/testimage.c3f33c2a.jpg', $result);
 
-        $result = $this->helper->imageUrl($image, null, ['pathPrefix' => '/src/']);
+        $result = $this->helper->imageUrl($image, null, ['pathPrefix' => 'src/']);
         $this->assertEquals('/src/test/path/testimage.jpg', $result);
     }
 

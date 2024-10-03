@@ -2,8 +2,10 @@
 
 namespace FileStorage\View\Helper;
 
+use Cake\Core\Configure;
 use Cake\Log\Log;
 use Cake\View\Helper;
+use Cake\View\View;
 use Exception;
 use FileStorage\Model\Entity\FileStorageEntityInterface;
 use PhpCollective\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException;
@@ -32,8 +34,19 @@ class ImageHelper extends Helper
      * @var array<string, mixed>
      */
     protected array $_defaultConfig = [
-        'pathPrefix' => '',
+        'pathPrefix' => 'img/',
     ];
+
+    /**
+     * @param \Cake\View\View $view
+     * @param array<string, mixed> $config
+     */
+    public function __construct(View $view, array $config = [])
+    {
+        $config += (array)Configure::read('FileStorage');
+
+        parent::__construct($view, $config);
+    }
 
     /**
      * Generates an image url based on the image record data and the used Gaufrette adapter to store it
@@ -100,9 +113,9 @@ class ImageHelper extends Helper
             ));
         }
 
-        $options = array_merge($this->getConfig(), $options);
+        $options += $this->getConfig();
         if (!empty($options['pathPrefix'])) {
-            $url = $options['pathPrefix'] . $path;
+            $url = '/' . $options['pathPrefix'] . $path;
         }
 
         return $this->normalizePath((string)$url);
