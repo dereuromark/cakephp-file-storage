@@ -2,8 +2,11 @@
 
 namespace FileStorage;
 
+use Cake\Console\CommandCollection;
 use Cake\Core\BasePlugin;
 use Cake\Routing\RouteBuilder;
+use FileStorage\Command\CleanupCommand;
+use FileStorage\Command\ImageVariantGenerateCommand;
 
 /**
  * FileStorage Plugin for CakePHP
@@ -41,5 +44,20 @@ class FileStoragePlugin extends BasePlugin
                 $routes->fallbacks();
             });
         });
+    }
+
+    /**
+     * Add commands for the plugin.
+     *
+     * @param \Cake\Console\CommandCollection $commands The command collection to update.
+     *
+     * @return \Cake\Console\CommandCollection
+     */
+    public function console(CommandCollection $commands): CommandCollection
+    {
+        $commands->add('file_storage cleanup', CleanupCommand::class);
+        $commands->add('file_storage generate_image_variant', ImageVariantGenerateCommand::class);
+
+        return $commands;
     }
 }

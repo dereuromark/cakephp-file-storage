@@ -8,9 +8,17 @@ use Cake\Routing\Middleware\RoutingMiddleware;
 
 class Application extends BaseApplication
 {
- /**
-  * @inheritDoc
-  */
+    /**
+     * @inheritDoc
+     */
+    public function bootstrap(): void
+    {
+        $this->addPlugin('FileStorage');
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function middleware(MiddlewareQueue $middleware): MiddlewareQueue
     {
         $middleware->add(new RoutingMiddleware($this));

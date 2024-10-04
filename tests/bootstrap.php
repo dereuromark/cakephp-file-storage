@@ -3,10 +3,9 @@
 declare(strict_types=1);
 
 use Cake\Cache\Cache;
+use Cake\Chronos\Chronos;
 use Cake\Core\Configure;
-use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
-use FileStorage\FileStoragePlugin;
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -21,7 +20,8 @@ define('APP_DIR', 'src');
 define('CAKE_CORE_INCLUDE_PATH', PLUGIN_ROOT . '/vendor/cakephp/cakephp');
 define('CORE_PATH', CAKE_CORE_INCLUDE_PATH . DS);
 define('CAKE', CORE_PATH . APP_DIR . DS);
-
+define('CONFIG', ROOT . DS . 'config' . DS);
+define('TESTS', __DIR__ . DS);
 if (!defined('WWW_ROOT')) {
     define('WWW_ROOT', ROOT . DS . 'webroot' . DS);
 }
@@ -33,7 +33,6 @@ require CAKE_CORE_INCLUDE_PATH . '/src/functions.php';
 $config = [
     'path' => dirname(__FILE__, 2) . DS,
 ];
-Plugin::getCollection()->add(new FileStoragePlugin($config));
 
 Configure::write('debug', true);
 
@@ -93,7 +92,10 @@ ConnectionManager::setConfig('test', [
     'cacheMetadata' => true,
 ]);
 
+Chronos::setTestNow(Chronos::now());
+
 if (env('FIXTURE_SCHEMA_METADATA')) {
     $loader = new Cake\TestSuite\Fixture\SchemaLoader();
     $loader->loadInternalFile(env('FIXTURE_SCHEMA_METADATA'));
 }
+Configure::load('example');

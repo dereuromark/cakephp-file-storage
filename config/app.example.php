@@ -3,14 +3,8 @@
 
 define('THUMBS', WWW_ROOT . 'img' . DS . 'thumbs' . DS);
 
-// Container
-$container = \App\Container\Container::getSingletonInstance();
-$container->delegate(
-    new League\Container\ReflectionContainer(),
-);
-
 // Storage setup
-$storageFactory = new \PhpCollective\Infrastructure\Storage\StorageAdapterFactory($container);
+$storageFactory = new \PhpCollective\Infrastructure\Storage\StorageAdapterFactory();
 $storageService = new \PhpCollective\Infrastructure\Storage\StorageService(
     $storageFactory,
 );
@@ -44,18 +38,13 @@ $imageProcessor = new \PhpCollective\Infrastructure\Storage\Processor\Image\Imag
     $pathBuilder,
     $imageManager,
 );
-$imageDimensionsProcessor = new \App\Storage\Processor\ImageDimensionsProcessor();
-$stackProcessor = new \PhpCollective\Infrastructure\Storage\Processor\StackProcessor([
-    $imageProcessor,
-    $imageDimensionsProcessor,
-]);
 
 // Configure variants
 $collection = \PhpCollective\Infrastructure\Storage\Processor\Image\ImageVariantCollection::create();
-$collection->addNew(\App\Storage\StorageCollections::IMG_RESIZED)
+$collection->addNew('resize')
     ->resize(300, 300)
     ->optimize();
-$collection->addNew(\App\Storage\StorageCollections::IMG_CROPPED)
+$collection->addNew('crop')
     ->fit(100, 100)
     ->optimize();
 
@@ -76,7 +65,7 @@ return [
         ],
         'behaviorConfig' => [
             'fileStorage' => $fileStorage,
-            'fileProcessor' => $stackProcessor,
+            'fileProcessor' => null,
             'fileValidator' => \App\FileStorage\Validator\ImageValidator::class,
         ],
     ],
