@@ -100,7 +100,7 @@ class CleanupCommand extends Command
             }
 
             $io->warning('Deleting orphaned file: ' . $path);
-            if ($args->getOption('dry-run')) {
+            if ($args->getOption('dryRun')) {
                 continue;
             }
 
@@ -137,7 +137,7 @@ class CleanupCommand extends Command
             ->toArray();
 
         $io->info(count($images) . ' orphaned images found.');
-        if ($args->getOption('dry-run')) {
+        if ($args->getOption('dryRun')) {
             return;
         }
 
@@ -176,7 +176,7 @@ class CleanupCommand extends Command
             }
 
             $io->error('Missing images for ' . $image->id . ': ' . implode(', ', $missing));
-            if ($args->getOption('dry-run')) {
+            if ($args->getOption('dryRun')) {
                 continue;
             }
 

@@ -17,7 +17,7 @@ class CleanupCommandTest extends TestCase
      */
     public function testRun(): void
     {
-        $this->exec('file_storage cleanup');
+        $this->exec('file_storage cleanup -d');
 
         $this->assertExitCode(0);
         $this->assertOutputContains('0 orphaned images found.');
