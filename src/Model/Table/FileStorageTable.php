@@ -58,7 +58,7 @@ class FileStorageTable extends Table
     /**
      * Initialize
      *
-     * @param array $config
+     * @param array<string, mixed> $config
      *
      * @return void
      */
