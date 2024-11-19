@@ -43,19 +43,6 @@ use Cake\ORM\Table;
 class FileStorageTable extends Table
 {
     /**
-     * @inheritDoc
-     */
-    public function getSchema(): TableSchemaInterface
-    {
-        $schema = parent::getSchema();
-
-        $schema->addColumn('variants', 'json');
-        $schema->addColumn('metadata', 'json');
-
-        return $schema;
-    }
-
-    /**
      * Initialize
      *
      * @param array<string, mixed> $config
@@ -69,6 +56,10 @@ class FileStorageTable extends Table
         $this->setTable('file_storage');
         $this->setPrimaryKey('id');
         $this->setDisplayField('filename');
+
+        $this->getSchema()
+            ->addColumn('variants', 'json')
+            ->addColumn('metadata', 'json');
 
         $this->addBehavior('Timestamp');
         $this->addBehavior(
