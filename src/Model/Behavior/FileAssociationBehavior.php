@@ -60,7 +60,7 @@ class FileAssociationBehavior extends Behavior
     public function beforeSave(
         EventInterface $event,
         EntityInterface $entity,
-        ArrayObject $options
+        ArrayObject $options,
     ): void {
         $associations = $this->getConfig('associations');
         foreach ($associations as $assocConfig) {
@@ -100,7 +100,7 @@ class FileAssociationBehavior extends Behavior
     public function afterSave(
         EventInterface $event,
         EntityInterface $entity,
-        ArrayObject $options
+        ArrayObject $options,
     ): void {
         $associations = $this->getConfig('associations');
         foreach ($associations as $assocName => $assocConfig) {
@@ -209,7 +209,7 @@ class FileAssociationBehavior extends Behavior
     protected function findAndRemovePreviousFile(
         EntityInterface $entity,
         string $association,
-        array $assocConfig
+        array $assocConfig,
     ): void {
         /** @var \FileStorage\Model\Entity\FileStorage $fileEntity */
         $fileEntity = $entity->get($assocConfig['property']);
