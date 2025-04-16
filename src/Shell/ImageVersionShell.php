@@ -271,7 +271,7 @@ class ImageVersionShell extends Shell
      * @param string $action
      * @param string $model
      * @param array $operations
-     * @param array $options
+     * @param array<string, mixed> $options
      *
      * @return void
      */

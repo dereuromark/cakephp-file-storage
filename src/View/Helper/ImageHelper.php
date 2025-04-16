@@ -54,7 +54,7 @@ class ImageHelper extends Helper
      * @param \FileStorage\Model\Entity\FileStorageEntityInterface|null $image FileStorage entity or whatever else table that matches this helpers needs without
      * the model, we just want the record fields
      * @param string|null $version Image version string
-     * @param array $options HtmlHelper::image(), 2nd arg options array
+     * @param array<string, mixed> $options HtmlHelper::image(), 2nd arg options array
      *
      * @return string
      */
@@ -83,7 +83,7 @@ class ImageHelper extends Helper
      * @param \FileStorage\Model\Entity\FileStorageEntityInterface $image FileStorage entity or whatever else table that matches this helpers needs without
      * the model, we just want the record fields
      * @param string|null $variant Image version string
-     * @param array $options HtmlHelper::image(), 2nd arg options array
+     * @param array<string, mixed> $options HtmlHelper::image(), 2nd arg options array
      *
      * @throws \PhpCollective\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException
      *
@@ -124,7 +124,7 @@ class ImageHelper extends Helper
     /**
      * Provides a fallback image if the image record is empty
      *
-     * @param array $options
+     * @param array<string, mixed> $options
      * @param string|null $version
      *
      * @return string
