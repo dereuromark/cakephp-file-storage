@@ -33,7 +33,7 @@
     "require-dev": {
         "php-collective/code-sniffer": "^0.2.1",
         "php-collective/file-storage-image-processor": "dev-master as 1.0.0",
-        "phpunit/phpunit": "^10.2 || ^11.5"
+        "phpunit/phpunit": "^10.5 || ^11.5 || ^12.1"
     },
     "suggest": {
         "php-collective/file-storage-image-processor": "Required if you want to use the image processing feature of FileStorage"
