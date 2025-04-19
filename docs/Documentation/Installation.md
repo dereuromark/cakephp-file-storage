@@ -16,14 +16,9 @@ Run
 bin/cake plugin load FileStorage
 ```
 
-or manually add this to your `Application` class:
-```php
-$this->addPlugin('FileStorage');
+Make sure to disable routing if you do not have authentication set up:
 ```
-
-[Make sure to disable routing if you do not have authentication set up:
-```php
-$this->addPlugin('FileStorage', ['routes' => false]);
+bin/cake plugin load FileStorage --no-routes
 ```
 You do not want visitors to be able to browse to the file storage backend.
 
