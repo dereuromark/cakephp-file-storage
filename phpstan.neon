@@ -2,13 +2,13 @@ parameters:
 	level: 8
 	paths:
 		- src/
-	checkMissingIterableValueType: false
-	checkGenericClassInNonGenericObjectType: false
 	excludePaths:
 		- src/Shell/
 	bootstrapFiles:
 		- tests/bootstrap.php
 	earlyTerminatingMethodCalls:
-		Cake\Console\Shell:
+		Cake\Console\BaseCommand:
 			- abort
 	ignoreErrors:
+		- identifier: missingType.iterableValue
+		- identifier: missingType.generics
