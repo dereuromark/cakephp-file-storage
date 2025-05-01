@@ -41,10 +41,8 @@ class ImageHelperTest extends FileStorageTestCase
     public function setUp(): void
     {
         parent::setUp();
-        $null = null;
-        $this->view = new View($null);
+        $this->view = new View();
         $this->helper = new ImageHelper($this->view);
-        $this->helper->Html = new HtmlHelper($this->view);
 
         $request = (new Request(['url' => 'contacts/add']))
             ->withAttribute('webroot', '/')

@@ -140,14 +140,15 @@ class FileStorageBehavior extends Behavior
      * @param \FileStorage\Model\Entity\FileStorage $entity
      * @param \ArrayObject $options
      *
-     * @return bool
+     * @return void
      */
-    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): bool
+    public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
     {
         if (!$this->isFileUploadPresent($entity)) {
             $event->stopPropagation();
+            $event->setResult(false);
 
-            return false;
+            return;
         }
 
         $this->checkEntityBeforeSave($entity);
@@ -156,8 +157,6 @@ class FileStorageBehavior extends Behavior
             'entity' => $entity,
             'storageAdapter' => $this->getStorageAdapter($entity->get('adapter')),
         ], $this->table());
-
-        return true;
     }
 
     /**
