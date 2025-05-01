@@ -4,7 +4,6 @@ namespace FileStorage\Test\TestCase\View\Helper;
 
 use Cake\Core\Configure;
 use Cake\Http\ServerRequest as Request;
-use Cake\View\Helper\HtmlHelper;
 use Cake\View\View;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use FileStorage\View\Helper\ImageHelper;
