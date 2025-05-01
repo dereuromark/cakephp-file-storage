@@ -10,7 +10,7 @@ The **FileStorage** plugin is giving you the possibility to upload and store fil
 
 Storage adapters are a unified interface that allow you to store file data to your local file system, in memory, in a database or into a zip file and remote systems. There is a database table keeping track of what you stored where. You can always write your own adapter or extend and overload existing ones.
 
-This branch is for use with **CakePHP 5.0+**. See [version map](https://github.com/dereuromark/cakephp-file-storage/wiki#cakephp-version-map) for details.
+This branch is for use with **CakePHP 5.1+**. See [version map](https://github.com/dereuromark/cakephp-file-storage/wiki#cakephp-version-map) for details.
 
 ## How it works
 
