@@ -66,7 +66,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
             Log::write('error', 'Invalid variants url data for ' . $this->id);
 
             return array_shift($variants[$variant]['url']);
-        }        
+        }
 
         return $variants[$variant]['url'];
     }
