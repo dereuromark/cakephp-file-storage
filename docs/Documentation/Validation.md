@@ -1,7 +1,7 @@
 # Validation
 
 In your config, you can set a `fileValidator` to be used:
-```
+```php
 'FileStorage' => [
         'behaviorConfig' => [
             'fileValidator' => \App\FileStorage\Validator\ImageValidator::class,
