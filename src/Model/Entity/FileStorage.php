@@ -61,6 +61,13 @@ class FileStorage extends Entity implements FileStorageEntityInterface
             return null;
         }
 
+        // Until fix is fully applied
+        if (!is_string($variants[$variant]['url'])) {
+            Log::write('error', 'Invalid variants url data for ' . $this->id);
+
+            return array_shift($variants[$variant]['url']);
+        }        
+
         return $variants[$variant]['url'];
     }
 
@@ -77,10 +84,10 @@ class FileStorage extends Entity implements FileStorageEntityInterface
         }
 
         // Until fix is fully applied
-        if (!is_string($variants[$variant]['url'])) {
-            Log::write('error', 'Invalid variants data for ' . $this->id);
+        if (!is_string($variants[$variant]['path'])) {
+            Log::write('error', 'Invalid variants path data for ' . $this->id);
 
-            return array_shift($variants[$variant]['url']);
+            return array_shift($variants[$variant]['path']);
         }
 
         return $variants[$variant]['path'];
