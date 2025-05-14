@@ -2,6 +2,7 @@
 
 namespace FileStorage\Model\Entity;
 
+use Cake\Log\Log;
 use Cake\ORM\Entity;
 
 /**
@@ -73,6 +74,13 @@ class FileStorage extends Entity implements FileStorageEntityInterface
         $variants = (array)$this->get('variants');
         if (!isset($variants[$variant]['path'])) {
             return null;
+        }
+
+        // Until fix is fully applied
+        if (!is_string($variants[$variant]['url'])) {
+            Log::write('error', 'Invalid variants data for ' . $this->id);
+
+            return array_shift($variants[$variant]['url']);
         }
 
         return $variants[$variant]['path'];
