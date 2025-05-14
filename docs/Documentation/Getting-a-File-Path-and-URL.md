@@ -10,7 +10,7 @@ Be aware that whenever you use a path builder somewhere, you **must** use the sa
 
 If you're using an entity from this plugin, or extending it they'll implement the PathBuilderTrait. This enables you to set and get the path builder on the entities.
 
-Due to some [limitations of the CakePHP core](http://api.cakephp.org/3.1/source-class-Cake.ORM.Table.html#1965) you can't pass options to the entity when calling `Table::newEntity()`.
+You can't pass options to the entity when calling `Table::newEntity()`.
 
 There are two workarounds for that issue. Either you'll have to set it manually on the entity instance:
 
