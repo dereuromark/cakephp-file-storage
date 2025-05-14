@@ -283,7 +283,8 @@ class ImageVariantGenerateCommand extends Command
             );
         }
 
-        /** @var \FileStorage\FileStorage\DataTransformerInterface */
+        assert($this->transformer !== null);
+
         return $this->transformer;
     }
 
