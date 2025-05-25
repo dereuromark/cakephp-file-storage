@@ -1,6 +1,6 @@
 <?php
 
-use Migrations\AbstractMigration;
+use Migrations\BaseMigration;
 
 /**
  * AddingVariantsAndMetadataFields

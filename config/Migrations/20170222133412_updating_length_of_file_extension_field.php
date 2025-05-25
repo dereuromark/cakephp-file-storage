@@ -1,6 +1,6 @@
 <?php
 
-use Migrations\AbstractMigration;
+use Migrations\BaseMigration;
 
 /**
  * https://github.com/burzum/cakephp-file-storage/issues/126
@@ -18,7 +18,7 @@ use Migrations\AbstractMigration;
  *
  * @link https://github.com/burzum/cakephp-file-storage/issues/157
  */
-class UpdatingLengthOfFileExtensionField extends AbstractMigration {
+class UpdatingLengthOfFileExtensionField extends BaseMigration {
 
 	/**
 	 * Change Method.

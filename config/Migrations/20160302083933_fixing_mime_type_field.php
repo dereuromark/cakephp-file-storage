@@ -1,6 +1,6 @@
 <?php
 
-use Migrations\AbstractMigration;
+use Migrations\BaseMigration;
 
 /**
  * https://github.com/burzum/cakephp-file-storage/issues/126
@@ -16,7 +16,7 @@ use Migrations\AbstractMigration;
  * implementation limits may make such long names problematic. For this reason,
  * <type-name> and <subtype-name> SHOULD be limited to 64 characters.
  */
-class FixingMimeTypeField extends AbstractMigration {
+class FixingMimeTypeField extends BaseMigration {
 
 	/**
 	 * Change Method.
