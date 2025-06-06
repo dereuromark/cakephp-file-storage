@@ -36,7 +36,11 @@
         "phpunit/phpunit": "^10.5 || ^11.5 || ^12.1"
     },
     "suggest": {
+        "cakephp/migrations": "For migrations to run.",
         "php-collective/file-storage-image-processor": "Required if you want to use the image processing feature of FileStorage"
+    },
+    "conflict": {
+        "cakephp/migrations": "<4.5"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Migrations\BaseMigration;
 
-class AddCollectionColumn extends AbstractMigration
+class AddCollectionColumn extends BaseMigration
 {
     /**
      * Change Method.

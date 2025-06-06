@@ -5,7 +5,7 @@ use Migrations\BaseMigration;
 /**
  * AddingVariantsAndMetadataFields
  */
-class AddingVariantsAndMetadataFields extends AbstractMigration
+class AddingVariantsAndMetadataFields extends BaseMigration
 {
 	/**
 	 * Change Method.
