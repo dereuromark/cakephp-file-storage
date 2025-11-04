@@ -51,8 +51,11 @@ $collection->addNew('crop')
 return [
     'FileStorage' => [
         'pathPrefix' => 'img/thumbs/',
+        // Image variants configuration
+        // Structure: [ModelAlias][CollectionName][variants]
+        // Note: ModelAlias comes from the table (e.g., 'Posts', 'Users')
+        //       CollectionName can be different (e.g., 'Cover', 'Avatar', 'Gallery')
         'imageVariants' => [
-            //FIXME
             'EventImages' => [
                 'EventImages' => $collection->toArray(),
             ],
@@ -62,6 +65,11 @@ return [
             'Photos' => [
                 'Photos' => $collection->toArray(),
             ],
+            // Example with model != collection:
+            // 'Posts' => [
+            //     'Cover' => $coverVariants->toArray(),
+            //     'GalleryImages' => $galleryVariants->toArray(),
+            // ],
         ],
         'behaviorConfig' => [
             'fileStorage' => $fileStorage,

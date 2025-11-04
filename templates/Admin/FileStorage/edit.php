@@ -33,8 +33,6 @@
                 echo $this->Form->control('filesize');
                 echo $this->Form->control('path');
                 echo $this->Form->control('adapter');
-                //echo $this->Form->control('variants');
-                //echo $this->Form->control('metadata');
                 ?>
             </fieldset>
             <?= $this->Form->button(__('Submit')) ?>
