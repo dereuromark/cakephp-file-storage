@@ -132,7 +132,8 @@ class FileStorageTestCase extends TestCase
             'Local' => [
                 'class' => LocalFactory::class,
                 'options' => [
-                    'root' => $this->testPath, true,
+                    'root' => $this->testPath,
+                    true,
                 ],
             ],
         ]);

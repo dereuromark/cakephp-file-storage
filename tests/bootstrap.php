@@ -31,7 +31,7 @@ require CORE_PATH . 'config/bootstrap.php';
 require CAKE_CORE_INCLUDE_PATH . '/src/functions.php';
 
 $config = [
-    'path' => dirname(__FILE__, 2) . DS,
+    'path' => dirname(__DIR__, 1) . DS,
 ];
 
 Configure::write('debug', true);

@@ -24,8 +24,7 @@ class CleanupCommand extends Command
         $model = $args->getArgument('model');
         $collection = $args->getArgument('collection');
 
-        $conditions = [
-        ];
+        $conditions = [];
         if ($model) {
             $conditions['model'] = $model;
         }
