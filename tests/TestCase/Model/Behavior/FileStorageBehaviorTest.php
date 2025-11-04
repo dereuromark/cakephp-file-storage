@@ -145,4 +145,88 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $this->assertSame($entity->filesize, 332643);
         $this->assertSame($entity->mime_type, 'image/jpeg');
     }
+
+    /**
+     * Test processImages() with matching model and collection configuration
+     *
+     * @return void
+     */
+    public function testProcessImagesWithMatchingConfig()
+    {
+        Configure::write('FileStorage.imageVariants', [
+            'FileStorage' => [
+                'Photos' => [
+                    'thumbnail' => [
+                        'width' => 50,
+                        'height' => 50,
+                    ],
+                ],
+            ],
+        ]);
+
+        $entity = $this->FileStorage->newEmptyEntity();
+        $entity->collection = 'Photos';
+        $entity->id = 'test-id';
+        $entity->path = 'test/path.jpg';
+        $entity->adapter = 'Local';
+
+        $file = $this->FileStorage->behaviors()->FileStorage->entityToFileObject($entity);
+
+        $result = $this->FileStorage->behaviors()->FileStorage->processImages($file, $entity);
+
+        $this->assertNotEmpty($result->variants());
+        $this->assertArrayHasKey('thumbnail', $result->variants());
+    }
+
+    /**
+     * Test processImages() with model != collection (the bug fix scenario)
+     *
+     * @return void
+     */
+    public function testProcessImagesWithDifferentModelAndCollection()
+    {
+        Configure::write('FileStorage.imageVariants', [
+            'FileStorage' => [
+                'Cover' => [
+                    'large' => [
+                        'width' => 800,
+                        'height' => 600,
+                    ],
+                ],
+            ],
+        ]);
+
+        $entity = $this->FileStorage->newEmptyEntity();
+        $entity->collection = 'Cover';
+        $entity->id = 'test-id';
+        $entity->path = 'test/path.jpg';
+        $entity->adapter = 'Local';
+
+        $file = $this->FileStorage->behaviors()->FileStorage->entityToFileObject($entity);
+
+        $result = $this->FileStorage->behaviors()->FileStorage->processImages($file, $entity);
+
+        $this->assertNotEmpty($result->variants());
+        $this->assertArrayHasKey('large', $result->variants());
+    }
+
+    /**
+     * Test processImages() when no config exists for model/collection
+     *
+     * @return void
+     */
+    public function testProcessImagesWithNoConfig()
+    {
+        $entity = $this->FileStorage->newEmptyEntity();
+        $entity->collection = 'NonExistentCollection';
+        $entity->id = 'test-id';
+        $entity->path = 'test/path.jpg';
+        $entity->adapter = 'Local';
+
+        $file = $this->FileStorage->behaviors()->FileStorage->entityToFileObject($entity);
+
+        $result = $this->FileStorage->behaviors()->FileStorage->processImages($file, $entity);
+
+        $this->assertEmpty($result->variants());
+    }
 }

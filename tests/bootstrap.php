@@ -51,8 +51,6 @@ class_alias(TestApp\Application::class, 'App\Application');
 class_alias(TestApp\Controller\AppController::class, 'App\Controller\AppController');
 class_alias(TestApp\View\AppView::class, 'App\View\AppView');
 
-error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
-
 //$Tmp = new Folder(TMP);
 //$Tmp->create(TMP . 'cache/models', 0770);
 //$Tmp->create(TMP . 'cache/persistent', 0770);
