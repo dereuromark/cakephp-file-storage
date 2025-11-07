@@ -1,7 +1,7 @@
 # FileStorage Plugin for CakePHP
 
 [![CI](https://github.com/dereuromark/cakephp-file-storage/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/dereuromark/cakephp-file-storage/actions/workflows/ci.yml?query=branch%3Amaster)
-[![codecov](https://codecov.io/gh/dereuromark/cakephp-file-storage/branch/master/graph/badge.svg)](https://codecov.io/gh/dereuromark/cakephp-file-storage)
+[![codecov](https://codecov.io/gh/dereuromark/cakephp-file-storage/branch/master/graph/badge.svg)](https://app.codecov.io/gh/dereuromark/cakephp-file-storage/tree/master)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat)](https://phpstan.org/)
 [![Latest Stable Version](https://poser.pugx.org/dereuromark/cakephp-file-storage/v/stable.svg)](https://packagist.org/packages/dereuromark/cakephp-file-storage)
 [![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%208.1-8892BF.svg)](https://php.net/)
