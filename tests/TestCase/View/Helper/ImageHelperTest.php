@@ -124,4 +124,83 @@ class ImageHelperTest extends FileStorageTestCase
         $result = $this->helper->fallbackImage([], 't150');
         $this->assertSame('', $result);
     }
+
+    /**
+     * @return void
+     */
+    public function testDisplay(): void
+    {
+        $image = $this->FileStorage->newEntity([
+            'filename' => 'testimage.jpg',
+            'model' => 'Test',
+            'foreign_key' => 1,
+            'path' => 'test/path/testimage.jpg',
+            'extension' => 'jpg',
+            'adapter' => 'Local',
+            'variants' => [
+                't150' => [
+                    'path' => 'test/path/testimage.c3f33c2a.jpg',
+                    'url' => '',
+                ],
+            ],
+        ]);
+
+        $result = $this->helper->display($image, 't150', ['pathPrefix' => 'src/']);
+        $this->assertStringContainsString('<img src="/src/test/path/testimage.c3f33c2a.jpg"', $result);
+
+        $result = $this->helper->display($image, null, ['pathPrefix' => 'src/']);
+        $this->assertStringContainsString('<img src="/src/test/path/testimage.jpg"', $result);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDisplayWithNullImage(): void
+    {
+        $result = $this->helper->display(null, null, ['fallback' => 'placeholder.jpg']);
+        $this->assertStringContainsString('<img src="/img/placeholder.jpg"', $result);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDisplayWithInvalidVariant(): void
+    {
+        $image = $this->FileStorage->newEntity([
+            'id' => 'e479b480-f60b-11e1-a21f-0800200c9a66',
+            'filename' => 'testimage.jpg',
+            'model' => 'Test',
+            'path' => 'test/path/testimage.jpg',
+            'extension' => 'jpg',
+            'adapter' => 'Local',
+        ], ['accessibleFields' => ['*' => true]]);
+
+        // When variant doesn't exist, it should fall back to fallback image
+        $result = $this->helper->display($image, 'nonexistent', ['fallback' => 'error.jpg']);
+        $this->assertStringContainsString('<img src="/img/error.jpg"', $result);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDisplayWithUrlInVariant(): void
+    {
+        $image = $this->FileStorage->newEntity([
+            'filename' => 'testimage.jpg',
+            'model' => 'Test',
+            'foreign_key' => 1,
+            'path' => 'test/path/testimage.jpg',
+            'extension' => 'jpg',
+            'adapter' => 'Local',
+            'variants' => [
+                't150' => [
+                    'path' => 'test/path/testimage.c3f33c2a.jpg',
+                    'url' => 'https://cdn.example.com/images/testimage.jpg',
+                ],
+            ],
+        ]);
+
+        $result = $this->helper->display($image, 't150');
+        $this->assertStringContainsString('https://cdn.example.com/images/testimage.jpg', $result);
+    }
 }
