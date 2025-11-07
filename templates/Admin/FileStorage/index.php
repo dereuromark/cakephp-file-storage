@@ -32,7 +32,7 @@ use Cake\Core\Plugin;
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($fileStorage as $fileStorage): ?>
+                <?php foreach ($fileStorage as $fileStorage) { ?>
                 <tr>
                     <td><?= h($fileStorage->model) ?>:<?= $this->Number->format($fileStorage->foreign_key) ?></td>
                     <td><?= h($fileStorage->collection) ?></td>
@@ -56,7 +56,7 @@ use Cake\Core\Plugin;
                         <?= $this->Form->postLink(Plugin::isLoaded('Tools') ? $this->Icon->render('delete') : __('Delete'), ['action' => 'delete', $fileStorage->id], ['escapeTitle' => false, 'confirm' => __('Are you sure you want to delete # {0}?', $fileStorage->id)]); ?>
                     </td>
                 </tr>
-                <?php endforeach; ?>
+                <?php } ?>
             </tbody>
         </table>
     </div>
