@@ -92,6 +92,7 @@ class DataTransformer implements DataTransformerInterface
         // because $_accessible['id'] = false prevents mass assignment
         $uuid = $data['id'];
         unset($data['id']);
+        /** @var \Cake\ORM\Entity $entity */
         $entity = $this->table->newEntity($data, ['validate' => false, 'guard' => false]);
         $entity->id = $uuid;
 
