@@ -11,7 +11,7 @@ use Cake\ORM\Behavior;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Validation\UploadValidatorInterface;
-use League\Flysystem\AdapterInterface;
+use League\Flysystem\FilesystemAdapter;
 use PhpCollective\Infrastructure\Storage\FileInterface;
 use PhpCollective\Infrastructure\Storage\FileStorage;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
@@ -79,9 +79,9 @@ class FileStorageBehavior extends Behavior
     /**
      * @param string $configName
      *
-     * @return \League\Flysystem\AdapterInterface
+     * @return \League\Flysystem\FilesystemAdapter
      */
-    public function getStorageAdapter(string $configName): AdapterInterface
+    public function getStorageAdapter(string $configName): FilesystemAdapter
     {
         return $this->fileStorage->getStorage($configName);
     }

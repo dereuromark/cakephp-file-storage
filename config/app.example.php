@@ -32,7 +32,7 @@ $fileStorage = new \PhpCollective\Infrastructure\Storage\FileStorage(
 );
 
 // Image Manager and Processor
-$imageManager = new \Intervention\Image\ImageManager();
+$imageManager = new \Intervention\Image\ImageManager(new \Intervention\Image\Drivers\Gd\Driver());
 $imageProcessor = new \PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor(
     $fileStorage,
     $pathBuilder,
@@ -45,7 +45,7 @@ $collection->addNew('resize')
     ->resize(300, 300)
     ->optimize();
 $collection->addNew('crop')
-    ->fit(100, 100)
+    ->cover(100, 100)
     ->optimize();
 
 return [

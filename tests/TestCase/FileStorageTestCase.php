@@ -8,6 +8,7 @@ use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\TestSuite\TestCase;
 use FileStorage\Filesystem\Folder;
 use FileStorage\Model\Table\FileStorageTable;
+use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use PhpCollective\Infrastructure\Storage\Factories\LocalFactory;
 use PhpCollective\Infrastructure\Storage\FileStorage;
@@ -143,9 +144,7 @@ class FileStorageTestCase extends TestCase
             $pathBuilder,
         );
 
-        $imageManager = new ImageManager([
-            'driver' => 'gd',
-        ]);
+        $imageManager = new ImageManager(new Driver());
 
         $imageProcessor = new ImageProcessor(
             $fileStorage,
