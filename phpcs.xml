@@ -1,13 +1,9 @@
 <?xml version="1.0"?>
-<ruleset name="spryker">
-    <rule ref="vendor/php-collective/code-sniffer/PhpCollective/ruleset.xml"/>
-
+<ruleset name="plugin">
     <arg value="nps"/>
 
     <file>src/</file>
     <file>tests/</file>
-
-    <exclude-pattern>src/Storage/*</exclude-pattern>
 
     <rule ref="PSR2.Classes.PropertyDeclaration">
         <severity>0</severity>

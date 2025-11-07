@@ -64,10 +64,17 @@ class CleanupCommand extends Command
             }
         }
 
-        /** @var \PhpCollective\Infrastructure\Storage\FileStorage $fileStorage */
+        /** @var \PhpCollective\Infrastructure\Storage\FileStorage|null $fileStorage */
         $fileStorage = Configure::read('FileStorage.behaviorConfig.fileStorage');
-        //TODO: Make more agnostic apart from local file system.
+        if (!$fileStorage) {
+            $io->warning('FileStorage not configured, skipping orphaned file removal.');
 
+            return;
+        }
+
+        // Note: This orphaned file removal still requires local filesystem access
+        // as it needs to iterate through directories. For non-local adapters,
+        // this feature may not be applicable.
         $path = WWW_ROOT . Configure::read('FileStorage.pathPrefix');
 
         $model = $args->getArgument('model');
@@ -77,6 +84,12 @@ class CleanupCommand extends Command
         }
         if ($collection) {
             $path .= $collection . DS;
+        }
+
+        if (!is_dir($path)) {
+            $io->info('Path does not exist or is not accessible: ' . $path);
+
+            return;
         }
 
         $directory = new RecursiveDirectoryIterator(
@@ -89,21 +102,21 @@ class CleanupCommand extends Command
         );
 
         foreach ($contents as $file) {
-            $path = (string)$file;
-            if (!is_file($path)) {
+            $filePath = (string)$file;
+            if (!is_file($filePath)) {
                 continue;
             }
 
-            if (in_array($path, $files)) {
+            if (in_array($filePath, $files)) {
                 continue;
             }
 
-            $io->warning('Deleting orphaned file: ' . $path);
+            $io->warning('Deleting orphaned file: ' . $filePath);
             if ($args->getOption('dryRun')) {
                 continue;
             }
 
-            unlink($path);
+            unlink($filePath);
         }
     }
 
@@ -155,17 +168,37 @@ class CleanupCommand extends Command
      */
     protected function checkImageFileExistence(array $images, Arguments $args, ConsoleIo $io): void
     {
+        /** @var \PhpCollective\Infrastructure\Storage\FileStorage|null $fileStorage */
+        $fileStorage = Configure::read('FileStorage.behaviorConfig.fileStorage');
+        if (!$fileStorage) {
+            $io->warning('FileStorage not configured, skipping existence check.');
+
+            return;
+        }
+
         foreach ($images as $image) {
             $io->verbose('Checking image ' . $image->id);
 
-            $path = WWW_ROOT . Configure::read('FileStorage.pathPrefix') . $image->path;
+            // Use storage adapter to check file existence
+            try {
+                $adapter = $fileStorage->getStorage($image->adapter);
+            } catch (\Exception $e) {
+                $io->error('Could not get adapter for image ' . $image->id . ': ' . $e->getMessage());
+
+                continue;
+            }
+
             $missing = [];
-            if (!file_exists($path)) {
+
+            // Check main file
+            if (!$adapter->has($image->path)) {
                 $missing[] = 'main';
             }
+
+            // Check variants
             foreach ($image->variants as $variant => $details) {
-                $variantPath = $details['path'];
-                if (!file_exists(WWW_ROOT . Configure::read('FileStorage.pathPrefix') . $variantPath)) {
+                $variantPath = $details['path'] ?? null;
+                if ($variantPath && !$adapter->has($variantPath)) {
                     $missing[] = $variant;
                 }
             }
@@ -174,7 +207,7 @@ class CleanupCommand extends Command
                 continue;
             }
 
-            $io->error('Missing images for ' . $image->id . ': ' . implode(', ', $missing));
+            $io->error('Missing files for ' . $image->id . ': ' . implode(', ', $missing));
             if ($args->getOption('dryRun')) {
                 continue;
             }

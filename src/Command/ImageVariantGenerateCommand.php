@@ -21,7 +21,7 @@ use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
 use RuntimeException;
 
 /**
- * TODO: Fix force option to only overwrite if set.
+ * Command for (re)generating image variants.
  */
 class ImageVariantGenerateCommand extends Command
 {
@@ -90,18 +90,17 @@ class ImageVariantGenerateCommand extends Command
         $model = $args->getArgumentAt(0);
         $collection = $args->getArgumentAt(1);
         $variant = $args->getArgumentAt(2);
-        $key = $model;
-        // Hack for now
-        if ($key) {
-            $key = $collection;
-        }
-        if ($collection) {
-            $key .= '.' . $collection;
-        }
-        if ($variant) {
-            $key .= '.' . $variant;
+
+        // Build config key path
+        $key = null;
+        if ($model && $collection) {
+            $key = $model . '.' . $collection;
+            if ($variant) {
+                $key .= '.' . $variant;
+            }
         }
 
+        // Read operations from config
         if ($key) {
             $operations = Configure::read('FileStorage.imageVariants.' . $key);
         } else {
@@ -112,8 +111,10 @@ class ImageVariantGenerateCommand extends Command
             $io->abort(__('Cannot find variants config for this model/collection.'));
         }
 
+        // Wrap operations in proper structure for processing
         if ($key) {
             if ($variant) {
+                // Single variant: wrap it
                 $operations = [$variant => $operations];
             }
 
@@ -195,7 +196,7 @@ class ImageVariantGenerateCommand extends Command
                     //EventManager::instance()->dispatch($Event);
 
                     if (empty($options['dryRun'])) {
-                        $this->_processEntity($image, $operations);
+                        $this->_processEntity($image, $operations, $options);
                     }
 
                     $io->verbose(__('- ID {0} processed', $image->id));
@@ -233,16 +234,17 @@ class ImageVariantGenerateCommand extends Command
      * @param \PhpCollective\Infrastructure\Storage\FileInterface $file File
      * @param \FileStorage\Model\Entity\FileStorage $entity
      * @param array $operations
+     * @param bool $merge Whether to merge with existing variants or replace
      *
      * @return \PhpCollective\Infrastructure\Storage\FileInterface
      */
-    public function processImages(FileInterface $file, EntityInterface $entity, array $operations): FileInterface
+    public function processImages(FileInterface $file, EntityInterface $entity, array $operations, bool $merge = false): FileInterface
     {
         if (!$operations) {
             return $file;
         }
 
-        $file = $file->withVariants($operations, false);
+        $file = $file->withVariants($operations, $merge);
 
         return $file;
     }
@@ -328,13 +330,11 @@ class ImageVariantGenerateCommand extends Command
                     'help' => __('The adapter config name to use.'),
                     'default' => 'Local',
                 ],
-                /*
                 'force' => [
                     'short' => 'f',
-                    'help' => __('Force overwriting of existing files (e.g. after a config change).'),
+                    'help' => __('Force regeneration of variants even if they already exist.'),
                     'boolean' => true,
                 ],
-                */
             ],
         );
         $parser->addArguments(
@@ -411,14 +411,17 @@ class ImageVariantGenerateCommand extends Command
     /**
      * @param \FileStorage\Model\Entity\FileStorage $image
      * @param array $operations
+     * @param array<string, mixed> $options
      *
      * @return void
      */
-    protected function _processEntity(FileStorage $image, array $operations): void
+    protected function _processEntity(FileStorage $image, array $operations, array $options = []): void
     {
         $file = $this->entityToFileObject($image);
 
-        $file = $this->processImages($file, $image, $operations);
+        // Use force option to determine if we should merge or replace variants
+        $merge = !($options['force'] ?? false);
+        $file = $this->processImages($file, $image, $operations, $merge);
 
         $processor = $this->getFileProcessor();
 

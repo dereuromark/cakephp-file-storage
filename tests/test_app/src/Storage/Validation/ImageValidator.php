@@ -1,6 +1,4 @@
-<?php
-
-declare(strict_types = 1);
+<?php declare(strict_types=1);
 
 namespace TestApp\Storage\Validation;
 
@@ -76,9 +74,9 @@ class ImageValidator implements UploadValidatorInterface
     }
 
     /**
-     * @param $data
+     * @param mixed $data
      *
-     * @return false
+     * @return bool
      */
     public static function nameOfTheRule($data): bool
     {
