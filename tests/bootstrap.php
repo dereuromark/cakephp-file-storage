@@ -50,6 +50,7 @@ Configure::write('App', [
 class_alias(TestApp\Application::class, 'App\Application');
 class_alias(TestApp\Controller\AppController::class, 'App\Controller\AppController');
 class_alias(TestApp\View\AppView::class, 'App\View\AppView');
+class_alias(TestApp\Storage\Validation\ImageValidator::class, 'App\FileStorage\Validator\ImageValidator');
 
 //$Tmp = new Folder(TMP);
 //$Tmp->create(TMP . 'cache/models', 0770);

@@ -180,6 +180,12 @@ class CleanupCommand extends Command
             $io->verbose('Checking image ' . $image->id);
 
             // Use storage adapter to check file existence
+            if (!$image->adapter || !$image->path) {
+                $io->error('Image ' . $image->id . ' has no adapter or path configured');
+
+                continue;
+            }
+
             try {
                 $adapter = $fileStorage->getStorage($image->adapter);
             } catch (\Exception $e) {
@@ -191,14 +197,14 @@ class CleanupCommand extends Command
             $missing = [];
 
             // Check main file
-            if (!$adapter->has($image->path)) {
+            if (!$adapter->fileExists($image->path)) {
                 $missing[] = 'main';
             }
 
             // Check variants
             foreach ($image->variants as $variant => $details) {
                 $variantPath = $details['path'] ?? null;
-                if ($variantPath && !$adapter->has($variantPath)) {
+                if ($variantPath && !$adapter->fileExists($variantPath)) {
                     $missing[] = $variant;
                 }
             }
