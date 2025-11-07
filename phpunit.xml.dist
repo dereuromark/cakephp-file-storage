@@ -25,10 +25,7 @@
 			<directory suffix=".php">src/</directory>
 		</include>
 		<exclude>
-			<file>src/Storage/PathBuilder/PathBuilderInterface.php</file>
-			<directory>src/Model/Entity/</directory>
-			<directory>src/Event/</directory>
-			<directory>src/Lib/</directory>
+			<directory>src/Filesystem/</directory>
 		</exclude>
 	</source>
 

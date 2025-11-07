@@ -84,8 +84,17 @@ class DataTransformer implements DataTransformerInterface
             'path' => $file->path(),
         ];
 
-        return $entity
-            ? $this->table->patchEntity($entity, $data, ['validate' => false, 'guard' => false])
-            : $this->table->newEntity($data, ['validate' => false, 'guard' => false]);
+        if ($entity) {
+            return $this->table->patchEntity($entity, $data, ['validate' => false, 'guard' => false]);
+        }
+
+        // For new entities, create without ID first, then set it directly
+        // because $_accessible['id'] = false prevents mass assignment
+        $uuid = $data['id'];
+        unset($data['id']);
+        $entity = $this->table->newEntity($data, ['validate' => false, 'guard' => false]);
+        $entity->id = $uuid;
+
+        return $entity;
     }
 }
