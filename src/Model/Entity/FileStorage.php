@@ -61,11 +61,15 @@ class FileStorage extends Entity implements FileStorageEntityInterface
             return null;
         }
 
-        // Until fix is fully applied
         if (!is_string($variants[$variant]['url'])) {
             Log::write('error', 'Invalid variants url data for ' . $this->id);
 
-            return array_shift($variants[$variant]['url']);
+            // Return first element without modifying the array
+            if (is_array($variants[$variant]['url']) && count($variants[$variant]['url']) > 0) {
+                return (string)reset($variants[$variant]['url']);
+            }
+
+            return null;
         }
 
         return $variants[$variant]['url'];
@@ -83,11 +87,15 @@ class FileStorage extends Entity implements FileStorageEntityInterface
             return null;
         }
 
-        // Until fix is fully applied
         if (!is_string($variants[$variant]['path'])) {
             Log::write('error', 'Invalid variants path data for ' . $this->id);
 
-            return array_shift($variants[$variant]['path']);
+            // Return first element without modifying the array
+            if (is_array($variants[$variant]['path']) && count($variants[$variant]['path']) > 0) {
+                return (string)reset($variants[$variant]['path']);
+            }
+
+            return null;
         }
 
         return $variants[$variant]['path'];
