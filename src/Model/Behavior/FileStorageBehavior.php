@@ -213,11 +213,10 @@ class FileStorageBehavior extends Behavior
                 if (empty($tableConfig['className'])) {
                     $tableConfig['className'] = 'FileStorage.FileStorage';
                 }
-                //$this->getEventManager()->off('Model.afterSave');
+                // Temporarily remove behavior to prevent recursion when saving metadata
                 $this->table()->removeBehavior('FileStorage');
                 $this->table()->saveOrFail($entity, ['checkRules' => false]);
                 $this->table()->addBehavior('FileStorage', $tableConfig);
-                //$this->getEventManager()->on('Model.afterSave');
             } catch (Throwable $exception) {
                 $this->table()->delete($entity);
 
@@ -401,7 +400,9 @@ class FileStorageBehavior extends Behavior
             return $this->transformer;
         }
 
-        if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
+        if ($this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
+            $this->transformer = $this->getConfig('dataTransformer');
+        } else {
             $this->transformer = new DataTransformer(
                 $this->table(),
             );
