@@ -98,15 +98,15 @@ class ImagesController extends AppController
 ### 3. Generate URLs in Templates
 
 ```php
-// Use the URL helper
-$fileStorageTable = $this->fetchTable('FileStorage.FileStorage');
+// Generate URL to your serving controller
+use Cake\Routing\Router;
 
 echo $this->Html->link('View File',
-    $fileStorageTable->getUrl($fileStorage)
+    Router::url(['controller' => 'Files', 'action' => 'serve', $fileStorage->id])
 );
 
-// This generates URL to your configured route:
-// /images/display/{id}
+// This generates URL to your serving route:
+// /files/serve/{id}
 ```
 
 ---
@@ -315,8 +315,11 @@ public function share($fileStorageId)
         'expires' => strtotime('+24 hours'),
     ]);
 
-    // Generate full URL
-    $url = $fileStorageTable->getUrl($fileStorage, [
+    // Generate full URL with signature
+    $url = Router::url([
+        'controller' => 'Files',
+        'action' => 'serve',
+        $fileStorage->id,
         '?' => $signatureData,
         '_full' => true,
     ]);

@@ -4,7 +4,6 @@ namespace FileStorage\Model\Table;
 
 use Cake\Core\Configure;
 use Cake\ORM\Table;
-use Cake\Routing\Router;
 
 /**
  * FileStorageTable
@@ -66,48 +65,5 @@ class FileStorageTable extends Table
             'FileStorage.FileStorage',
             (array)Configure::read('FileStorage.behaviorConfig'),
         );
-    }
-
-    /**
-     * Generate URL to file serving endpoint
-     *
-     * Applications must implement their own serving controller.
-     * This method generates the URL to your controller's action.
-     *
-     * Configure the route in config/app.php:
-     * ```
-     * 'FileStorage' => [
-     *     'serveRoute' => [
-     *         'controller' => 'Files',
-     *         'action' => 'serve',
-     *         'plugin' => false,
-     *     ],
-     * ],
-     * ```
-     *
-     * @param \FileStorage\Model\Entity\FileStorage $entity File storage entity
-     * @param array<string, mixed> $options URL options (passed to Router::url)
-     *
-     * @return string URL to file
-     */
-    public function getUrl($entity, array $options = []): string
-    {
-        $route = Configure::read('FileStorage.serveRoute', [
-            'controller' => 'Files',
-            'action' => 'serve',
-            'plugin' => false,
-        ]);
-
-        $url = array_merge($route, [$entity->id]);
-
-        // Merge in query parameters
-        if (isset($options['?'])) {
-            $url['?'] = $options['?'];
-        }
-
-        // Check if full URL is requested
-        $full = $options['_full'] ?? false;
-
-        return Router::url($url, $full);
     }
 }
