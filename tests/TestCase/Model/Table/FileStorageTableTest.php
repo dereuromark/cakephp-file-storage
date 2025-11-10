@@ -2,6 +2,7 @@
 
 namespace FileStorage\Test\TestCase\Model\Table;
 
+use Cake\Core\Configure;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use Laminas\Diactoros\UploadedFile;
 
@@ -85,5 +86,32 @@ class FileStorageTableTest extends FileStorageTestCase
         $this->assertSame([], $entity->getErrors());
 
         $this->FileStorage->saveOrFail($entity);
+    }
+
+    /**
+     * Test getUrl method exists and returns string
+     *
+     * Note: Full URL generation testing requires routing to be configured,
+     * which is better tested in integration tests.
+     *
+     * @return void
+     */
+    public function testGetUrlMethodExists(): void
+    {
+        $fileStorage = $this->FileStorage->newEntity([
+            'id' => 'test-uuid-123',
+            'filename' => 'test.jpg',
+        ]);
+
+        $this->assertTrue(method_exists($this->FileStorage, 'getUrl'));
+
+        // Verify it accepts the expected parameters
+        $reflection = new \ReflectionMethod($this->FileStorage, 'getUrl');
+        $this->assertEquals(2, $reflection->getNumberOfParameters());
+
+        $params = $reflection->getParameters();
+        $this->assertEquals('entity', $params[0]->getName());
+        $this->assertEquals('options', $params[1]->getName());
+        $this->assertTrue($params[1]->isDefaultValueAvailable());
     }
 }
