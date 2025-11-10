@@ -78,6 +78,6 @@ class SignedUrlGenerator
         $expected = static::generate($entity, $options);
 
         // Timing-safe comparison to prevent timing attacks
-        return hash_equals($expected['signature'], $signature);
+        return hash_equals((string)$expected['signature'], $signature);
     }
 }
