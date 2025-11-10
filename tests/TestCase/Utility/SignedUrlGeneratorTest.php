@@ -14,11 +14,11 @@ use FileStorage\Utility\SignedUrlGenerator;
  */
 class SignedUrlGeneratorTest extends TestCase
 {
- /**
-  * setUp method
-  *
-  * @return void
-  */
+    /**
+     * setUp method
+     *
+     * @return void
+     */
     protected function setUp(): void
     {
         parent::setUp();
