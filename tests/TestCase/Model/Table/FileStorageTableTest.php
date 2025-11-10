@@ -2,7 +2,6 @@
 
 namespace FileStorage\Test\TestCase\Model\Table;
 
-use Cake\Core\Configure;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use Laminas\Diactoros\UploadedFile;
 

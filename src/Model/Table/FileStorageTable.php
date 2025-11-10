@@ -87,6 +87,7 @@ class FileStorageTable extends Table
      *
      * @param \FileStorage\Model\Entity\FileStorage $entity File storage entity
      * @param array<string, mixed> $options URL options (passed to Router::url)
+     *
      * @return string URL to file
      */
     public function getUrl($entity, array $options = []): string

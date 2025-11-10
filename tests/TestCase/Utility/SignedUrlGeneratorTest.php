@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace FileStorage\Test\TestCase\Utility;
 
@@ -15,12 +14,11 @@ use FileStorage\Utility\SignedUrlGenerator;
  */
 class SignedUrlGeneratorTest extends TestCase
 {
-
-    /**
-     * setUp method
-     *
-     * @return void
-     */
+ /**
+  * setUp method
+  *
+  * @return void
+  */
     protected function setUp(): void
     {
         parent::setUp();

@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace FileStorage\Utility;
 
@@ -17,19 +16,19 @@ use FileStorage\Model\Entity\FileStorage;
  */
 class SignedUrlGenerator
 {
-
-    /**
-     * Generate signature data for a file
-     *
-     * The signature includes the file ID, path, modification time, and expiration
-     * to ensure it becomes invalid if the file changes or time expires.
-     *
-     * @param \FileStorage\Model\Entity\FileStorage $entity File storage entity
-     * @param array<string, mixed> $options Options
-     *   - expires: Unix timestamp when signature expires (optional)
-     *   - secret: Custom secret key (defaults to configured secret or Security salt)
-     * @return array<string, int|string|null> Array with 'signature' and 'expires' keys
-     */
+ /**
+  * Generate signature data for a file
+  *
+  * The signature includes the file ID, path, modification time, and expiration
+  * to ensure it becomes invalid if the file changes or time expires.
+  *
+  * @param \FileStorage\Model\Entity\FileStorage $entity File storage entity
+  * @param array<string, mixed> $options Options
+  *   - expires: Unix timestamp when signature expires (optional)
+  *   - secret: Custom secret key (defaults to configured secret or Security salt)
+  *
+  * @return array<string, int|string|null> Array with 'signature' and 'expires' keys
+  */
     public static function generate(FileStorage $entity, array $options = []): array
     {
         $expires = $options['expires'] ?? null;
@@ -63,6 +62,7 @@ class SignedUrlGenerator
      * @param array<string, mixed> $options Options
      *   - expires: Unix timestamp signature should match (optional)
      *   - secret: Custom secret key (defaults to configured secret or Security salt)
+     *
      * @return bool True if signature is valid and not expired
      */
     public static function verify(FileStorage $entity, string $signature, array $options = []): bool
