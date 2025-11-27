@@ -114,6 +114,43 @@ public function initialize(array $config): void
 }
 ```
 
+### Behavior Configuration Options
+
+The behavior accepts these configuration options:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `fileStorage` | `FileStorage` | *required* | The FileStorage instance for storing files |
+| `fileProcessor` | `ProcessorInterface\|null` | `null` | Image/file processor for generating variants |
+| `fileValidator` | `string\|UploadValidatorInterface\|null` | `null` | Validator class or instance for upload validation |
+| `fileField` | `string` | `'file'` | The field name in your form that contains the uploaded file |
+| `defaultStorageConfig` | `string` | `'Local'` | Default storage adapter name |
+| `ignoreEmptyFile` | `bool` | `true` | Skip processing when no file is uploaded |
+
+#### The `fileField` Option
+
+The `fileField` option defines which field name the behavior looks for in uploaded data. By default, it's `'file'`, meaning your form field should be named `*.file`:
+
+```php
+// Default: fileField => 'file'
+echo $this->Form->control('avatar.file', ['type' => 'file']);
+```
+
+If you want to use a different field name, configure it:
+
+```php
+// In your table
+$this->addBehavior('FileStorage.FileStorage', [
+    'fileStorage' => $fileStorage,
+    'fileField' => 'upload',  // Custom field name
+]);
+
+// In your form
+echo $this->Form->control('avatar.upload', ['type' => 'file']);
+```
+
+This is useful when integrating with existing forms or APIs that use different field naming conventions.
+
 ## Adding File Upload to Your Model
 
 ### Create Association

@@ -13,6 +13,7 @@ The **File Storage** plugin is giving you the possibility to store files in virt
   * [Image Storage and Versioning](Documentation/Image-Storage-And-Versioning.md)
   * [The Image Version Shell](Documentation/The-Image-Version-Shell.md)
   * [The Image Helper](Documentation/The-Image-Helper.md)
+* [File Serving and Authorization](Documentation/FileServing.md)
 
 ## Tutorials
 

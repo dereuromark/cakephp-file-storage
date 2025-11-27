@@ -1,67 +1,176 @@
 Image Versioning
 ================
 
-You can set up automatic image processing for the ImageStorage table. To make the magic happen you have to use the ImageStorage table (it extends the FileStorage table) for image file saving.
+Image variants allow you to automatically generate different sizes/versions of uploaded images. The plugin uses the `php-collective/file-storage-image-processor` library for image processing.
 
-All you need to do is basically use the image model and configure versions on a per model basis. When you save an ImageStorage table entity it is important to have the 'model' field filled so that the script can find the correct versions for that model.
+## Requirements
+
+Install the image processor library:
+
+```bash
+composer require php-collective/file-storage-image-processor
+```
+
+## Configuration
+
+### Using ImageVariantCollection (Recommended)
+
+The modern approach uses `ImageVariantCollection` to define variants with a fluent API:
 
 ```php
-Configure::write('FileStorage', array(
-	'imageSizes' => array(
-		'GalleryImage' => array(
-			'c50' => array(
-				'crop' => array(
-					'width' => 50, 'height' => 50
-				)
-			),
-			't120' => array(
-				'thumbnail' => array(
-					'width' => 120, 'height' => 120
-				)
-			),
-			't800' => array(
-				'thumbnail' => array(
-					'width' => 800, 'height' => 600
-				)
-			)
-		),
-		'User' => array(
-			'c50' => array(
-				'crop' => array(
-					'width' => 50, 'height' => 50
-				)
-			),
-			't150' => array(
-				'crop' => array(
-					'width' => 150, 'height' => 150)
-				)
-			),
-		)
-	)
+use PhpCollective\Infrastructure\Storage\Processor\Image\ImageVariantCollection;
+
+// Create a variant collection
+$collection = ImageVariantCollection::create();
+
+// Add variants with various operations
+$collection->addNew('thumb')
+    ->crop(100, 100);
+
+$collection->addNew('medium')
+    ->resize(400, 400)
+    ->optimize();
+
+$collection->addNew('large')
+    ->fit(800, 600)
+    ->optimize();
+
+// Configure in your application
+Configure::write('FileStorage', [
+    'imageVariants' => [
+        // Structure: [ModelAlias][CollectionName] => variants
+        'Posts' => [
+            'Cover' => $collection->toArray(),
+            'Gallery' => $galleryVariants->toArray(),
+        ],
+        'Users' => [
+            'Avatar' => $avatarVariants->toArray(),
+        ],
+    ],
+]);
+```
+
+### Understanding Model and Collection
+
+The variant configuration uses a two-level hierarchy:
+
+- **Model**: The table alias (e.g., `'Posts'`, `'Users'`) - comes from `$table->getAlias()`
+- **Collection**: A grouping within a model (e.g., `'Avatar'`, `'Cover'`, `'Gallery'`)
+
+This allows different variant configurations for different file types within the same model.
+
+### Available Variant Operations
+
+- `resize(width, height)` - Resize maintaining aspect ratio
+- `fit(width, height)` - Resize and crop to exact dimensions
+- `crop(width, height, x, y)` - Crop specific area (x, y optional)
+- `optimize()` - Optimize file size
+- `greyscale()` - Convert to grayscale
+- `blur(amount)` - Apply blur effect
+
+### Array Configuration (Alternative)
+
+You can also configure variants using arrays directly:
+
+```php
+Configure::write('FileStorage', [
+    'imageVariants' => [
+        'Users' => [
+            'Avatar' => [
+                'thumb' => [
+                    'width' => 50,
+                    'height' => 50,
+                    'mode' => 'crop',
+                ],
+                'medium' => [
+                    'width' => 150,
+                    'height' => 150,
+                    'mode' => 'crop',
+                ],
+            ],
+        ],
+    ],
+]);
+```
+
+## Setting Up the Image Processor
+
+Configure the image processor in your bootstrap or storage configuration:
+
+```php
+use Intervention\Image\ImageManager;
+use PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor;
+
+// Create image manager (uses GD by default)
+$imageManager = new ImageManager();
+
+// Create image processor
+$imageProcessor = new ImageProcessor(
+    $fileStorage,
+    $pathBuilder,
+    $imageManager,
 );
 
-\FileStorage\Lib\FileStorageUtils::generateHashes();
+// Add to behavior configuration
+Configure::write('FileStorage.behaviorConfig', [
+    'fileStorage' => $fileStorage,
+    'fileProcessor' => $imageProcessor,
+]);
 ```
 
-Calling ```generateHashes()``` is important, it will create the hash values for each versioned image and store them in Media.imageHashes in the configuration.
+### Using Multiple Processors
 
-If you don't want to have the script to generate the hashes each time it's executed, it is up to you to store it persistent. This plugin just provides you the tools.
+You can stack multiple processors using `StackProcessor`:
 
-Image files will end up wherever you have configured your base path.
+```php
+use PhpCollective\Infrastructure\Storage\Processor\StackProcessor;
+
+$stackProcessor = new StackProcessor([
+    $imageProcessor,
+    $customProcessor, // Your custom processor
+]);
+
+Configure::write('FileStorage.behaviorConfig', [
+    'fileStorage' => $fileStorage,
+    'fileProcessor' => $stackProcessor,
+]);
+```
+
+## File Storage Paths
+
+Image files are stored using the configured path builder. The default pattern is:
 
 ```
-/ModelName/51/21/63/4c0f128f91fc48749662761d407888cc/4c0f128f91fc48749662761d407888cc.jpg
+/{model}/{collection}/{randomPath}/{strippedId}/{filename}.{extension}
 ```
 
-The versioned image files will be in the same folder, which is the id of the record, as the original image and have the truncated hash of the version attached but before the extension.
+For example:
+```
+/Users/Avatar/a1/b2c3d4e5/profile.jpg
+```
+
+Variant files are stored alongside the original with a hashed variant name:
 
 ```
-/ModelName/51/21/63/4c0f128f91fc48749662761d407888cc/4c0f128f91fc48749662761d407888cc.f91fsc.jpg
+/Users/Avatar/a1/b2c3d4e5/profile.abc123.jpg
 ```
 
-You should symlink your image root folder to APP/webroot/images for example to avoid that images go through php and are send directly instead.
+## Accessing Variants
 
-Extending and Changing Image Versioning
----------------------------------------
+After upload, variant information is stored in the entity's `variants` field as JSON:
 
-It is possible to totally change the way image versions are created. You'll just have to extend or create new listeners and attach them to the global EventManager.
+```php
+// In your template
+$entity = $this->Posts->get($id, contain: ['CoverImages']);
+
+// Access original
+$originalPath = $entity->cover_image->path;
+
+// Access variant
+$thumbPath = $entity->cover_image->variants['thumb']['path'] ?? null;
+```
+
+See also:
+- [The Image Helper](The-Image-Helper.md) for displaying images
+- [The Image Version Shell](The-Image-Version-Shell.md) for regenerating variants
+- [Quick Start Tutorial](../Tutorials/Quick-Start.md) for a complete example
