@@ -61,12 +61,19 @@ This allows different variant configurations for different file types within the
 
 ### Available Variant Operations
 
-- `resize(width, height)` - Resize maintaining aspect ratio
-- `fit(width, height)` - Resize and crop to exact dimensions
-- `crop(width, height, x, y)` - Crop specific area (x, y optional)
-- `optimize()` - Optimize file size
-- `greyscale()` - Convert to grayscale
-- `blur(amount)` - Apply blur effect
+- `crop(width, height, x, y)` - Crop to exact dimensions at position (x, y optional)
+- `resize(width, height)` - Resize to exact dimensions (does not preserve aspect ratio)
+- `scale(width, height)` - Scale while preserving aspect ratio
+- `cover(width, height)` - Smart crop to cover exact dimensions
+- `widen(width)` - Resize by width, maintain aspect ratio
+- `heighten(height)` - Resize by height, maintain aspect ratio
+- `rotate(angle)` - Rotate by degrees
+- `flip(direction)` - Flip 'h' (horizontal) or 'v' (vertical)
+- `flipHorizontal()` - Flip horizontally
+- `flipVertical()` - Flip vertically
+- `sharpen(amount)` - Apply sharpening
+- `optimize()` - Apply optimization if available on system
+- `callback(callable)` - Custom processing with callback function
 
 ### Array Configuration (Alternative)
 

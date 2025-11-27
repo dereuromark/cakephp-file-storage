@@ -314,13 +314,12 @@ $imageProcessor = new ImageProcessor($fileStorage, $pathBuilder, $imageManager);
 // Define variants
 $coverVariants = ImageVariantCollection::create();
 $coverVariants->addNew('thumbnail')
-    ->resize(150, 150)
-    ->optimize();
+    ->crop(150, 150);
 $coverVariants->addNew('medium')
-    ->resize(400, 400)
+    ->scale(400, 400)
     ->optimize();
 $coverVariants->addNew('large')
-    ->fit(800, 600)
+    ->cover(800, 600)
     ->optimize();
 
 // Configure for your models
@@ -344,12 +343,17 @@ Configure::write('FileStorage.behaviorConfig', [
 
 Available operations on variants:
 
-- `resize(width, height)` - Resize maintaining aspect ratio
-- `fit(width, height)` - Resize and crop to exact dimensions
-- `crop(width, height, x, y)` - Crop specific area
-- `optimize()` - Optimize file size
-- `greyscale()` - Convert to grayscale
-- `blur(amount)` - Apply blur effect
+- `crop(width, height, x, y)` - Crop to exact dimensions at position (x, y optional)
+- `resize(width, height)` - Resize to exact dimensions (does not preserve aspect ratio)
+- `scale(width, height)` - Scale while preserving aspect ratio
+- `cover(width, height)` - Smart crop to cover exact dimensions
+- `widen(width)` - Resize by width, maintain aspect ratio
+- `heighten(height)` - Resize by height, maintain aspect ratio
+- `rotate(angle)` - Rotate by degrees
+- `flip(direction)` - Flip 'h' (horizontal) or 'v' (vertical)
+- `sharpen(amount)` - Apply sharpening
+- `optimize()` - Apply optimization if available on system
+- `callback(callable)` - Custom processing with callback function
 
 See the [Image Storage and Versioning](Image-Storage-And-Versioning.md) documentation for more details.
 
