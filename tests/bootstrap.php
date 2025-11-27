@@ -6,6 +6,11 @@ use Cake\Cache\Cache;
 use Cake\Chronos\Chronos;
 use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
+use Cake\TestSuite\Fixture\SchemaLoader;
+use TestApp\Application;
+use TestApp\Controller\AppController;
+use TestApp\Storage\Validation\ImageValidator;
+use TestApp\View\AppView;
 
 if (!defined('DS')) {
     define('DS', DIRECTORY_SEPARATOR);
@@ -47,10 +52,10 @@ Configure::write('App', [
     ],
 ]);
 
-class_alias(TestApp\Application::class, 'App\Application');
-class_alias(TestApp\Controller\AppController::class, 'App\Controller\AppController');
-class_alias(TestApp\View\AppView::class, 'App\View\AppView');
-class_alias(TestApp\Storage\Validation\ImageValidator::class, 'App\FileStorage\Validator\ImageValidator');
+class_alias(Application::class, 'App\Application');
+class_alias(AppController::class, 'App\Controller\AppController');
+class_alias(AppView::class, 'App\View\AppView');
+class_alias(ImageValidator::class, 'App\FileStorage\Validator\ImageValidator');
 
 //$Tmp = new Folder(TMP);
 //$Tmp->create(TMP . 'cache/models', 0770);
@@ -94,7 +99,7 @@ ConnectionManager::setConfig('test', [
 Chronos::setTestNow(Chronos::now());
 
 if (env('FIXTURE_SCHEMA_METADATA')) {
-    $loader = new Cake\TestSuite\Fixture\SchemaLoader();
+    $loader = new SchemaLoader();
     $loader->loadInternalFile(env('FIXTURE_SCHEMA_METADATA'));
 }
 Configure::load('example');

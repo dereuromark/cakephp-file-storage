@@ -6,6 +6,7 @@ use Cake\Console\TestSuite\ConsoleIntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use FileStorage\Command\ImageVariantGenerateCommand;
 use PhpCollective\Infrastructure\Storage\File;
+use ReflectionClass;
 
 /**
  * @uses \FileStorage\Command\ImageVariantGenerateCommand
@@ -98,7 +99,7 @@ class ImageVariantGenerateCommandTest extends TestCase
         $command = new ImageVariantGenerateCommand();
 
         // Set the table on the command via reflection since it's protected
-        $reflection = new \ReflectionClass($command);
+        $reflection = new ReflectionClass($command);
         $property = $reflection->getProperty('Table');
         $property->setAccessible(true);
         $property->setValue($command, $table);
@@ -119,7 +120,7 @@ class ImageVariantGenerateCommandTest extends TestCase
         $command = new ImageVariantGenerateCommand();
 
         // Set the table on the command via reflection since it's protected
-        $reflection = new \ReflectionClass($command);
+        $reflection = new ReflectionClass($command);
         $property = $reflection->getProperty('Table');
         $property->setAccessible(true);
         $property->setValue($command, $table);

@@ -7,6 +7,7 @@ use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;
+use Exception;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -188,7 +189,7 @@ class CleanupCommand extends Command
 
             try {
                 $adapter = $fileStorage->getStorage($image->adapter);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $io->error('Could not get adapter for image ' . $image->id . ': ' . $e->getMessage());
 
                 continue;
