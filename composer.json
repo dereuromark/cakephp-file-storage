@@ -25,7 +25,7 @@
     ],
     "homepage": "https://github.com/dereuromark/cakephp-file-storage-plugin",
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.2",
         "brick/varexporter": "^0.4.0 || ^0.5.0 || ^0.6.0 || ^0.7.0",
         "cakephp/cakephp": "^5.1.1",
         "php-collective/file-storage": "^1.0.0"
@@ -33,7 +33,7 @@
     "require-dev": {
         "php-collective/code-sniffer": "dev-master",
         "php-collective/file-storage-image-processor": "^1.0.0",
-        "phpunit/phpunit": "^10.5 || ^11.5 || ^12.1"
+        "phpunit/phpunit": "^11.5 || ^12.1"
     },
     "suggest": {
         "cakephp/migrations": "For migrations to run.",

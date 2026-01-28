@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/dereuromark/cakephp-file-storage/branch/master/graph/badge.svg)](https://app.codecov.io/gh/dereuromark/cakephp-file-storage/tree/master)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat)](https://phpstan.org/)
 [![Latest Stable Version](https://poser.pugx.org/dereuromark/cakephp-file-storage/v/stable.svg)](https://packagist.org/packages/dereuromark/cakephp-file-storage)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%208.1-8892BF.svg)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%208.2-8892BF.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 
 The **FileStorage** plugin is giving you the possibility to upload and store files in virtually any kind of storage backend. The plugin features the [FlySystem](https://github.com/thephpleague/flysystem) library in a CakePHP fashion and provides a simple way to use the storage adapters.
