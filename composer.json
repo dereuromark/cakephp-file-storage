@@ -34,7 +34,7 @@
         "cakephp/migrations": "^5.0.0",
         "php-collective/code-sniffer": "dev-master",
         "php-collective/file-storage-image-processor": "^1.0.0",
-        "phpunit/phpunit": "^11.5 || ^12.1"
+        "phpunit/phpunit": "^11.5 || ^12.1 || ^13.0"
     },
     "suggest": {
         "cakephp/migrations": "For migrations to run.",
