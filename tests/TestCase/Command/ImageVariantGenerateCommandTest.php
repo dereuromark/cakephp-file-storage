@@ -101,7 +101,6 @@ class ImageVariantGenerateCommandTest extends TestCase
         // Set the table on the command via reflection since it's protected
         $reflection = new ReflectionClass($command);
         $property = $reflection->getProperty('Table');
-        $property->setAccessible(true);
         $property->setValue($command, $table);
 
         $entity = $table->get(1);
@@ -122,7 +121,6 @@ class ImageVariantGenerateCommandTest extends TestCase
         // Set the table on the command via reflection since it's protected
         $reflection = new ReflectionClass($command);
         $property = $reflection->getProperty('Table');
-        $property->setAccessible(true);
         $property->setValue($command, $table);
 
         $file = File::create(
