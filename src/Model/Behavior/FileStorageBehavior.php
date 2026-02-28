@@ -316,6 +316,7 @@ class FileStorageBehavior extends Behavior
             ->all();
 
         if ($results->count() > 0) {
+            /** @var \Cake\Datasource\EntityInterface $result */
             foreach ($results as $result) {
                 $table->delete($result);
             }

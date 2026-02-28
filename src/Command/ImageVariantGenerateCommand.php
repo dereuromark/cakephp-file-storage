@@ -399,13 +399,16 @@ class ImageVariantGenerateCommand extends Command
             'extension IN' => $extensions,
         ];
 
-        return $this->Table
+        /** @var array<\FileStorage\Model\Entity\FileStorage> $records */
+        $records = $this->Table
             ->find()
             ->where($conditions)
             ->limit($limit)
             ->offset($offset)
             ->all()
             ->toArray();
+
+        return $records;
     }
 
     /**
