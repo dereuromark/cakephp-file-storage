@@ -10,7 +10,8 @@
         "abstraction",
         "upload",
         "cakephp",
-        "storage"
+        "storage",
+        "admin-panel"
     ],
     "authors": [
         {
