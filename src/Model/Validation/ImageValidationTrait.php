@@ -25,9 +25,12 @@ trait ImageValidationTrait
             }
             $file = $check['tmp_name'];
         }
-        [$imgWidth] = getimagesize($file);
+        $imageSize = getimagesize($file);
+        if ($imageSize === false) {
+            return false;
+        }
 
-        return $width > 0 && $imgWidth >= $width;
+        return $width > 0 && $imageSize[0] >= $width;
     }
 
     /**
@@ -50,9 +53,12 @@ trait ImageValidationTrait
 
             $file = $check['tmp_name'];
         }
-        [$imgWidth] = getimagesize($file);
+        $imageSize = getimagesize($file);
+        if ($imageSize === false) {
+            return false;
+        }
 
-        return $width > 0 && $imgWidth <= $width;
+        return $width > 0 && $imageSize[0] <= $width;
     }
 
     /**
@@ -74,9 +80,12 @@ trait ImageValidationTrait
             }
             $file = $check['tmp_name'];
         }
-        [, $imgHeight] = getimagesize($file);
+        $imageSize = getimagesize($file);
+        if ($imageSize === false) {
+            return false;
+        }
 
-        return $height > 0 && $imgHeight >= $height;
+        return $height > 0 && $imageSize[1] >= $height;
     }
 
     /**
@@ -98,8 +107,11 @@ trait ImageValidationTrait
             }
             $file = $check['tmp_name'];
         }
-        [, $imgHeight] = getimagesize($file);
+        $imageSize = getimagesize($file);
+        if ($imageSize === false) {
+            return false;
+        }
 
-        return $height > 0 && $imgHeight <= $height;
+        return $height > 0 && $imageSize[1] <= $height;
     }
 }
