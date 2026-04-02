@@ -40,7 +40,7 @@ class ImageValidator implements UploadValidatorInterface
             'provider' => 'upload',
             'on' => function($context) {
                 $file = $context['data']['file'] ?? null;
-                return $file && $file->getError() == UPLOAD_ERR_OK;
+                return $file && $file->getError() === UPLOAD_ERR_OK;
             },
         ]);
 
@@ -50,7 +50,7 @@ class ImageValidator implements UploadValidatorInterface
             'provider' => 'upload',
             'on' => function($context) {
                 $file = $context['data']['file'] ?? null;
-                return $file && $file->getError() == UPLOAD_ERR_OK;
+                return $file && $file->getError() === UPLOAD_ERR_OK;
             },
         ]);
         $validator->add('file', 'fileAboveMinWidth', [
@@ -59,7 +59,7 @@ class ImageValidator implements UploadValidatorInterface
             'provider' => 'upload',
             'on' => function($context) {
                 $file = $context['data']['file'] ?? null;
-                return $file && $file->getError() == UPLOAD_ERR_OK;
+                return $file && $file->getError() === UPLOAD_ERR_OK;
             },
         ]);
     }
