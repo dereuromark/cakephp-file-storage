@@ -63,8 +63,10 @@ $fileStorage = new \PhpCollective\Infrastructure\Storage\FileStorage(
     $pathBuilder,
 );
 
-// Image Manager and Processor
-$imageManager = new \Intervention\Image\ImageManager();
+// Image Manager and Processor (Intervention Image v3)
+$imageManager = new \Intervention\Image\ImageManager(
+    new \Intervention\Image\Drivers\Gd\Driver()
+);
 $imageProcessor = new \PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor(
     $fileStorage,
     $pathBuilder,

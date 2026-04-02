@@ -301,12 +301,13 @@ Image variants allow you to automatically generate different sizes/versions of u
 In your bootstrap/storage config:
 
 ```php
+use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor;
 use PhpCollective\Infrastructure\Storage\Processor\Image\ImageVariantCollection;
 
-// Image Manager
-$imageManager = new ImageManager(['driver' => 'gd']);
+// Image Manager (Intervention Image v3)
+$imageManager = new ImageManager(new Driver());
 
 // Image Processor
 $imageProcessor = new ImageProcessor($fileStorage, $pathBuilder, $imageManager);
