@@ -105,11 +105,12 @@ Configure::write('FileStorage', [
 Configure the image processor in your bootstrap or storage configuration:
 
 ```php
+use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor;
 
-// Create image manager (uses GD by default)
-$imageManager = new ImageManager();
+// Create image manager with GD driver
+$imageManager = new ImageManager(new Driver());
 
 // Create image processor
 $imageProcessor = new ImageProcessor(
