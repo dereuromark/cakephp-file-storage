@@ -3,15 +3,22 @@
  * @var \App\View\AppView $this
  * @var \FileStorage\Model\Entity\FileStorage $fileStorage
  */
+$cspNonce = (string)$this->getRequest()->getAttribute('cspNonce', '');
 ?>
 <div class="row">
     <aside class="column large-3 medium-4 columns col-sm-4 col-12">
         <ul class="side-nav nav nav-pills flex-column">
             <li class="nav-item heading"><?= __('Actions') ?></li>
-            <li class="nav-item"><?= $this->Form->postLink(
+            <li class="nav-item"><?= $this->Form->postButton(
                 __('Delete'),
                 ['action' => 'delete', $fileStorage->id],
-                ['confirm' => __('Are you sure you want to delete # {0}?', $fileStorage->id), 'class' => 'side-nav-item']
+                [
+                    'class' => 'side-nav-item btn btn-link text-start w-100',
+                    'form' => [
+                        'class' => 'd-inline',
+                        'data-confirm-message' => __('Are you sure you want to delete # {0}?', $fileStorage->id),
+                    ],
+                ]
                 ) ?></li>
             <li class="nav-item"><?= $this->Html->link(__('List File Storage'), ['action' => 'index'], ['class' => 'side-nav-item']) ?></li>
         </ul>
@@ -40,3 +47,12 @@
         </div>
     </div>
 </div>
+<script<?= $cspNonce !== '' ? ' nonce="' . h($cspNonce) . '"' : '' ?>>
+document.querySelectorAll('form[data-confirm-message]').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        if (!confirm(this.dataset.confirmMessage)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>

@@ -4,6 +4,8 @@
  * @var \Cake\Datasource\EntityInterface[]|\Cake\Collection\CollectionInterface $fileStorage
  */
 use Cake\Core\Plugin;
+
+$cspNonce = (string)$this->getRequest()->getAttribute('cspNonce', '');
 ?>
 <nav class="actions large-3 medium-4 columns col-sm-4 col-xs-12" id="actions-sidebar">
     <ul class="side-nav nav nav-pills flex-column">
@@ -53,7 +55,14 @@ use Cake\Core\Plugin;
                     <td class="actions">
                         <?= $this->Html->link(Plugin::isLoaded('Tools') ? $this->Icon->render('view') : __('View'), ['action' => 'view', $fileStorage->id], ['escapeTitle' => false]); ?>
                         <?= $this->Html->link(Plugin::isLoaded('Tools') ? $this->Icon->render('edit') : __('Edit'), ['action' => 'edit', $fileStorage->id], ['escapeTitle' => false]); ?>
-                        <?= $this->Form->postLink(Plugin::isLoaded('Tools') ? $this->Icon->render('delete') : __('Delete'), ['action' => 'delete', $fileStorage->id], ['escapeTitle' => false, 'confirm' => __('Are you sure you want to delete # {0}?', $fileStorage->id)]); ?>
+                        <?= $this->Form->postButton(Plugin::isLoaded('Tools') ? $this->Icon->render('delete') : __('Delete'), ['action' => 'delete', $fileStorage->id], [
+                            'escapeTitle' => false,
+                            'class' => 'btn btn-link p-0 align-baseline',
+                            'form' => [
+                                'class' => 'd-inline',
+                                'data-confirm-message' => __('Are you sure you want to delete # {0}?', $fileStorage->id),
+                            ],
+                        ]); ?>
                     </td>
                 </tr>
                 <?php } ?>
@@ -63,3 +72,12 @@ use Cake\Core\Plugin;
 
     <?php echo $this->element('Tools.pagination'); ?>
 </div>
+<script<?= $cspNonce !== '' ? ' nonce="' . h($cspNonce) . '"' : '' ?>>
+document.querySelectorAll('form[data-confirm-message]').forEach(function(form) {
+    form.addEventListener('submit', function(e) {
+        if (!confirm(this.dataset.confirmMessage)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
