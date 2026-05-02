@@ -21,6 +21,19 @@ The whole plugin is build with clear [Separation of Concerns (SoC)](https://en.w
 
 You associate the `file_storage` table with your model using the FileStorage model from the plugin via hasOne, hasMany or HABTM. When you upload a file you save it to the FileStorage model through the associations, `Documents.file` for example. The FileStorage model dispatches then file storage specific events, the listeners listening to these events process the file and put it in the configured storage backend using adapters for different backends and build the storage path using a path builder class.
 
+## Admin backend
+
+The plugin ships a self-contained admin backend at `/admin/file-storage`
+(dashboard, file listing with bulk delete, storage cleanup UI). It is
+**fail-closed by default** — set `FileStorage.adminAccess` (`true` or a
+`Closure(\Cake\Http\ServerRequest): bool`) to opt in. The bundled
+Bootstrap 5 layout can be replaced with your host app's layout via
+`FileStorage.adminLayout`. See [docs/Documentation/Installation.md](docs/Documentation/Installation.md#the-admin-backend).
+
+For background image-variant regeneration from the admin UI, install
+[`dereuromark/cakephp-queue`](https://github.com/dereuromark/cakephp-queue);
+without it the regenerate buttons render disabled.
+
 ## Documentation
 
 For documentation, as well as tutorials, see the [docs](docs/) directory of this repository.
