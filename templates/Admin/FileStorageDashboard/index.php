@@ -7,6 +7,8 @@
  * @var array<int, array{collection: string, count: int, bytes: int|float}> $byCollection
  * @var array<int, array{model: string, count: int, bytes: int|float}> $byModel
  * @var array<int, array{adapter: string, count: int}> $byAdapter
+ * @var array<int, array{mime_type: string, count: int, bytes: int|float}> $byMime
+ * @var array<int, \FileStorage\Model\Entity\FileStorage> $largest
  * @var array<int, \FileStorage\Model\Entity\FileStorage> $recent
  * @var bool $queueLoaded
  */
@@ -143,6 +145,70 @@ $humanBytes = function (int|float $bytes): string {
                         <?php endforeach; ?>
                         <?php if (!$byAdapter): ?>
                             <tr><td colspan="2" class="text-center text-muted py-3"><?= __d('file_storage', 'No data.') ?></td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-file-code me-2"></i><?= __d('file_storage', 'Top Mime Types') ?></div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th><?= __d('file_storage', 'Mime') ?></th>
+                            <th class="text-end"><?= __d('file_storage', 'Files') ?></th>
+                            <th class="text-end"><?= __d('file_storage', 'Size') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($byMime as $row): ?>
+                            <tr>
+                                <td><code><?= h($row['mime_type']) ?></code></td>
+                                <td class="text-end"><?= number_format((int)$row['count']) ?></td>
+                                <td class="text-end"><?= h($humanBytes((int)$row['bytes'])) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <?php if (!$byMime): ?>
+                            <tr><td colspan="3" class="text-center text-muted py-3"><?= __d('file_storage', 'No data.') ?></td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-weight-hanging me-2"></i><?= __d('file_storage', 'Largest Files') ?></div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th><?= __d('file_storage', 'Filename') ?></th>
+                            <th><?= __d('file_storage', 'Collection') ?></th>
+                            <th class="text-end"><?= __d('file_storage', 'Size') ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($largest as $entry): ?>
+                            <tr>
+                                <td>
+                                    <?= $this->Html->link(
+                                        h($entry->filename),
+                                        ['plugin' => 'FileStorage', 'prefix' => 'Admin', 'controller' => 'FileStorage', 'action' => 'view', $entry->id],
+                                        ['escapeTitle' => false],
+                                    ) ?>
+                                </td>
+                                <td><?= h($entry->collection) ?></td>
+                                <td class="text-end"><?= h($humanBytes((int)$entry->filesize)) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                        <?php if (!$largest): ?>
+                            <tr><td colspan="3" class="text-center text-muted py-3"><?= __d('file_storage', 'No data.') ?></td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>

@@ -5,6 +5,7 @@ namespace FileStorage\Test\TestCase\Controller\Admin;
 use Cake\Core\Configure;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
+use Cake\Http\Exception\NotFoundException;
 use Cake\Http\ServerRequest;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
@@ -255,5 +256,130 @@ class FileStorageControllerTest extends TestCase
         $this->expectException(BadRequestException::class);
 
         $this->post(['controller' => 'FileStorage', 'action' => 'regenerateVariants', 1, 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testIndexExposesFilterMetadata(): void
+    {
+        $this->get(['controller' => 'FileStorage', 'action' => 'index', 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+
+        $this->assertResponseOk();
+        $this->assertSame(['Item'], $this->viewVariable('models'));
+        $this->assertNotNull($this->viewVariable('collections'));
+
+        $values = $this->viewVariable('filterValues');
+        $this->assertIsArray($values);
+        $this->assertSame('', $values['model']);
+        $this->assertSame('', $values['mime']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testIndexFilterByMimePrefix(): void
+    {
+        // Fixture has 1 png + 3 jpg rows; `image/p` should narrow to the png only.
+        $this->get([
+            'controller' => 'FileStorage',
+            'action' => 'index',
+            'prefix' => 'Admin',
+            'plugin' => 'FileStorage',
+            '?' => ['mime' => 'image/p'],
+        ]);
+
+        $this->assertResponseOk();
+        $fileStorage = $this->viewVariable('fileStorage');
+        $this->assertCount(1, $fileStorage);
+        $values = $this->viewVariable('filterValues');
+        $this->assertSame('image/p', $values['mime']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testIndexFilterByFilenameSubstring(): void
+    {
+        // Three fixture rows have `titus` in the filename, one does not.
+        $this->get([
+            'controller' => 'FileStorage',
+            'action' => 'index',
+            'prefix' => 'Admin',
+            'plugin' => 'FileStorage',
+            '?' => ['q' => 'titus'],
+        ]);
+
+        $this->assertResponseOk();
+        $this->assertCount(3, $this->viewVariable('fileStorage'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testIndexFilterByMinSize(): void
+    {
+        // 0.1 MB ≈ 104857 bytes → drops the two small fixture rows
+        // (12345 + 54321) and keeps the two 335872-byte ones.
+        $this->get([
+            'controller' => 'FileStorage',
+            'action' => 'index',
+            'prefix' => 'Admin',
+            'plugin' => 'FileStorage',
+            '?' => ['min_size' => '0.1'],
+        ]);
+
+        $this->assertResponseOk();
+        $this->assertCount(2, $this->viewVariable('fileStorage'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testIndexFilterByForeignKey(): void
+    {
+        $this->get([
+            'controller' => 'FileStorage',
+            'action' => 'index',
+            'prefix' => 'Admin',
+            'plugin' => 'FileStorage',
+            '?' => ['fk' => '4'],
+        ]);
+
+        $this->assertResponseOk();
+        $rows = $this->viewVariable('fileStorage');
+        $this->assertCount(1, $rows);
+        $this->assertSame(4, $rows->items()->first()->foreign_key);
+    }
+
+    /**
+     * @return void
+     */
+    public function testIndexFilterIgnoresEmptyValues(): void
+    {
+        $this->get([
+            'controller' => 'FileStorage',
+            'action' => 'index',
+            'prefix' => 'Admin',
+            'plugin' => 'FileStorage',
+            '?' => ['model' => '', 'mime' => '', 'min_size' => ''],
+        ]);
+
+        $this->assertResponseOk();
+        $this->assertCount(4, $this->viewVariable('fileStorage'));
+    }
+
+    /**
+     * The fixture row points at `Item/cake.icon.png` on the test Local
+     * adapter, but no actual file exists there — the action must 404
+     * instead of returning a corrupted/empty body.
+     *
+     * @return void
+     */
+    public function testDownloadFailsWhenBackingFileMissing(): void
+    {
+        $this->expectException(NotFoundException::class);
+
+        $this->get(['controller' => 'FileStorage', 'action' => 'download', 1, 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
     }
 }

@@ -52,7 +52,15 @@ class FileStorageDashboardControllerTest extends TestCase
         $this->assertNotNull($this->viewVariable('byCollection'));
         $this->assertNotNull($this->viewVariable('byModel'));
         $this->assertNotNull($this->viewVariable('byAdapter'));
+        $this->assertNotNull($this->viewVariable('byMime'));
+        $this->assertNotNull($this->viewVariable('largest'));
         $this->assertNotNull($this->viewVariable('recent'));
+
+        // Largest is sorted by filesize DESC — first entry should be the
+        // largest fixture row (titus.jpg at 335872 bytes).
+        $largest = $this->viewVariable('largest');
+        $this->assertNotEmpty($largest);
+        $this->assertSame(335872, $largest[0]->filesize);
     }
 
     /**
