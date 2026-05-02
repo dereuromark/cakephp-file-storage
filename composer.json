@@ -33,13 +33,15 @@
     },
     "require-dev": {
         "cakephp/migrations": "^5.0.0",
+        "dereuromark/cakephp-queue": "^8.12",
         "php-collective/code-sniffer": "dev-master",
         "php-collective/file-storage-image-processor": "^1.0 || ^2.0",
         "phpunit/phpunit": "^11.5 || ^12.1 || ^13.0"
     },
     "suggest": {
         "cakephp/migrations": "For migrations to run.",
-        "php-collective/file-storage-image-processor": "Required if you want to use the image processing feature of FileStorage"
+        "php-collective/file-storage-image-processor": "Required if you want to use the image processing feature of FileStorage",
+        "dereuromark/cakephp-queue": "For background image-variant regeneration from the admin UI."
     },
     "conflict": {
         "cakephp/migrations": "<4.5"

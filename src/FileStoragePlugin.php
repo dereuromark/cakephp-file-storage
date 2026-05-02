@@ -39,7 +39,9 @@ class FileStoragePlugin extends BasePlugin
     {
         $routes->prefix('Admin', function (RouteBuilder $routes): void {
             $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes): void {
-                $routes->connect('/', ['controller' => 'FileStorage', 'action' => 'index']);
+                $routes->connect('/', ['controller' => 'FileStorageDashboard', 'action' => 'index']);
+                $routes->connect('/files', ['controller' => 'FileStorage', 'action' => 'index']);
+                $routes->connect('/dashboard', ['controller' => 'FileStorageDashboard', 'action' => 'index']);
 
                 $routes->fallbacks();
             });

@@ -6,11 +6,7 @@ use Cake\Command\Command;
 use Cake\Console\Arguments;
 use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
-use Cake\Core\Configure;
-use Exception;
-use FilesystemIterator;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
+use FileStorage\Service\CleanupService;
 
 class CleanupCommand extends Command
 {
@@ -24,206 +20,23 @@ class CleanupCommand extends Command
     {
         $model = $args->getArgument('model');
         $collection = $args->getArgument('collection');
+        $dryRun = (bool)$args->getOption('dryRun');
 
-        $conditions = [];
-        if ($model) {
-            $conditions['model'] = $model;
-        }
-        if ($collection) {
-            $conditions['collection'] = $collection;
-        }
+        $report = (new CleanupService())->run($model, $collection, $dryRun);
 
-        $query = $this->getTableLocator()->get('FileStorage.FileStorage')->find()
-            ->where($conditions);
+        $io->out(sprintf('Checking %d file storage rows...', $report->checkedCount));
+        $io->info(sprintf('%d orphan row(s) %s.', $report->deletedRows, $dryRun ? 'would be deleted' : 'deleted'));
 
-        /** @var array<\FileStorage\Model\Entity\FileStorage> $images */
-        $images = $query
-            ->all()
-            ->toArray();
-        $io->out('Checking ' . count($images) . ' images...');
-
-        $this->removeOrphanedImages($args, $io);
-        $this->removeOrphanedFiles($images, $args, $io);
-
-        $this->checkImageFileExistence($images, $args, $io);
-    }
-
-    /**
-     * @param array<\FileStorage\Model\Entity\FileStorage> $images
-     * @param \Cake\Console\Arguments $args
-     * @param \Cake\Console\ConsoleIo $io
-     *
-     * @return void
-     */
-    protected function removeOrphanedFiles(array $images, Arguments $args, ConsoleIo $io): void
-    {
-        // Hash-set keyed by absolute path for O(1) lookup; the iterator below can scan
-        // many thousand files, and the original `in_array()` walk turned that into O(n*m).
-        $files = [];
-        $pathPrefix = (string)Configure::read('FileStorage.pathPrefix');
-        foreach ($images as $image) {
-            $files[WWW_ROOT . $pathPrefix . $image->path] = true;
-            foreach ($image->variants as $variant => $details) {
-                $files[WWW_ROOT . $pathPrefix . $details['path']] = true;
-            }
+        foreach ($report->deletedFiles as $path) {
+            $io->warning(sprintf('%s orphan file: %s', $dryRun ? 'Would delete' : 'Deleted', $path));
         }
 
-        /** @var \PhpCollective\Infrastructure\Storage\FileStorage|null $fileStorage */
-        $fileStorage = Configure::read('FileStorage.behaviorConfig.fileStorage');
-        if (!$fileStorage) {
-            $io->warning('FileStorage not configured, skipping orphaned file removal.');
-
-            return;
+        foreach ($report->missingFiles as $entry) {
+            $io->error(sprintf('Missing files for %s: %s', $entry['id'], implode(', ', $entry['missing'])));
         }
 
-        // Note: This orphaned file removal still requires local filesystem access
-        // as it needs to iterate through directories. For non-local adapters,
-        // this feature may not be applicable.
-        $path = WWW_ROOT . Configure::read('FileStorage.pathPrefix');
-
-        $model = $args->getArgument('model');
-        $collection = $args->getArgument('collection');
-        if ($model) {
-            $path .= $model . DS;
-        }
-        if ($collection) {
-            $path .= $collection . DS;
-        }
-
-        if (!is_dir($path)) {
-            $io->info('Path does not exist or is not accessible: ' . $path);
-
-            return;
-        }
-
-        $directory = new RecursiveDirectoryIterator(
-            $path,
-            FilesystemIterator::SKIP_DOTS,
-        );
-        $contents = new RecursiveIteratorIterator(
-            $directory,
-            RecursiveIteratorIterator::SELF_FIRST,
-        );
-
-        foreach ($contents as $file) {
-            $filePath = (string)$file;
-            if (!is_file($filePath)) {
-                continue;
-            }
-
-            if (isset($files[$filePath])) {
-                continue;
-            }
-
-            $io->warning('Deleting orphaned file: ' . $filePath);
-            if ($args->getOption('dryRun')) {
-                continue;
-            }
-
-            unlink($filePath);
-        }
-    }
-
-    /**
-     * @param \Cake\Console\Arguments $args
-     * @param \Cake\Console\ConsoleIo $io
-     *
-     * @return void
-     */
-    protected function removeOrphanedImages(Arguments $args, ConsoleIo $io): void
-    {
-        $model = $args->getArgument('model');
-        $collection = $args->getArgument('collection');
-        $conditions = [
-            'foreign_key IS' => null,
-        ];
-        if ($model) {
-            $conditions['model'] = $model;
-        }
-        if ($collection) {
-            $conditions['collection'] = $collection;
-        }
-
-        $query = $this->getTableLocator()->get('FileStorage.FileStorage')->find()
-            ->where($conditions);
-
-        /** @var array<\FileStorage\Model\Entity\FileStorage> $images */
-        $images = $query
-            ->all()
-            ->toArray();
-
-        $io->info(count($images) . ' orphaned images found.');
-        if ($args->getOption('dryRun')) {
-            return;
-        }
-
-        foreach ($images as $image) {
-            $io->verbose('- deleting orphaned image ' . $image->id);
-            $this->getTableLocator()->get('FileStorage.FileStorage')->deleteOrFail($image);
-        }
-    }
-
-    /**
-     * @param array<\FileStorage\Model\Entity\FileStorage> $images
-     * @param \Cake\Console\Arguments $args
-     * @param \Cake\Console\ConsoleIo $io
-     *
-     * @return void
-     */
-    protected function checkImageFileExistence(array $images, Arguments $args, ConsoleIo $io): void
-    {
-        /** @var \PhpCollective\Infrastructure\Storage\FileStorage|null $fileStorage */
-        $fileStorage = Configure::read('FileStorage.behaviorConfig.fileStorage');
-        if (!$fileStorage) {
-            $io->warning('FileStorage not configured, skipping existence check.');
-
-            return;
-        }
-
-        foreach ($images as $image) {
-            $io->verbose('Checking image ' . $image->id);
-
-            // Use storage adapter to check file existence
-            if (!$image->adapter || !$image->path) {
-                $io->error('Image ' . $image->id . ' has no adapter or path configured');
-
-                continue;
-            }
-
-            try {
-                $adapter = $fileStorage->getStorage($image->adapter);
-            } catch (Exception $e) {
-                $io->error('Could not get adapter for image ' . $image->id . ': ' . $e->getMessage());
-
-                continue;
-            }
-
-            $missing = [];
-
-            // Check main file
-            if (!$adapter->fileExists($image->path)) {
-                $missing[] = 'main';
-            }
-
-            // Check variants
-            foreach ($image->variants as $variant => $details) {
-                $variantPath = $details['path'] ?? null;
-                if ($variantPath && !$adapter->fileExists($variantPath)) {
-                    $missing[] = $variant;
-                }
-            }
-
-            if (!$missing) {
-                continue;
-            }
-
-            $io->error('Missing files for ' . $image->id . ': ' . implode(', ', $missing));
-            if ($args->getOption('dryRun')) {
-                continue;
-            }
-
-            $this->getTableLocator()->get('FileStorage.FileStorage')->delete($image);
-            $io->verbose('- deleting image ' . $image->id);
+        foreach ($report->warnings as $warning) {
+            $io->warning($warning);
         }
     }
 
