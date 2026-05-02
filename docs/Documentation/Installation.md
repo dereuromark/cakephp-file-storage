@@ -104,6 +104,69 @@ bin/cake plugin load FileStorage --no-routes
 WARNING: Do not flip `adminAccess` to `true` unless you actually have an upstream gate in place.
 You do not want to make the uploaded content's metadata listable / editable publicly.
 
+## The admin backend
+
+Once `adminAccess` is set, the plugin exposes a self-contained admin backend
+under the plugin's `Admin` prefix:
+
+| URL                             | Action                                                        |
+|---------------------------------|---------------------------------------------------------------|
+| `/admin/file-storage`           | Dashboard — counts, total size, top collections/models, recent uploads |
+| `/admin/file-storage/files`     | File listing with bulk delete and (optional) variant regen   |
+| `/admin/file-storage/cleanup`   | Storage-tree cleanup UI — dry-run preview, then confirm      |
+| `/admin/file-storage/dashboard` | Alias for the dashboard                                       |
+| `/admin/file-storage/files/view/{id}` | View a single file_storage entity                       |
+| `/admin/file-storage/files/edit/{id}` | Edit a single file_storage entity                       |
+
+### Layout
+
+The plugin ships its own Bootstrap 5 + Font Awesome 6 layout (loaded via CDN
+with SRI — no webroot bundling). Two config keys control how it integrates
+into your application:
+
+```php
+'FileStorage' => [
+    'adminAccess' => true,
+    // Layout switch:
+    //   null     (default) — use the bundled `FileStorage.file_storage` layout
+    //   false              — fall back to your host app's default layout
+    //   'App.admin'        — use any custom layout you ship
+    'adminLayout' => null,
+
+    // Standalone mode: when true, the admin controllers do NOT call
+    // App\Controller\AppController::initialize() — only Flash is loaded.
+    // Useful for apps without their own admin shell. Default: false (inherit).
+    'standalone' => false,
+],
+```
+
+If you want the admin UI to render inside *your* admin shell (matching the
+pre-4.4 behavior), set `'adminLayout' => false`.
+
+### Cleanup
+
+The admin's **Cleanup** action is the same logic as the existing
+`bin/cake file_storage cleanup` CLI — both delegate to
+`FileStorage\Service\CleanupService`. Use the UI for a dry-run preview
+(orphan rows, orphan files on disk, missing backing files), then confirm to
+run. Use the CLI for cron-driven runs.
+
+### Variant regeneration (optional, requires Queue)
+
+The file listing has a per-row "regenerate variants" button. It's enabled
+when [dereuromark/cakephp-queue](https://github.com/dereuromark/cakephp-queue)
+is installed and loaded; it enqueues a `Queue.Execute` job that runs
+`bin/cake file_storage generate_image_variant ...` on a worker (no
+synchronous regen — long requests would 502).
+
+Without the Queue plugin loaded the button is rendered disabled with a
+tooltip pointing here. Install:
+
+```
+composer require dereuromark/cakephp-queue
+bin/cake plugin load Queue
+```
+
 Running Tests
 -------------
 

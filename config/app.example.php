@@ -60,6 +60,23 @@ return [
         //
         // See docs/Documentation/Installation.md for examples.
         'adminAccess' => null,
+
+        // Standalone admin backend. When true the admin controllers run independent of
+        // the host application's `App\Controller\AppController` (skips its initialize()
+        // chain, loads only Flash). Useful for projects without their own admin shell.
+        // Leave false (default) to inherit your AppController's components.
+        'standalone' => false,
+
+        // Bundled Bootstrap 5 / Font Awesome 6 admin layout (CDN with SRI).
+        //   null    — use the bundled `FileStorage.file_storage` layout (default).
+        //   false   — fall back to the host application's default layout
+        //             (matches the pre-4.4 behaviour).
+        //   string  — use the given layout, e.g. `'App.admin'`.
+        'adminLayout' => null,
+        // Optional dependency note:
+        // - The "regenerate variants" button on the admin file listing requires
+        //   `dereuromark/cakephp-queue` to be installed and loaded; the button
+        //   renders disabled (with a tooltip) when Queue is not loaded.
         // Image variants configuration
         // Structure: [ModelAlias][CollectionName][variants]
         // Note: ModelAlias comes from the table (e.g., 'Posts', 'Users')
