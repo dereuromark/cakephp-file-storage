@@ -4,10 +4,33 @@ namespace FileStorage\Test\TestCase\Utility;
 
 use Cake\TestSuite\TestCase;
 use FileStorage\Utility\StorageUtils;
+use InvalidArgumentException;
 use Psr\Http\Message\UploadedFileInterface;
 
 class StorageUtilsTest extends TestCase
 {
+    /**
+     * @return void
+     */
+    public function testFileToUploadedFileObjectThrowsOnMissingFile(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/not a readable file/');
+
+        StorageUtils::fileToUploadedFileObject(TMP . 'this_file_does_not_exist_' . uniqid() . '.bin');
+    }
+
+    /**
+     * @return void
+     */
+    public function testFileToUploadedFileArrayThrowsOnDirectory(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/not a readable file/');
+
+        StorageUtils::fileToUploadedFileArray(TMP);
+    }
+
     /**
      * @return void
      */

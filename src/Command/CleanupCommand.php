@@ -57,11 +57,14 @@ class CleanupCommand extends Command
      */
     protected function removeOrphanedFiles(array $images, Arguments $args, ConsoleIo $io): void
     {
+        // Hash-set keyed by absolute path for O(1) lookup; the iterator below can scan
+        // many thousand files, and the original `in_array()` walk turned that into O(n*m).
         $files = [];
+        $pathPrefix = (string)Configure::read('FileStorage.pathPrefix');
         foreach ($images as $image) {
-            $files[] = WWW_ROOT . Configure::read('FileStorage.pathPrefix') . $image->path;
+            $files[WWW_ROOT . $pathPrefix . $image->path] = true;
             foreach ($image->variants as $variant => $details) {
-                $files[] = WWW_ROOT . Configure::read('FileStorage.pathPrefix') . $details['path'];
+                $files[WWW_ROOT . $pathPrefix . $details['path']] = true;
             }
         }
 
@@ -108,7 +111,7 @@ class CleanupCommand extends Command
                 continue;
             }
 
-            if (in_array($filePath, $files)) {
+            if (isset($files[$filePath])) {
                 continue;
             }
 

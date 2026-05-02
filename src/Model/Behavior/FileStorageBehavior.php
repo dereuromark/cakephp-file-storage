@@ -29,20 +29,11 @@ class FileStorageBehavior extends Behavior
 {
     use EventDispatcherTrait;
 
-    /**
-     * @var \PhpCollective\Infrastructure\Storage\FileStorage
-     */
-    protected $fileStorage;
+    protected FileStorage $fileStorage;
 
-    /**
-     * @var \FileStorage\FileStorage\DataTransformerInterface
-     */
-    protected $transformer;
+    protected ?DataTransformerInterface $transformer = null;
 
-    /**
-     * @var \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface
-     */
-    protected $processor;
+    protected ?ProcessorInterface $processor = null;
 
     /**
      * Default config

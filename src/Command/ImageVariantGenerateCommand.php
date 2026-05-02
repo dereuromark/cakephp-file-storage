@@ -30,22 +30,17 @@ class ImageVariantGenerateCommand extends Command
 
     /**
      * Storage Table Object
-     *
-     * @var \Cake\ORM\Table
      */
-    protected $Table;
+    protected Table $Table;
 
-    /**
-     * @var int
-     */
-    protected $limit = 10;
+    protected int $limit = 10;
 
     /**
      * Default config
      *
      * @var array<string, mixed>
      */
-    protected $_defaultConfig = [
+    protected array $_defaultConfig = [
         'defaultStorageConfig' => 'Local',
         'ignoreEmptyFile' => true,
         'fileField' => 'file',
@@ -54,15 +49,9 @@ class ImageVariantGenerateCommand extends Command
         'fileValidator' => null,
     ];
 
-    /**
-     * @var \FileStorage\FileStorage\DataTransformerInterface|null
-     */
-    protected $transformer;
+    protected ?DataTransformerInterface $transformer = null;
 
-    /**
-     * @var \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface|null
-     */
-    protected $processor;
+    protected ?ProcessorInterface $processor = null;
 
     /**
      * Implement this method with your command's logic.
@@ -279,13 +268,10 @@ class ImageVariantGenerateCommand extends Command
             return $this->transformer;
         }
 
-        if (!$this->getConfig('dataTransformer') instanceof DataTransformerInterface) {
-            $this->transformer = new DataTransformer(
-                $this->table(),
-            );
-        }
-
-        assert($this->transformer !== null);
+        $configured = $this->getConfig('dataTransformer');
+        $this->transformer = $configured instanceof DataTransformerInterface
+            ? $configured
+            : new DataTransformer($this->table());
 
         return $this->transformer;
     }

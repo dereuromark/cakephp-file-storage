@@ -218,7 +218,7 @@ class FileAssociationBehavior extends Behavior
         $key = $this->table()->{$association}->getPrimaryKey();
         /** @var string $foreignKey */
         $foreignKey = $this->table()->getPrimaryKey();
-        $entities = $this->table()->{$association}->find()->where(
+        $existingEntities = $this->table()->{$association}->find()->where(
             [
                 'model' => $assocConfig['model'],
                 'collection' => $assocConfig['collection'] ?? null,
@@ -226,8 +226,8 @@ class FileAssociationBehavior extends Behavior
                 'id !=' => $fileEntity->get($key),
             ],
         )->all()->toArray();
-        foreach ($entities as $entity) {
-            $this->table()->{$association}->delete($entity);
+        foreach ($existingEntities as $existing) {
+            $this->table()->{$association}->delete($existing);
         }
     }
 }
