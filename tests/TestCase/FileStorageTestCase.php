@@ -6,8 +6,8 @@ use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\TestSuite\TestCase;
-use FileStorage\Filesystem\Folder;
 use FileStorage\Model\Table\FileStorageTable;
+use FilesystemIterator;
 use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use PhpCollective\Infrastructure\Storage\Factories\LocalFactory;
@@ -17,6 +17,8 @@ use PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor;
 use PhpCollective\Infrastructure\Storage\Processor\StackProcessor;
 use PhpCollective\Infrastructure\Storage\StorageAdapterFactory;
 use PhpCollective\Infrastructure\Storage\StorageService;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use TestApp\Storage\Processor\ImageDimensionsProcessor;
 
 /**
@@ -175,8 +177,38 @@ class FileStorageTestCase extends TestCase
         parent::tearDown();
 
         $this->getTableLocator()->clear();
-        $Folder = new Folder($this->testPath);
-        $Folder->delete();
+        $this->removeDirectoryRecursive($this->testPath);
+    }
+
+    /**
+     * Recursively delete a directory and its contents. Replaces the previous Folder->delete()
+     * call now that the vendored Folder class has been removed.
+     *
+     * @param string $path Directory to remove
+     *
+     * @return void
+     */
+    protected function removeDirectoryRecursive(string $path): void
+    {
+        if (!is_dir($path)) {
+            return;
+        }
+
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST,
+        );
+
+        foreach ($iterator as $file) {
+            if ($file->isDir()) {
+                @rmdir($file->getPathname());
+
+                continue;
+            }
+            @unlink($file->getPathname());
+        }
+
+        @rmdir($path);
     }
 
     /**
