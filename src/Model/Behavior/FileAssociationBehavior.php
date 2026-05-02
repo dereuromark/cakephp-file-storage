@@ -131,7 +131,7 @@ class FileAssociationBehavior extends Behavior
      *
      * @return void
      */
-    protected function processOne(EntityInterface $entity, string $assocName, array $assocConfig)
+    protected function processOne(EntityInterface $entity, string $assocName, array $assocConfig): void
     {
         $property = $assocConfig['property'];
 
@@ -168,7 +168,7 @@ class FileAssociationBehavior extends Behavior
      *
      * @return void
      */
-    protected function processMany(EntityInterface $entity, string $assocName, array $assocConfig)
+    protected function processMany(EntityInterface $entity, string $assocName, array $assocConfig): void
     {
         $property = $assocConfig['property'];
 
