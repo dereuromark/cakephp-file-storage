@@ -254,7 +254,7 @@ class ImageVariantGenerateCommand extends Command
      *
      * @return \Cake\Datasource\EntityInterface
      */
-    public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity)
+    public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity): EntityInterface
     {
         return $this->getTransformer()->fileObjectToEntity($file, $entity);
     }

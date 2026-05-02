@@ -3,6 +3,7 @@
 namespace FileStorage\Controller\Admin;
 
 use Cake\Core\Plugin;
+use Cake\Http\Response;
 use FileStorage\Model\Table\FileStorageTable;
 
 class FileStorageDashboardController extends FileStorageAppController
@@ -25,9 +26,9 @@ class FileStorageDashboardController extends FileStorageAppController
     }
 
     /**
-     * @return \Cake\Http\Response|null|void
+     * @return \Cake\Http\Response|null
      */
-    public function index()
+    public function index(): ?Response
     {
         $totalCount = $this->FileStorage->find()->count();
 
@@ -124,5 +125,7 @@ class FileStorageDashboardController extends FileStorageAppController
             'recent',
         ));
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
+
+        return null;
     }
 }

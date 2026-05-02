@@ -204,10 +204,17 @@ class FileStorageBehavior extends Behavior
                 if (empty($tableConfig['className'])) {
                     $tableConfig['className'] = 'FileStorage.FileStorage';
                 }
-                // Temporarily remove behavior to prevent recursion when saving metadata
+                // Temporarily remove behavior to prevent recursion when saving metadata.
+                // try/finally so that even if saveOrFail() throws (and the outer catch
+                // deletes the entity + rethrows), the table doesn't end up permanently
+                // missing this behavior — the TableLocator can cache the same instance
+                // across the rest of the request.
                 $this->table()->removeBehavior('FileStorage');
-                $this->table()->saveOrFail($entity, ['checkRules' => false]);
-                $this->table()->addBehavior('FileStorage', $tableConfig);
+                try {
+                    $this->table()->saveOrFail($entity, ['checkRules' => false]);
+                } finally {
+                    $this->table()->addBehavior('FileStorage', $tableConfig);
+                }
             } catch (Throwable $exception) {
                 $this->table()->delete($entity);
 
@@ -332,7 +339,7 @@ class FileStorageBehavior extends Behavior
      *
      * @return \Cake\Datasource\EntityInterface
      */
-    public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity)
+    public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity): EntityInterface
     {
         return $this->getTransformer()->fileObjectToEntity($file, $entity);
     }

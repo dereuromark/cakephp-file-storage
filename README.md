@@ -34,6 +34,13 @@ For background image-variant regeneration from the admin UI, install
 [`dereuromark/cakephp-queue`](https://github.com/dereuromark/cakephp-queue);
 without it the regenerate buttons render disabled.
 
+> [!NOTE]
+> Do not pre-fill the primary key on a FileStorage entity before saving.
+> Path generation runs through the `php-collective/file-storage` UUID
+> strategy; if a caller hands it a pre-set id, two concurrent saves with
+> the same id would race on `fileStorage->store()`. Let the table assign
+> the id.
+
 ## Documentation
 
 For documentation, as well as tutorials, see the [docs](docs/) directory of this repository.

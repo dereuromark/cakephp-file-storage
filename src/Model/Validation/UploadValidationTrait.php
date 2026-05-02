@@ -15,7 +15,7 @@ trait UploadValidationTrait
      *
      * @return bool Success
      */
-    public static function isUnderPhpSizeLimit($check): bool
+    public static function isUnderPhpSizeLimit(UploadedFileInterface|array $check): bool
     {
         if ($check instanceof UploadedFileInterface) {
             return $check->getError() !== UPLOAD_ERR_INI_SIZE;
@@ -32,7 +32,7 @@ trait UploadValidationTrait
      *
      * @return bool Success
      */
-    public static function isUnderFormSizeLimit($check): bool
+    public static function isUnderFormSizeLimit(UploadedFileInterface|array $check): bool
     {
         if ($check instanceof UploadedFileInterface) {
             return $check->getError() !== UPLOAD_ERR_FORM_SIZE;
@@ -48,7 +48,7 @@ trait UploadValidationTrait
      *
      * @return bool Success
      */
-    public static function isCompletedUpload($check): bool
+    public static function isCompletedUpload(UploadedFileInterface|array $check): bool
     {
         if ($check instanceof UploadedFileInterface) {
             return $check->getError() !== UPLOAD_ERR_PARTIAL;
@@ -64,7 +64,7 @@ trait UploadValidationTrait
      *
      * @return bool Success
      */
-    public static function isFileUpload($check): bool
+    public static function isFileUpload(UploadedFileInterface|array $check): bool
     {
         if ($check instanceof UploadedFileInterface) {
             return $check->getError() !== UPLOAD_ERR_NO_FILE;
@@ -80,7 +80,7 @@ trait UploadValidationTrait
      *
      * @return bool Success
      */
-    public static function isSuccessfulWrite($check): bool
+    public static function isSuccessfulWrite(UploadedFileInterface|array $check): bool
     {
         if ($check instanceof UploadedFileInterface) {
             return $check->getError() !== UPLOAD_ERR_CANT_WRITE;
@@ -97,7 +97,7 @@ trait UploadValidationTrait
      *
      * @return bool Success
      */
-    public static function isAboveMinSize($check, $size): bool
+    public static function isAboveMinSize(UploadedFileInterface|array $check, int $size): bool
     {
         if ($check instanceof UploadedFileInterface) {
             return $check->getSize() >= $size;
@@ -114,7 +114,7 @@ trait UploadValidationTrait
      *
      * @return bool Success
      */
-    public static function isBelowMaxSize($check, $size): bool
+    public static function isBelowMaxSize(UploadedFileInterface|array $check, int $size): bool
     {
         if ($check instanceof UploadedFileInterface) {
             return $check->getSize() <= $size;
@@ -134,7 +134,7 @@ trait UploadValidationTrait
      *
      * @return bool
      */
-    public static function hasAllowedExtension($check, array $extensions): bool
+    public static function hasAllowedExtension(UploadedFileInterface|array $check, array $extensions): bool
     {
         if (!$extensions) {
             return false;
@@ -173,7 +173,7 @@ trait UploadValidationTrait
      *
      * @return bool
      */
-    public static function hasAllowedMimeType($check, array $mimes, bool $sniff = true): bool
+    public static function hasAllowedMimeType(UploadedFileInterface|array $check, array $mimes, bool $sniff = true): bool
     {
         if (!$mimes) {
             return false;

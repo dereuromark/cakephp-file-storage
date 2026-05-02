@@ -7,6 +7,7 @@ use Cake\Core\Plugin;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\InternalErrorException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\Response;
 use FileStorage\Service\CleanupService;
 
 /**
@@ -16,9 +17,9 @@ use FileStorage\Service\CleanupService;
 class FileStorageController extends FileStorageAppController
 {
     /**
-     * @return \Cake\Http\Response|null|void Renders view
+     * @return \Cake\Http\Response|null Renders view
      */
-    public function index()
+    public function index(): ?Response
     {
         $query = $this->FileStorage->find();
         $filters = $this->buildIndexFilters();
@@ -55,6 +56,8 @@ class FileStorageController extends FileStorageAppController
         $this->set(compact('fileStorage', 'models', 'collections'));
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
         $this->set('filterValues', $this->indexFilterValues());
+
+        return null;
     }
 
     /**
@@ -130,22 +133,24 @@ class FileStorageController extends FileStorageAppController
      *
      * @param string|null $id File Storage id.
      *
-     * @return \Cake\Http\Response|null|void Renders view
+     * @return \Cake\Http\Response|null Renders view
      */
-    public function view($id = null)
+    public function view(?string $id = null): ?Response
     {
         $fileStorage = $this->FileStorage->get($id);
 
         $this->set(compact('fileStorage'));
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
+
+        return null;
     }
 
     /**
      * @param string|null $id File Storage id.
      *
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
+     * @return \Cake\Http\Response|null Redirects on successful edit, renders view otherwise.
      */
-    public function edit($id = null)
+    public function edit(?string $id = null): ?Response
     {
         $fileStorage = $this->FileStorage->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
@@ -158,14 +163,16 @@ class FileStorageController extends FileStorageAppController
             $this->Flash->error(__('The file storage could not be saved. Please, try again.'));
         }
         $this->set(compact('fileStorage'));
+
+        return null;
     }
 
     /**
      * @param string|null $id File Storage id.
      *
-     * @return \Cake\Http\Response|null|void Redirects to index.
+     * @return \Cake\Http\Response|null Redirects to index.
      */
-    public function delete($id = null)
+    public function delete(?string $id = null): ?Response
     {
         $this->request->allowMethod(['post', 'delete']);
         $fileStorage = $this->FileStorage->get($id);
@@ -192,7 +199,7 @@ class FileStorageController extends FileStorageAppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function deleteBulk()
+    public function deleteBulk(): ?Response
     {
         $this->request->allowMethod(['post']);
 
@@ -244,9 +251,9 @@ class FileStorageController extends FileStorageAppController
      * GET → renders the form (and a dry-run preview if `model` query is set).
      * POST → executes the cleanup against the resolved scope.
      *
-     * @return \Cake\Http\Response|null|void
+     * @return \Cake\Http\Response|null
      */
-    public function cleanup()
+    public function cleanup(): ?Response
     {
         $service = new CleanupService();
 
@@ -282,6 +289,8 @@ class FileStorageController extends FileStorageAppController
         }
 
         $this->set(compact('models', 'report', 'previewModel', 'previewCollection'));
+
+        return null;
     }
 
     /**
@@ -295,7 +304,7 @@ class FileStorageController extends FileStorageAppController
      *
      * @return \Cake\Http\Response|null
      */
-    public function regenerateVariants($id = null)
+    public function regenerateVariants(?string $id = null): ?Response
     {
         $this->request->allowMethod(['post']);
 
@@ -349,7 +358,7 @@ class FileStorageController extends FileStorageAppController
      *
      * @return \Cake\Http\Response
      */
-    public function download($id = null)
+    public function download(?string $id = null): Response
     {
         $entity = $this->FileStorage->get($id);
         $variant = (string)$this->request->getQuery('variant', '');

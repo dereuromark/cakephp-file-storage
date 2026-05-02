@@ -17,12 +17,12 @@ trait ImageValidationTrait
      *
      * @return bool Success
      */
-    public static function isValidImage($check, array $allowedTypes = []): bool
+    public static function isValidImage(UploadedFileInterface|array $check, array $allowedTypes = []): bool
     {
         if ($check instanceof UploadedFileInterface) {
             $file = $check->getStream()->getMetadata('uri');
         } else {
-            if (!isset($check['tmp_name']) || !strlen($check['tmp_name'])) {
+            if (($check['tmp_name'] ?? '') === '') {
                 return false;
             }
             $file = $check['tmp_name'];
@@ -48,13 +48,13 @@ trait ImageValidationTrait
      *
      * @return bool Success
      */
-    public static function isAboveMinWidth($check, int $width): bool
+    public static function isAboveMinWidth(UploadedFileInterface|array $check, int $width): bool
     {
         if ($check instanceof UploadedFileInterface) {
             $file = $check->getStream()->getMetadata('uri');
         } else {
             // Non-file uploads also mean the height is too big
-            if (!isset($check['tmp_name']) || !strlen($check['tmp_name'])) {
+            if (($check['tmp_name'] ?? '') === '') {
                 return false;
             }
             $file = $check['tmp_name'];
@@ -75,13 +75,13 @@ trait ImageValidationTrait
      *
      * @return bool Success
      */
-    public static function isBelowMaxWidth($check, int $width): bool
+    public static function isBelowMaxWidth(UploadedFileInterface|array $check, int $width): bool
     {
         if ($check instanceof UploadedFileInterface) {
             $file = $check->getStream()->getMetadata('uri');
         } else {
             // Non-file uploads also mean the height is too big
-            if (!isset($check['tmp_name']) || !strlen($check['tmp_name'])) {
+            if (($check['tmp_name'] ?? '') === '') {
                 return false;
             }
 
@@ -103,13 +103,13 @@ trait ImageValidationTrait
      *
      * @return bool Success
      */
-    public static function isAboveMinHeight($check, int $height): bool
+    public static function isAboveMinHeight(UploadedFileInterface|array $check, int $height): bool
     {
         if ($check instanceof UploadedFileInterface) {
             $file = $check->getStream()->getMetadata('uri');
         } else {
             // Non-file uploads also mean the height is too big
-            if (!isset($check['tmp_name']) || !strlen($check['tmp_name'])) {
+            if (($check['tmp_name'] ?? '') === '') {
                 return false;
             }
             $file = $check['tmp_name'];
@@ -130,13 +130,13 @@ trait ImageValidationTrait
      *
      * @return bool Success
      */
-    public static function isBelowMaxHeight($check, int $height): bool
+    public static function isBelowMaxHeight(UploadedFileInterface|array $check, int $height): bool
     {
         if ($check instanceof UploadedFileInterface) {
             $file = $check->getStream()->getMetadata('uri');
         } else {
             // Non-file uploads also mean the height is too big
-            if (!isset($check['tmp_name']) || !strlen($check['tmp_name'])) {
+            if (($check['tmp_name'] ?? '') === '') {
                 return false;
             }
             $file = $check['tmp_name'];

@@ -61,9 +61,9 @@ class SignedUrlGeneratorTest extends TestCase
         $this->assertIsArray($result);
         $this->assertArrayHasKey('signature', $result);
         $this->assertArrayHasKey('expires', $result);
-        $this->assertEquals($expires, $result['expires']);
+        $this->assertSame($expires, $result['expires']);
         $this->assertIsString($result['signature']);
-        $this->assertEquals(64, strlen($result['signature'])); // SHA256 hex = 64 chars
+        $this->assertSame(64, strlen($result['signature'])); // SHA256 hex = 64 chars
     }
 
     /**
@@ -135,7 +135,7 @@ class SignedUrlGeneratorTest extends TestCase
             'secret' => 'configured-secret',
         ]);
 
-        $this->assertEquals($expected['signature'], $result['signature']);
+        $this->assertSame($expected['signature'], $result['signature']);
 
         Configure::delete('FileStorage.signatureSecret');
     }
