@@ -48,17 +48,61 @@ The plugin uses the FlySystem-based storage abstraction from the `php-collective
 
 ## Setting up backend auth
 
-You can set up backend auth using Authentication/Authorization plugins or e.g. TinyAuth.
+The plugin's `Admin/FileStorageController` is **fail-closed by default**: every action throws
+`ForbiddenException` until you explicitly opt in via the `FileStorage.adminAccess` config key.
+This guarantees that misrouting / forgotten-middleware mistakes return 403 instead of silently
+exposing list / view / edit / delete on the file storage table.
 
-With the latter it is just the following in `config/auth_acl.ini`:
+Pick one of the following depending on your auth stack.
+
+### Option A — upstream gate (Authentication+Authorization plugin, TinyAuth, custom middleware)
+
+Configure your stack to gate the `Admin` prefix the way you normally would, then tell the plugin
+to trust that gate:
+
+```php
+// config/app.php (or any bootstrap file)
+'FileStorage' => [
+    'adminAccess' => true,
+    // … rest of your FileStorage config
+],
 ```
+
+For TinyAuth specifically the per-controller ACL line stays the same:
+```ini
 [FileStorage.Admin/FileStorage]
 * = admin
 ```
-With `admin` being your role that should be able to access it as `/admin/file-storage` via URL.
+With `admin` being the role that should be able to access `/admin/file-storage`.
 
-WARNING: Do not expose the controller actions without any proper auth in place.
-You do not want to make the uploaded content accessible publicly.
+### Option B — inline closure (no auth plugin needed)
+
+If you don't have a full auth stack and just want to gate by identity / role inline:
+
+```php
+'FileStorage' => [
+    'adminAccess' => function (\Cake\Http\ServerRequest $request): bool {
+        $identity = $request->getAttribute('identity');
+
+        return $identity !== null && $identity->is_admin === true;
+    },
+    // …
+],
+```
+
+The closure receives the current `ServerRequest` and must return `true` to allow access.
+Anything else (false, falsy values, exceptions) is treated as deny.
+
+### If you don't want the admin UI at all
+
+Either skip loading the plugin's routes, or load it without routes:
+
+```bash
+bin/cake plugin load FileStorage --no-routes
+```
+
+WARNING: Do not flip `adminAccess` to `true` unless you actually have an upstream gate in place.
+You do not want to make the uploaded content's metadata listable / editable publicly.
 
 Running Tests
 -------------

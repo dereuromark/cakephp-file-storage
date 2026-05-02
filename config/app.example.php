@@ -51,6 +51,15 @@ $collection->addNew('crop')
 return [
     'FileStorage' => [
         'pathPrefix' => 'img/thumbs/',
+        // Admin UI access gate. The admin controller is fail-closed: leaving this unset
+        // (or null) means every action returns 403. Opt in with one of:
+        //
+        //   true                        — trust an upstream gate (Authentication+Authorization,
+        //                                 TinyAuth, custom middleware) on the Admin prefix.
+        //   Closure(ServerRequest $r)   — return true to allow this request.
+        //
+        // See docs/Documentation/Installation.md for examples.
+        'adminAccess' => null,
         // Image variants configuration
         // Structure: [ModelAlias][CollectionName][variants]
         // Note: ModelAlias comes from the table (e.g., 'Posts', 'Users')
