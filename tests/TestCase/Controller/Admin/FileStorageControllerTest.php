@@ -3,10 +3,12 @@
 namespace FileStorage\Test\TestCase\Controller\Admin;
 
 use Cake\Core\Configure;
+use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\ServerRequest;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
+use FileStorage\Service\CleanupReport;
 
 /**
  * @uses \FileStorage\Controller\Admin\FileStorageController
@@ -181,5 +183,77 @@ class FileStorageControllerTest extends TestCase
         $this->expectException(ForbiddenException::class);
 
         $this->post(['controller' => 'FileStorage', 'action' => 'delete', 1, 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+    }
+
+    /**
+     * @return void
+     */
+    public function testDeleteBulk(): void
+    {
+        $this->enableRetainFlashMessages();
+
+        $this->post(
+            ['controller' => 'FileStorage', 'action' => 'deleteBulk', 'prefix' => 'Admin', 'plugin' => 'FileStorage'],
+            ['ids' => [1, 2]],
+        );
+
+        $this->assertRedirect(['controller' => 'FileStorage', 'action' => 'index', 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+        $this->assertFlashMessage('2 file storage entries deleted.');
+    }
+
+    /**
+     * @return void
+     */
+    public function testDeleteBulkNothingSelected(): void
+    {
+        $this->enableRetainFlashMessages();
+
+        $this->post(
+            ['controller' => 'FileStorage', 'action' => 'deleteBulk', 'prefix' => 'Admin', 'plugin' => 'FileStorage'],
+            ['ids' => []],
+        );
+
+        $this->assertRedirect();
+        $this->assertFlashMessage('No file storage entries selected.');
+    }
+
+    /**
+     * @return void
+     */
+    public function testCleanupGetWithoutPreview(): void
+    {
+        $this->get(['controller' => 'FileStorage', 'action' => 'cleanup', 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+
+        $this->assertResponseOk();
+        $this->assertNull($this->viewVariable('report'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testCleanupGetWithPreview(): void
+    {
+        $this->get([
+            'controller' => 'FileStorage',
+            'action' => 'cleanup',
+            'prefix' => 'Admin',
+            'plugin' => 'FileStorage',
+            '?' => ['model' => 'Item'],
+        ]);
+
+        $this->assertResponseOk();
+        $report = $this->viewVariable('report');
+        $this->assertInstanceOf(CleanupReport::class, $report);
+        $this->assertTrue($report->dryRun);
+    }
+
+    /**
+     * @return void
+     */
+    public function testRegenerateVariantsRejectsWithoutQueuePlugin(): void
+    {
+        $this->expectException(BadRequestException::class);
+
+        $this->post(['controller' => 'FileStorage', 'action' => 'regenerateVariants', 1, 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
     }
 }
