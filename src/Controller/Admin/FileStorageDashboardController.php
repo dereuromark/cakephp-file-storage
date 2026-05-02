@@ -83,6 +83,29 @@ class FileStorageDashboardController extends FileStorageAppController
             ->all()
             ->toList();
 
+        // Top mime types — answers "are we storing too many of X?" at a glance.
+        $byMime = $this->FileStorage->find()
+            ->select([
+                'mime_type',
+                'count' => 'COUNT(*)',
+                'bytes' => 'SUM(filesize)',
+            ])
+            ->where(['mime_type IS NOT' => null])
+            ->groupBy(['mime_type'])
+            ->orderByDesc('bytes')
+            ->limit(10)
+            ->disableHydration()
+            ->all()
+            ->toList();
+
+        // Top size hogs — answers "where is the disk going?"
+        $largest = $this->FileStorage->find()
+            ->where(['filesize IS NOT' => null])
+            ->orderByDesc('filesize')
+            ->limit(10)
+            ->all()
+            ->toArray();
+
         $recent = $this->FileStorage->find()
             ->orderByDesc('created')
             ->limit(10)
@@ -96,6 +119,8 @@ class FileStorageDashboardController extends FileStorageAppController
             'byCollection',
             'byModel',
             'byAdapter',
+            'byMime',
+            'largest',
             'recent',
         ));
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
