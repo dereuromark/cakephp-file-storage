@@ -571,7 +571,7 @@ class Folder
         foreach ($iterator as $itemPath => $fsIterator) {
             if ($skipHidden) {
                 $subPathName = $fsIterator->getSubPathname();
-                if ($subPathName[0] === '.' || strpos($subPathName, DIRECTORY_SEPARATOR . '.') !== false) {
+                if ($subPathName[0] === '.' || str_contains($subPathName, DIRECTORY_SEPARATOR . '.')) {
                     unset($fsIterator);
 
                     continue;
@@ -937,20 +937,29 @@ class Folder
     }
 
     /**
-     * Get the real path (taking ".." and such into account)
+     * Get the real path (taking ".." and such into account).
+     *
+     * When the Folder already has a `pwd()` set, the resolved path must stay within
+     * that boundary; any input that canonicalizes to a location outside `pwd()` is
+     * rejected with `false`. This containment check is skipped before the first
+     * `cd()` call, so the constructor's initial seeding still works.
      *
      * @param string $path Path to resolve
      *
      * @return string|false The resolved path
      */
-    public function realpath($path)
+    public function realpath(string $path)
     {
-        if (strpos($path, '..') === false) {
+        if (!str_contains($path, '..')) {
             if (!static::isAbsolute($path)) {
                 $path = static::addPathElement((string)$this->path, $path);
             }
 
-            return $path;
+            return $this->withinPath($path);
+        }
+
+        if (!static::isAbsolute($path) && $this->path !== null) {
+            $path = static::addPathElement($this->path, $path);
         }
         $path = str_replace('/', DIRECTORY_SEPARATOR, trim($path));
         $parts = explode(DIRECTORY_SEPARATOR, $path);
@@ -977,7 +986,28 @@ class Folder
         }
         $newpath .= implode(DIRECTORY_SEPARATOR, $newparts);
 
-        return static::slashTerm($newpath);
+        return $this->withinPath(static::slashTerm($newpath));
+    }
+
+    /**
+     * Returns the given resolved path if it is contained within the current `pwd()`,
+     * or `false` otherwise. When `pwd()` is not yet set, the path is returned as-is.
+     *
+     * @param string $path Already-resolved path to check
+     *
+     * @return string|false
+     */
+    protected function withinPath(string $path)
+    {
+        if ($this->path === null || $this->path === '') {
+            return $path;
+        }
+
+        if (!str_starts_with($path, $this->path)) {
+            return false;
+        }
+
+        return $path;
     }
 
     /**

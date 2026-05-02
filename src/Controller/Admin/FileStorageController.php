@@ -78,6 +78,10 @@ class FileStorageController extends AppController
             return $this->redirect($this->referer(['action' => 'index']));
         }
 
-        return $this->redirect($redirect ?: ['action' => 'index']);
+        if (is_string($redirect) && str_starts_with($redirect, '/') && !str_starts_with($redirect, '//') && !str_starts_with($redirect, '/\\')) {
+            return $this->redirect($redirect);
+        }
+
+        return $this->redirect(['action' => 'index']);
     }
 }
