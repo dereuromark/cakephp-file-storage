@@ -73,6 +73,15 @@ return [
         //             (matches the pre-4.4 behaviour).
         //   string  — use the given layout, e.g. `'App.admin'`.
         'adminLayout' => null,
+
+        // Back-to-App link in the admin header (opt-in). When set, an outline
+        // button appears in the top navbar so admins can escape the
+        // plugin-isolated layout. Accepts anything Router::url() takes — Cake
+        // URL array, path string, or full URL. Use 'plugin' => false to
+        // anchor the builder to the host app rather than the FileStorage plugin.
+        // 'adminBackUrl' => ['plugin' => false, 'prefix' => 'Admin', 'controller' => 'Overview', 'action' => 'index'],
+        // 'adminBackLabel' => 'Back to admin', // Optional. Defaults to "Back to App".
+
         // Optional dependency note:
         // - The "regenerate variants" button on the admin file listing requires
         //   `dereuromark/cakephp-queue` to be installed and loaded; the button
