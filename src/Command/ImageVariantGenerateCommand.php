@@ -97,7 +97,7 @@ class ImageVariantGenerateCommand extends Command
         }
 
         if (!$operations) {
-            $io->abort(__('Cannot find variants config for this model/collection.'));
+            $io->abort(__d('file_storage', 'Cannot find variants config for this model/collection.'));
         }
 
         // Wrap operations in proper structure for processing
@@ -132,12 +132,12 @@ class ImageVariantGenerateCommand extends Command
                 $totalImageCount = $this->_getCount($model, $collection);
 
                 if ($totalImageCount === 0) {
-                    $io->out(__('No images found for this model/collection'));
+                    $io->out(__d('file_storage', 'No images found for this model/collection'));
 
                     continue;
                 }
 
-                $io->out(__('{0} image file(s) will be processed', $totalImageCount));
+                $io->out(__d('file_storage', '{0} image file(s) will be processed', $totalImageCount));
 
                 $options = $args->getOptions();
                 $this->_loop($io, $model, $collection, $variants, $options);
@@ -188,7 +188,7 @@ class ImageVariantGenerateCommand extends Command
                         $this->_processEntity($image, $operations, $options);
                     }
 
-                    $io->verbose(__('- ID {0} processed', $image->id));
+                    $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
                 }
             }
             $offset += $limit;
@@ -293,32 +293,32 @@ class ImageVariantGenerateCommand extends Command
     {
         $parser = parent::getOptionParser();
         $parser->setDescription([
-            __('Command for (re)generating image variants.'),
+            __d('file_storage', 'Command for (re)generating image variants.'),
         ]);
         $parser->addOption('storage', [
             'short' => 's',
-            'help' => __('The storage table for image processing you want to use.'),
+            'help' => __d('file_storage', 'The storage table for image processing you want to use.'),
             'default' => 'FileStorage.FileStorage',
         ]);
         $parser->addOption('limit', [
             'short' => 'l',
-            'help' => __('Limits the amount of records to be processed in one batch'),
+            'help' => __d('file_storage', 'Limits the amount of records to be processed in one batch'),
         ]);
         $parser->addOption('dryRun', [
             'short' => 'd',
-            'help' => __('Dry-Run only.'),
+            'help' => __d('file_storage', 'Dry-Run only.'),
             'boolean' => true,
         ]);
         $parser->addOptions(
             [
                 'adapter' => [
                     'short' => 'a',
-                    'help' => __('The adapter config name to use.'),
+                    'help' => __d('file_storage', 'The adapter config name to use.'),
                     'default' => 'Local',
                 ],
                 'force' => [
                     'short' => 'f',
-                    'help' => __('Force regeneration of variants even if they already exist.'),
+                    'help' => __d('file_storage', 'Force regeneration of variants even if they already exist.'),
                     'boolean' => true,
                 ],
             ],
@@ -326,15 +326,15 @@ class ImageVariantGenerateCommand extends Command
         $parser->addArguments(
             [
                 'model' => [
-                    'help' => __('Model name of the images to generate'),
+                    'help' => __d('file_storage', 'Model name of the images to generate'),
                     'required' => false,
                 ],
                 'collection' => [
-                    'help' => __('Collection name of the images to generate.'),
+                    'help' => __d('file_storage', 'Collection name of the images to generate.'),
                     'required' => false,
                 ],
                 'variant' => [
-                    'help' => __('The image variant (omit for all). Careful: This currently wipes the other variants.'),
+                    'help' => __d('file_storage', 'The image variant (omit for all). Careful: This currently wipes the other variants.'),
                     'required' => false,
                 ],
             ],
