@@ -1,0 +1,408 @@
+# LANGUAGE translation of CakePHP Application
+# Copyright YEAR NAME <EMAIL@ADDRESS>
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2026-05-04 03:32+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+msgid "Dry-Run only."
+msgstr ""
+
+msgid "Cannot find variants config for this model/collection."
+msgstr ""
+
+msgid "No images found for this model/collection"
+msgstr ""
+
+msgid "{0} image file(s) will be processed"
+msgstr ""
+
+msgid "- ID {0} processed"
+msgstr ""
+
+msgid "Command for (re)generating image variants."
+msgstr ""
+
+msgid "The storage table for image processing you want to use."
+msgstr ""
+
+msgid "Limits the amount of records to be processed in one batch"
+msgstr ""
+
+msgid "The adapter config name to use."
+msgstr ""
+
+msgid "Force regeneration of variants even if they already exist."
+msgstr ""
+
+msgid "Model name of the images to generate"
+msgstr ""
+
+msgid "Collection name of the images to generate."
+msgstr ""
+
+msgid "The image variant (omit for all). Careful: This currently wipes the other variants."
+msgstr ""
+
+msgid "The file storage has been saved."
+msgstr ""
+
+msgid "The file storage could not be saved. Please, try again."
+msgstr ""
+
+msgid "The file storage has been deleted."
+msgstr ""
+
+msgid "The file storage could not be deleted. Please, try again."
+msgstr ""
+
+msgid "No file storage entries selected."
+msgstr ""
+
+msgid "{0} deleted, {1} failed."
+msgstr ""
+
+msgid "Bulk delete failed."
+msgstr ""
+
+msgid "Cleanup complete: {0} orphaned files deleted, {1} orphaned rows removed."
+msgstr ""
+
+msgid "Variant regeneration job has been queued for {0}."
+msgstr ""
+
+msgid "File is not stored on any adapter."
+msgstr ""
+
+msgid "No path stored for the requested file."
+msgstr ""
+
+msgid "FileStorage adapter not configured."
+msgstr ""
+
+msgid "Backing file is missing on the adapter."
+msgstr ""
+
+msgid "{0} file storage entry deleted."
+msgid_plural "{0} file storage entries deleted."
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "Cleanup"
+msgstr ""
+
+msgid "Storage Cleanup"
+msgstr ""
+
+msgid "Scope"
+msgstr ""
+
+msgid "Model"
+msgstr ""
+
+msgid "— all —"
+msgstr ""
+
+msgid "Collection"
+msgstr ""
+
+msgid "(leave empty for all)"
+msgstr ""
+
+msgid "Preview (dry-run)"
+msgstr ""
+
+msgid "Dry-run report"
+msgstr ""
+
+msgid "Checked {0} rows"
+msgstr ""
+
+msgid "Orphan rows (would delete)"
+msgstr ""
+
+msgid "Orphan files on disk (would delete)"
+msgstr ""
+
+msgid "Rows with missing backing files"
+msgstr ""
+
+msgid "Show {0} orphan file paths"
+msgstr ""
+
+msgid "Show {0} rows with missing files"
+msgstr ""
+
+msgid "Row id"
+msgstr ""
+
+msgid "Missing variants"
+msgstr ""
+
+msgid "Run cleanup now"
+msgstr ""
+
+msgid "Sure? This permanently deletes the orphan rows and files listed above."
+msgstr ""
+
+msgid "Nothing to clean up — storage is in sync."
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "Are you sure you want to delete # {0}?"
+msgstr ""
+
+msgid "List File Storage"
+msgstr ""
+
+msgid "File Storage"
+msgstr ""
+
+msgid "Edit File Storage"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "Files"
+msgstr ""
+
+msgid "Filters"
+msgstr ""
+
+msgid "active"
+msgstr ""
+
+msgid "Mime prefix"
+msgstr ""
+
+msgid "Filename contains"
+msgstr ""
+
+msgid "substring match"
+msgstr ""
+
+msgid "FK"
+msgstr ""
+
+msgid "id"
+msgstr ""
+
+msgid "Min size (MB)"
+msgstr ""
+
+msgid "Created from"
+msgstr ""
+
+msgid "Created to"
+msgstr ""
+
+msgid "Filter"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Delete the selected file storage entries? This cannot be undone."
+msgstr ""
+
+msgid "Delete selected"
+msgstr ""
+
+msgid "Tip: tick the header checkbox to select all rows on this page."
+msgstr ""
+
+msgid "Select all"
+msgstr ""
+
+msgid "Select row"
+msgstr ""
+
+msgid "View"
+msgstr ""
+
+msgid "Download"
+msgstr ""
+
+msgid "Edit"
+msgstr ""
+
+msgid "Queue variant regeneration"
+msgstr ""
+
+msgid "Queue a variant regeneration job for {0}?"
+msgstr ""
+
+msgid "Install dereuromark/cakephp-queue to enable background variant regeneration."
+msgstr ""
+
+msgid "Delete {0}?"
+msgstr ""
+
+msgid "previous"
+msgstr ""
+
+msgid "next"
+msgstr ""
+
+msgid "File"
+msgstr ""
+
+msgid "Back to list"
+msgstr ""
+
+msgid "Regenerate variants"
+msgstr ""
+
+msgid "Delete {0}? This cannot be undone."
+msgstr ""
+
+msgid "Details"
+msgstr ""
+
+msgid "Mime / Extension"
+msgstr ""
+
+msgid "Adapter"
+msgstr ""
+
+msgid "Path"
+msgstr ""
+
+msgid "DB filesize"
+msgstr ""
+
+msgid "bytes"
+msgstr ""
+
+msgid "Hash"
+msgstr ""
+
+msgid "Created"
+msgstr ""
+
+msgid "Modified"
+msgstr ""
+
+msgid "User"
+msgstr ""
+
+msgid "Variants"
+msgstr ""
+
+msgid "Preview"
+msgstr ""
+
+msgid "Variant"
+msgstr ""
+
+msgid "Size on disk"
+msgstr ""
+
+msgid "State"
+msgstr ""
+
+msgid "main"
+msgstr ""
+
+msgid "present"
+msgstr ""
+
+msgid "missing"
+msgstr ""
+
+msgid "Open inline"
+msgstr ""
+
+msgid "no path"
+msgstr ""
+
+msgid "No variants generated."
+msgstr ""
+
+msgid "Variants (raw)"
+msgstr ""
+
+msgid "Metadata"
+msgstr ""
+
+msgid "Dashboard"
+msgstr ""
+
+msgid "FileStorage Dashboard"
+msgstr ""
+
+msgid "Total Files"
+msgstr ""
+
+msgid "Total Size"
+msgstr ""
+
+msgid "Orphan Rows"
+msgstr ""
+
+msgid "Adapters"
+msgstr ""
+
+msgid "Top Collections"
+msgstr ""
+
+msgid "Size"
+msgstr ""
+
+msgid "No data."
+msgstr ""
+
+msgid "Top Models"
+msgstr ""
+
+msgid "Files by Adapter"
+msgstr ""
+
+msgid "Top Mime Types"
+msgstr ""
+
+msgid "Mime"
+msgstr ""
+
+msgid "Largest Files"
+msgstr ""
+
+msgid "Filename"
+msgstr ""
+
+msgid "Recent Uploads"
+msgstr ""
+
+msgid "No uploads yet."
+msgstr ""
+
+msgid "Install {0} to enable background image-variant regeneration from this UI."
+msgstr ""
+
+msgid "Navigation"
+msgstr ""
+
+msgid "Background Jobs"
+msgstr ""
+
+msgid "Queue Admin"
+msgstr ""
+
+msgid "Queue (not loaded)"
+msgstr ""
+

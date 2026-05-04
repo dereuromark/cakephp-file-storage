@@ -56,7 +56,7 @@ class CleanupCommand extends Command
         $parser->addArgument('collection');
         $parser->addOption('dryRun', [
             'short' => 'd',
-            'help' => __('Dry-Run only.'),
+            'help' => __d('file_storage', 'Dry-Run only.'),
             'boolean' => true,
         ]);
 

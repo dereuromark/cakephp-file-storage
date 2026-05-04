@@ -156,11 +156,11 @@ class FileStorageController extends FileStorageAppController
         if ($this->request->is(['patch', 'post', 'put'])) {
             $fileStorage = $this->FileStorage->patchEntity($fileStorage, $this->request->getData());
             if ($this->FileStorage->save($fileStorage)) {
-                $this->Flash->success(__('The file storage has been saved.'));
+                $this->Flash->success(__d('file_storage', 'The file storage has been saved.'));
 
                 return $this->redirect(['action' => 'index']);
             }
-            $this->Flash->error(__('The file storage could not be saved. Please, try again.'));
+            $this->Flash->error(__d('file_storage', 'The file storage could not be saved. Please, try again.'));
         }
         $this->set(compact('fileStorage'));
 
@@ -178,9 +178,9 @@ class FileStorageController extends FileStorageAppController
         $fileStorage = $this->FileStorage->get($id);
         $redirect = $this->request->getQuery('redirect');
         if ($this->FileStorage->delete($fileStorage)) {
-            $this->Flash->success(__('The file storage has been deleted.'));
+            $this->Flash->success(__d('file_storage', 'The file storage has been deleted.'));
         } else {
-            $this->Flash->error(__('The file storage could not be deleted. Please, try again.'));
+            $this->Flash->error(__d('file_storage', 'The file storage could not be deleted. Please, try again.'));
         }
 
         if ($redirect === 'ref') {
@@ -208,7 +208,7 @@ class FileStorageController extends FileStorageAppController
         $ids = array_values(array_filter($ids, static fn ($id): bool => (string)$id !== ''));
 
         if (!$ids) {
-            $this->Flash->warning(__('No file storage entries selected.'));
+            $this->Flash->warning(__d('file_storage', 'No file storage entries selected.'));
 
             return $this->redirect(['action' => 'index']);
         }
@@ -230,16 +230,17 @@ class FileStorageController extends FileStorageAppController
         }
 
         if ($deleted > 0 && $failed === 0) {
-            $this->Flash->success(__n(
+            $this->Flash->success(__dn(
+                'file_storage',
                 '{0} file storage entry deleted.',
                 '{0} file storage entries deleted.',
                 $deleted,
                 $deleted,
             ));
         } elseif ($deleted > 0 && $failed > 0) {
-            $this->Flash->warning(__('{0} deleted, {1} failed.', $deleted, $failed));
+            $this->Flash->warning(__d('file_storage', '{0} deleted, {1} failed.', $deleted, $failed));
         } else {
-            $this->Flash->error(__('Bulk delete failed.'));
+            $this->Flash->error(__d('file_storage', 'Bulk delete failed.'));
         }
 
         return $this->redirect(['action' => 'index']);
@@ -272,7 +273,8 @@ class FileStorageController extends FileStorageAppController
             $collection = (string)$this->request->getData('collection') ?: null;
             $report = $service->run($model, $collection, dryRun: false);
 
-            $this->Flash->success(__(
+            $this->Flash->success(__d(
+                'file_storage',
                 'Cleanup complete: {0} orphaned files deleted, {1} orphaned rows removed.',
                 count($report->deletedFiles),
                 $report->deletedRows,
@@ -335,7 +337,7 @@ class FileStorageController extends FileStorageAppController
             ],
         );
 
-        $this->Flash->success(__('Variant regeneration job has been queued for {0}.', h($entity->filename)));
+        $this->Flash->success(__d('file_storage', 'Variant regeneration job has been queued for {0}.', h($entity->filename)));
 
         return $this->redirect($this->referer(['action' => 'index']));
     }
