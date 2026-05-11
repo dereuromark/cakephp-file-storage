@@ -36,13 +36,18 @@ class ImageVariantTaskTest extends FileStorageTestCase
         // Conjure a minimal `queued_jobs` table so the Task base class's
         // LocatorAwareTrait lookup succeeds. A full Queue plugin migration
         // isn't needed here — the assertions only exercise validation +
-        // missing-entity branches and never persist a job.
+        // missing-entity branches and never persist a job. Keep the schema
+        // portable across SQLite/MySQL/Postgres (no AUTOINCREMENT keyword);
+        // SQLite uses AUTOINCREMENT, MySQL needs AUTO_INCREMENT, and
+        // Postgres uses SERIAL — a plain PRIMARY KEY without auto-increment
+        // works on all three since we never insert rows here.
         $connection = ConnectionManager::get('test');
         $connection->execute(
             'CREATE TABLE IF NOT EXISTS queued_jobs ('
-            . '  id INTEGER PRIMARY KEY AUTOINCREMENT,'
+            . '  id INTEGER NOT NULL,'
             . '  job_task VARCHAR(255),'
-            . '  data TEXT'
+            . '  data TEXT,'
+            . '  PRIMARY KEY (id)'
             . ')',
         );
     }
