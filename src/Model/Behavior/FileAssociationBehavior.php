@@ -8,7 +8,7 @@ use Cake\Event\EventInterface;
 use Cake\ORM\Association\HasMany;
 use Cake\ORM\Association\HasOne;
 use Cake\ORM\Behavior;
-use Laminas\Diactoros\UploadedFile;
+use Psr\Http\Message\UploadedFileInterface;
 
 /**
  * File Association Behavior.
@@ -145,7 +145,7 @@ class FileAssociationBehavior extends Behavior
         $ok = false;
         if (is_array($file) && $file['error'] === UPLOAD_ERR_OK) {
             $ok = true;
-        } elseif ($file instanceof UploadedFile && $file->getError() === UPLOAD_ERR_OK) {
+        } elseif ($file instanceof UploadedFileInterface && $file->getError() === UPLOAD_ERR_OK) {
             $ok = true;
         }
 
@@ -182,7 +182,7 @@ class FileAssociationBehavior extends Behavior
             $ok = false;
             if (is_array($file) && $file['error'] === UPLOAD_ERR_OK) {
                 $ok = true;
-            } elseif ($file instanceof UploadedFile && $file->getError() === UPLOAD_ERR_OK) {
+            } elseif ($file instanceof UploadedFileInterface && $file->getError() === UPLOAD_ERR_OK) {
                 $ok = true;
             }
 

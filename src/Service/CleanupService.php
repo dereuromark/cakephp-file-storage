@@ -5,6 +5,7 @@ namespace FileStorage\Service;
 use Cake\Core\Configure;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Exception;
+use FileStorage\Model\Entity\FileStorage;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -47,24 +48,58 @@ class CleanupService
             $scopeConditions['collection'] = $collection;
         }
 
-        /** @var array<\FileStorage\Model\Entity\FileStorage> $images */
-        $images = $table->find()
-            ->where($scopeConditions)
-            ->all()
-            ->toArray();
-
+        // Stream the rows in two passes instead of materializing the whole
+        // file_storage table into PHP memory. On deployments with hundreds of
+        // thousands of attachments the previous `->all()->toArray()` would OOM.
+        // Each pass is a fresh query so the underlying PDO cursor stays
+        // lazy / iterable-once and we never hold all rows at the same time.
+        $checkedCount = 0;
         $deletedRows = $this->removeOrphanRows($scopeConditions, $dryRun);
-        $deletedFiles = $this->removeOrphanFiles($images, $model, $collection, $dryRun, $warnings);
-        $missingFiles = $this->collectMissingFiles($images, $warnings);
+        $deletedFiles = $this->removeOrphanFiles(
+            $this->streamScoped($scopeConditions, $checkedCount),
+            $model,
+            $collection,
+            $dryRun,
+            $warnings,
+        );
+        $missingFiles = $this->collectMissingFiles($this->streamScoped($scopeConditions), $warnings);
 
         return new CleanupReport(
             dryRun: $dryRun,
-            checkedCount: count($images),
+            checkedCount: $checkedCount,
             deletedFiles: $deletedFiles,
             deletedRows: $deletedRows,
             missingFiles: $missingFiles,
             warnings: $warnings,
         );
+    }
+
+    /**
+     * Lazy iterator over file_storage rows matching $scopeConditions.
+     * The optional `&$checkedCount` ref is incremented as rows flow through
+     * for the first caller; later callers omit it.
+     *
+     * @param array<string, mixed> $scopeConditions
+     * @param int $checkedCount Out-param: counts rows as they iterate. Pass a
+     *     fresh `$x = 0` even if you don't care, to keep the ref consistent.
+     *
+     * @return iterable<\FileStorage\Model\Entity\FileStorage>
+     */
+    protected function streamScoped(array $scopeConditions, int &$checkedCount = 0): iterable
+    {
+        $table = $this->fetchTable('FileStorage.FileStorage');
+        $query = $table->find()->where($scopeConditions);
+        // disableBufferedResults() drops the ResultSet's internal row buffer
+        // so memory stays O(1) regardless of result-set size. Trade-off: we
+        // can't re-iterate the same query — every consumer here iterates
+        // exactly once.
+        $query->disableBufferedResults();
+        foreach ($query as $image) {
+            $checkedCount++;
+            assert($image instanceof FileStorage);
+
+            yield $image;
+        }
     }
 
     /**
@@ -95,7 +130,7 @@ class CleanupService
     }
 
     /**
-     * @param array<\FileStorage\Model\Entity\FileStorage> $images
+     * @param iterable<\FileStorage\Model\Entity\FileStorage> $images
      * @param string|null $model
      * @param string|null $collection
      * @param bool $dryRun
@@ -104,7 +139,7 @@ class CleanupService
      * @return array<int, string> Absolute paths of orphan files on disk that were (or would be) deleted.
      */
     protected function removeOrphanFiles(
-        array $images,
+        iterable $images,
         ?string $model,
         ?string $collection,
         bool $dryRun,
@@ -166,12 +201,12 @@ class CleanupService
     }
 
     /**
-     * @param array<\FileStorage\Model\Entity\FileStorage> $images
+     * @param iterable<\FileStorage\Model\Entity\FileStorage> $images
      * @param array<int, string> $warnings Out param.
      *
      * @return array<int, array{id: string|int, missing: array<int, string>}>
      */
-    protected function collectMissingFiles(array $images, array &$warnings): array
+    protected function collectMissingFiles(iterable $images, array &$warnings): array
     {
         $fileStorage = Configure::read('FileStorage.behaviorConfig.fileStorage');
         if ($fileStorage === null) {
