@@ -46,6 +46,19 @@ class FileStoragePlugin extends BasePlugin
                 $routes->fallbacks();
             });
         });
+
+        // Public signed-download route. Lives outside the Admin prefix because
+        // it authorizes via the embedded signature, not via an authenticated
+        // session. The signature is captured as a URL segment (not a query
+        // string) so it doesn't get scrubbed from same-origin Referer headers
+        // or hidden in reverse-proxy access logs that strip the query.
+        $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes): void {
+            $routes->connect(
+                '/signed/{id}/{signature}',
+                ['controller' => 'FileStorage', 'action' => 'signed'],
+                ['pass' => ['id', 'signature'], 'signature' => '[a-f0-9]{64}'],
+            );
+        });
     }
 
     /**
