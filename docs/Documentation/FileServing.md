@@ -294,28 +294,50 @@ Signed URLs allow temporary access to files without authentication, useful for:
 - API integrations
 - Temporary downloads
 
-### Generating Signed URLs
+### Built-in signed-URL serving (recommended)
+
+The plugin ships a public action at `/file-storage/signed/{id}/{signature}` that verifies the signature, looks up the file, and streams it directly. For local-filesystem adapters it uses `Response::withFile()`, giving HTTP `Range` support for `<video>` and `<audio>` elements for free; non-local adapters fall back to a single `read()` + string body.
+
+**Generate the URL** with the one-call helper:
 
 ```php
 use FileStorage\Utility\SignedUrlGenerator;
 
-// In your controller
+$url = SignedUrlGenerator::url($fileStorage, [
+    'expires' => strtotime('+24 hours'),
+    'fullBase' => true, // absolute URL for email
+]);
+// → http://example.com/file-storage/signed/<id>/<sha256>?expires=1799999999
+```
+
+The helper places the signature in the path segment (so reverse-proxy access logs that scrub query strings don't shred half the credential) and `expires` in the query string. The matching action handles:
+
+- 404 for unknown id
+- 403 for tampered or expired signatures (same status either way so probing callers can't distinguish)
+- 404 if the backing file disappeared from the adapter
+
+If `Authentication` is loaded globally, the `signed` action calls `allowUnauthenticated('signed')` on initialize so the request doesn't get bounced to the login form — that's the entire authorization story for a signed URL.
+
+### Custom serving controller (for app-specific authorization)
+
+You can still ship your own controller when you need extra checks beyond signature verification (rate limiting, audit logs, header tweaks). Generate the signature with `SignedUrlGenerator::generate()` and route it however you like:
+
+```php
+use FileStorage\Utility\SignedUrlGenerator;
+
 public function share($fileStorageId)
 {
     $fileStorageTable = $this->fetchTable('FileStorage.FileStorage');
     $fileStorage = $fileStorageTable->get($fileStorageId);
 
-    // Check user can share this file
     if (!$this->_checkAccess($fileStorage)) {
         throw new ForbiddenException();
     }
 
-    // Generate signature valid for 24 hours
     $signatureData = SignedUrlGenerator::generate($fileStorage, [
         'expires' => strtotime('+24 hours'),
     ]);
 
-    // Generate full URL with signature
     $url = Router::url([
         'controller' => 'Files',
         'action' => 'serve',
@@ -324,7 +346,6 @@ public function share($fileStorageId)
         '_full' => true,
     ]);
 
-    // Email or display URL
     $this->set('shareUrl', $url);
 }
 ```
