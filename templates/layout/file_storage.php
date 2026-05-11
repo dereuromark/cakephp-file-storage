@@ -140,6 +140,13 @@
             .fs-main { margin-left: 0; }
             .fs-footer { margin-left: 0; }
         }
+
+        /* Lighter placeholder so it doesn't get mistaken for real content */
+        .form-control::placeholder,
+        .form-select::placeholder {
+            color: #adb5bd;
+            opacity: 1;
+        }
     </style>
 
     <?= $this->fetch('meta') ?>
