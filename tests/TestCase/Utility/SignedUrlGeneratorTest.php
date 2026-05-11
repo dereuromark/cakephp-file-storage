@@ -4,8 +4,10 @@ namespace FileStorage\Test\TestCase\Utility;
 
 use Cake\Core\Configure;
 use Cake\I18n\DateTime;
+use Cake\Routing\Router;
 use Cake\TestSuite\TestCase;
 use Cake\Utility\Security;
+use FileStorage\FileStoragePlugin;
 use FileStorage\Model\Entity\FileStorage;
 use FileStorage\Utility\SignedUrlGenerator;
 
@@ -301,5 +303,61 @@ class SignedUrlGeneratorTest extends TestCase
             ['secret' => 'wrong-secret'],
         );
         $this->assertFalse($isInvalid);
+    }
+
+    /**
+     * `url()` composes a path that round-trips back to the controller action
+     * via Cake's router. Signature lives in the path segment (not the query
+     * string) so reverse-proxy access logs that scrub query strings don't
+     * silently shred half the credential.
+     *
+     * @return void
+     */
+    public function testUrlPutsSignatureInPathAndExpiresInQuery(): void
+    {
+        $this->loadPluginRoutes();
+        $fileStorage = new FileStorage([
+            'id' => 'urn-test',
+            'path' => 'Item/file.png',
+            'modified' => new DateTime('2026-05-11 12:00:00'),
+        ]);
+
+        $url = SignedUrlGenerator::url($fileStorage, ['expires' => 1799999999]);
+
+        $this->assertStringContainsString('/file-storage/signed/urn-test/', $url);
+        $this->assertMatchesRegularExpression('#/[a-f0-9]{64}\b#', $url);
+        $this->assertStringContainsString('expires=1799999999', $url);
+    }
+
+    /**
+     * No `expires` option → no `expires` query string. Matches the
+     * `generate()` behavior of returning null when unspecified.
+     *
+     * @return void
+     */
+    public function testUrlWithoutExpiresLeavesQueryEmpty(): void
+    {
+        $this->loadPluginRoutes();
+        $fileStorage = new FileStorage([
+            'id' => 'urn-no-expiry',
+            'path' => 'Item/file.png',
+            'modified' => new DateTime('2026-05-11 12:00:00'),
+        ]);
+
+        $url = SignedUrlGenerator::url($fileStorage);
+
+        $this->assertStringNotContainsString('expires=', $url);
+    }
+
+    /**
+     * Apply the plugin's routes() callback against the global router so the
+     * `url()` lookups in tests have something to match against. Idempotent
+     * across tests — Router::reload() resets registered scopes/routes.
+     */
+    protected function loadPluginRoutes(): void
+    {
+        Router::reload();
+        $builder = Router::createRouteBuilder('/');
+        (new FileStoragePlugin())->routes($builder);
     }
 }

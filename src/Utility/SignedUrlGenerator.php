@@ -3,6 +3,7 @@
 namespace FileStorage\Utility;
 
 use Cake\Core\Configure;
+use Cake\Routing\Router;
 use Cake\Utility\Security;
 use FileStorage\Model\Entity\FileStorage;
 
@@ -79,5 +80,47 @@ class SignedUrlGenerator
 
         // Timing-safe comparison to prevent timing attacks
         return hash_equals((string)$expected['signature'], $signature);
+    }
+
+    /**
+     * Build a fully-routable signed-download URL for this entity.
+     *
+     * Pairs with `FileStorage\Controller\FileStorageController::signed()`.
+     * The returned URL embeds the signature in the path segment and the
+     * expiration in the query string so reverse-proxy access logs scrub
+     * the secret half (signature) less aggressively than they would
+     * scrub a `?signature=...` query parameter — but the signature alone
+     * is useless without the entity-derived data this class hashes into
+     * `generate()`, so log exposure is bounded.
+     *
+     * Set `'fullBase' => true` for an absolute URL (the common case for
+     * email links and external embeds); the default is a relative path
+     * suitable for same-origin templates.
+     *
+     * @param \FileStorage\Model\Entity\FileStorage $entity
+     * @param array<string, mixed> $options Forwarded to `generate()`, plus:
+     *     - `fullBase` (bool, default false): emit an absolute URL.
+     *
+     * @return string The signed URL.
+     */
+    public static function url(FileStorage $entity, array $options = []): string
+    {
+        $fullBase = (bool)($options['fullBase'] ?? false);
+        unset($options['fullBase']);
+
+        $signed = static::generate($entity, $options);
+        $url = [
+            'plugin' => 'FileStorage',
+            'prefix' => false,
+            'controller' => 'FileStorage',
+            'action' => 'signed',
+            $entity->id,
+            $signed['signature'],
+        ];
+        if ($signed['expires'] !== null) {
+            $url['?'] = ['expires' => $signed['expires']];
+        }
+
+        return Router::url($url, $fullBase);
     }
 }
