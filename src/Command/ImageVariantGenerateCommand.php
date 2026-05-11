@@ -170,6 +170,20 @@ class ImageVariantGenerateCommand extends Command
         }
         $adapter = $storage->getStorage($options['adapter']);
 
+        $enqueue = !empty($options['queue']);
+        /** @var \Queue\Model\Table\QueuedJobsTable|null $queuedJobsTable */
+        $queuedJobsTable = null;
+        if ($enqueue) {
+            if (!class_exists('Queue\Model\Table\QueuedJobsTable')) {
+                $io->abort(__d(
+                    'file_storage',
+                    'The --queue option requires `dereuromark/cakephp-queue` to be installed.',
+                ));
+            }
+            /** @var \Queue\Model\Table\QueuedJobsTable $queuedJobsTable */
+            $queuedJobsTable = TableRegistry::getTableLocator()->get('Queue.QueuedJobs');
+        }
+
         do {
             $images = $this->_getRecords($model, $collection, $limit, $offset);
             if ($images) {
@@ -185,7 +199,20 @@ class ImageVariantGenerateCommand extends Command
                     //EventManager::instance()->dispatch($Event);
 
                     if (empty($options['dryRun'])) {
-                        $this->_processEntity($image, $operations, $options);
+                        if ($enqueue && $queuedJobsTable !== null) {
+                            // Hand off the per-entity work to the queue. The
+                            // ImageVariantTask payload mirrors the inline path:
+                            // same operations, same merge semantics, same table.
+                            $queuedJobsTable->createJob('FileStorage.ImageVariant', [
+                                'id' => $image->id,
+                                'operations' => $operations,
+                                'adapter' => $options['adapter'] ?? null,
+                                'merge' => !($options['force'] ?? false),
+                                'storageTable' => $this->Table->getRegistryAlias(),
+                            ]);
+                        } else {
+                            $this->_processEntity($image, $operations, $options);
+                        }
                     }
 
                     $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
@@ -319,6 +346,14 @@ class ImageVariantGenerateCommand extends Command
                 'force' => [
                     'short' => 'f',
                     'help' => __d('file_storage', 'Force regeneration of variants even if they already exist.'),
+                    'boolean' => true,
+                ],
+                'queue' => [
+                    'help' => __d(
+                        'file_storage',
+                        'Enqueue one ImageVariantTask job per entity instead of '
+                        . 'processing inline. Requires dereuromark/cakephp-queue.',
+                    ),
                     'boolean' => true,
                 ],
             ],
