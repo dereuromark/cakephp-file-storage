@@ -28,6 +28,7 @@ All arguments are optional. If omitted, the command will process all configured 
   * Without this flag, existing variants are merged (preserved)
   * With this flag, all variants are replaced
 * **--dryRun, -d**: Dry-run only (preview what would be processed without making changes).
+* **--queue**: Enqueue one `ImageVariantTask` job per entity instead of processing inline. Requires `dereuromark/cakephp-queue`. See [Background regeneration via cakephp-queue](#background-regeneration-via-cakephp-queue).
 
 ## Examples
 
@@ -140,3 +141,44 @@ Image variants must be configured in your application's configuration file (e.g.
 * The command removes the FileStorage behavior during save to prevent infinite loops
 
 The new command requires both model and collection names to be specified.
+
+## Background regeneration via cakephp-queue
+
+Inline processing blocks the calling shell for the whole batch, which is fine
+for a one-off CLI run but unworkable from an admin UI button on a deployment
+with thousands of attachments. When `dereuromark/cakephp-queue` is installed,
+pass `--queue` to enqueue one `FileStorage.ImageVariant` job per entity:
+
+```sh
+bin/cake file_storage generate_image_variant Posts Avatar --queue
+```
+
+Each job lands on the queue immediately; queue workers pick them up and run
+the same processor pipeline per-entity. Benefits:
+
+- the admin "regenerate variants" action can call into the command and
+  return immediately
+- failed jobs auto-retry per the queue config
+- renderer CPU cost spreads across multiple workers naturally
+
+### Enqueuing directly from app code
+
+If you don't want to go through the CLI, build the job payload yourself:
+
+```php
+$queuedJobsTable = $this->fetchTable('Queue.QueuedJobs');
+$queuedJobsTable->createJob('FileStorage.ImageVariant', [
+    'id' => $fileStorage->id,
+    'operations' => [
+        'thumbnail' => ['width' => 100],
+        'medium'    => ['width' => 600],
+    ],
+    'merge' => true,                                 // keep existing variants
+    'storageTable' => 'FileStorage.FileStorage',     // optional
+]);
+```
+
+The task validates the payload (missing `id` or `operations` throws
+`Queue\Model\QueueException` so the worker can apply retry / dead-letter
+handling) and soft-fails — no exception, no log noise — when the entity has
+been deleted between enqueue and dispatch.
