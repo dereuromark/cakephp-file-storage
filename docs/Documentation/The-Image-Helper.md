@@ -147,6 +147,73 @@ If you request a variant that doesn't exist, the helper will:
 ]) ?>
 ```
 
+## Modern image formats via `picture()`
+
+AVIF and WebP are 25–60% smaller than JPEG/PNG at comparable quality but
+need `<picture>` + `<source type>` content negotiation to ship safely
+alongside the original encoding. `Image->picture()` builds that markup:
+
+```php
+echo $this->Image->picture($article->cover, 'medium');
+```
+
+Renders (when alt-format variants exist):
+
+```html
+<picture>
+  <source srcset="/img/.../cover.medium.avif" type="image/avif">
+  <source srcset="/img/.../cover.medium.webp" type="image/webp">
+  <img src="/img/.../cover.medium.jpg" alt="">
+</picture>
+```
+
+Browsers pick the first `<source>` whose `type` they understand;
+everything else falls through to the inner `<img>`.
+
+### Producing the alt-format variants
+
+`picture()` doesn't encode anything itself — it just looks up variants
+named `{version}.{format}`. Declare them in your `FileStorage.imageVariants`
+config alongside the base variant:
+
+```php
+'FileStorage' => [
+    'imageVariants' => [
+        'Articles' => [
+            'cover' => [
+                'medium'      => ['width' => 800, 'format' => 'jpeg'],
+                'medium.webp' => ['width' => 800, 'format' => 'webp'],
+                'medium.avif' => ['width' => 800, 'format' => 'avif'],
+            ],
+        ],
+    ],
+],
+```
+
+Run `bin/cake file_storage generate_image_variant Articles cover` once to
+backfill existing rows. New uploads pick up all three formats
+automatically via the standard processor pipeline.
+
+### Behavior details
+
+- **Graceful degradation:** a format whose variant isn't defined (or
+  doesn't exist on the storage adapter) is silently skipped. Browsers
+  fall through to the next `<source>` or, ultimately, the `<img>`.
+- **No alt-format variants at all** → `picture()` returns just the
+  plain `<img>` without the `<picture>` wrapper. Avoids the visual
+  cost of wrapping the only child in a redundant element.
+- **Preference order matters:** default is `['avif', 'webp']` — AVIF
+  first because where supported it's the most efficient, WebP as a
+  near-universal fallback. Override per-call with `formats`:
+
+  ```php
+  echo $this->Image->picture($article->cover, 'medium', [
+      'formats' => ['webp'], // skip AVIF if you don't generate it
+  ]);
+  ```
+- **All other options** (`fallback`, `pathPrefix`, alt text, `class`)
+  forward to the inner `<img>` via the existing `display()` path.
+
 ## Working with Entities
 
 The helper expects entities that implement `FileStorageEntityInterface`. The plugin's `FileStorage` entity implements this interface and provides:

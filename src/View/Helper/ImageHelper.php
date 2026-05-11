@@ -122,6 +122,98 @@ class ImageHelper extends Helper
     }
 
     /**
+     * Render a `<picture>` element with one `<source>` per modern image
+     * format (AVIF, WebP) and a fallback `<img>` tag pointing at the
+     * traditional encoding.
+     *
+     * Browsers pick the first `<source>` whose `type` they understand;
+     * everything else falls through to the inner `<img>`. The plugin doesn't
+     * encode AVIF or WebP on its own — the caller is expected to declare
+     * those as variants in `FileStorage.imageVariants` config (e.g. a
+     * `medium.webp` variant alongside the `medium` JPEG variant) so the
+     * existing pipeline writes them. The helper just looks them up.
+     *
+     * Convention: a `$format` source is fetched as `imageUrl($image,
+     * "$version.$format")` (or `imageUrl($image, $format)` when no version
+     * is requested). If a format variant isn't defined for the entity
+     * (`VariantDoesNotExistException`) or the variant URL is empty, the
+     * source for that format is silently skipped — browsers degrade
+     * gracefully to the next entry. Unexpected lookup errors are logged
+     * to the `debug` channel and the format is still skipped.
+     *
+     * Options:
+     * - `formats` (array): list of format identifiers in preference order.
+     *   Default `['avif', 'webp']` — AVIF first because where supported
+     *   it's the most efficient; WebP as a near-universal fallback; the
+     *   original encoding inside the `<img>` for the long tail.
+     * - All other options are forwarded to `imageUrl()` / `Html->image()`.
+     *
+     * @param \FileStorage\Model\Entity\FileStorageEntityInterface|null $image
+     * @param string|null $version
+     * @param array<string, mixed> $options
+     *
+     * @return string `<picture>...</picture>` (or just the `<img>` when no
+     *     alternate-format variants exist).
+     */
+    public function picture(
+        ?FileStorageEntityInterface $image,
+        ?string $version = null,
+        array $options = [],
+    ): string {
+        $formats = $options['formats'] ?? ['avif', 'webp'];
+        unset($options['formats']);
+
+        if ($image === null) {
+            return $this->fallbackImage($options, $version);
+        }
+
+        $sources = [];
+        foreach ((array)$formats as $format) {
+            if (!is_string($format) || $format === '') {
+                continue;
+            }
+            $variantName = $version !== null && $version !== '' ? $version . '.' . $format : $format;
+            try {
+                $url = $this->imageUrl($image, $variantName, $options);
+            } catch (VariantDoesNotExistException) {
+                // Expected when an alt-format variant hasn't been generated
+                // for this entity yet — degrade silently. Logging every miss
+                // produces noise on apps that haven't backfilled AVIF/WebP.
+                continue;
+            }
+            if ($url === null || $url === '') {
+                continue;
+            }
+            $sources[] = [
+                'srcset' => $url,
+                'type' => 'image/' . $format,
+            ];
+        }
+
+        // The fallback img is always emitted, even when alt-format variants
+        // exist — `<picture>` semantics require it as the final child.
+        $fallback = $this->display($image, $version, $options);
+
+        if (!$sources) {
+            // No alt-format variants found; the bare img is equally good
+            // and avoids the visual cost of wrapping the only child in
+            // a redundant `<picture>` element.
+            return $fallback;
+        }
+
+        $sourceHtml = '';
+        foreach ($sources as $source) {
+            $sourceHtml .= sprintf(
+                '<source srcset="%s" type="%s">',
+                h($source['srcset']),
+                h($source['type']),
+            );
+        }
+
+        return sprintf('<picture>%s%s</picture>', $sourceHtml, $fallback);
+    }
+
+    /**
      * Provides a fallback image if the image record is empty
      *
      * @param array<string, mixed> $options
