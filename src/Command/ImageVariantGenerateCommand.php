@@ -203,19 +203,23 @@ class ImageVariantGenerateCommand extends Command
                             // Hand off the per-entity work to the queue. The
                             // ImageVariantTask payload mirrors the inline path:
                             // same operations, same merge semantics, same table.
+                            // We deliberately do NOT pass `adapter` — the task
+                            // resolves the storage adapter from the entity's
+                            // own `adapter` column, just like the inline path.
                             $queuedJobsTable->createJob('FileStorage.ImageVariant', [
                                 'id' => $image->id,
                                 'operations' => $operations,
-                                'adapter' => $options['adapter'] ?? null,
                                 'merge' => !($options['force'] ?? false),
                                 'storageTable' => $this->Table->getRegistryAlias(),
                             ]);
+                            $io->verbose(__d('file_storage', '- ID {0} enqueued', $image->id));
                         } else {
                             $this->_processEntity($image, $operations, $options);
+                            $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
                         }
+                    } else {
+                        $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
                     }
-
-                    $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
                 }
             }
             $offset += $limit;

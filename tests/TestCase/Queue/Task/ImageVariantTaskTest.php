@@ -12,16 +12,16 @@ use Queue\Model\QueueException;
  */
 class ImageVariantTaskTest extends FileStorageTestCase
 {
- /**
-  * Only the FileStorage fixture is loaded. The Queue plugin's
-  * `queued_jobs` table is not part of this test app's schema, but the
-  * Task base class fetches it eagerly via LocatorAwareTrait — we side-
-  * step by creating the table manually as a one-off in setUp(). This
-  * lets the failure-path tests below (validation + soft no-op) work
-  * without dragging in the full Queue plugin migrations setup.
-  *
-  * @var array<string>
-  */
+    /**
+     * Only the FileStorage fixture is loaded. The Queue plugin's
+     * `queued_jobs` table is not part of this test app's schema, but the
+     * Task base class fetches it eagerly via LocatorAwareTrait — we side-
+     * step by creating the table manually as a one-off in setUp(). This
+     * lets the failure-path tests below (validation + soft no-op) work
+     * without dragging in the full Queue plugin migrations setup.
+     *
+     * @var array<string>
+     */
     protected array $fixtures = [
         'plugin.FileStorage.FileStorage',
     ];

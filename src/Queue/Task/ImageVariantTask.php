@@ -38,8 +38,6 @@ use RuntimeException;
  *         'thumbnail' => ['width' => 100], // same shape `imageVariants` uses.
  *         'medium' => ['width' => 600],
  *     ],
- *     'adapter' => 'Local', // optional, defaults to the
- *                                             // entity's `adapter` column.
  *     'merge' => true, // optional, default true. Merge
  *                                             // means existing variants stay;
  *                                             // false replaces the variant set.
@@ -110,17 +108,13 @@ class ImageVariantTask extends Task
     /**
      * Apply the variant operations to one entity and persist the updated row.
      *
-     * Extracted as a public method so the equivalent inline path in
-     * `ImageVariantGenerateCommand` can be refactored to delegate here in a
-     * later PR without duplicating the processor pipeline.
-     *
      * @param \FileStorage\Model\Entity\FileStorage $entity
      * @param array<string, mixed> $operations
      * @param bool $merge
      *
      * @return void
      */
-    public function processEntity(EntityInterface $entity, array $operations, bool $merge = true): void
+    protected function processEntity(EntityInterface $entity, array $operations, bool $merge = true): void
     {
         $file = $this->entityToFileObject($entity);
         $file = $file->withVariants($operations, $merge);
@@ -143,18 +137,19 @@ class ImageVariantTask extends Task
 
         // Same recursion-guard pattern as ImageVariantGenerateCommand and the
         // FileStorageBehavior — strip the behavior for the metadata save so
-        // the afterSave processor pipeline doesn't re-fire here.
+        // the afterSave processor pipeline doesn't re-fire here. Tracking
+        // presence separately from config lets us restore the behavior even
+        // when it was attached with an empty options array.
         $behaviors = $this->storageTable->behaviors();
-        $tableConfig = $behaviors->has('FileStorage')
-            ? $behaviors->get('FileStorage')->getConfig()
-            : [];
-        if ($behaviors->has('FileStorage')) {
+        $hadBehavior = $behaviors->has('FileStorage');
+        $tableConfig = $hadBehavior ? $behaviors->get('FileStorage')->getConfig() : [];
+        if ($hadBehavior) {
             $this->storageTable->removeBehavior('FileStorage');
         }
         try {
             $this->storageTable->saveOrFail($entity);
         } finally {
-            if ($tableConfig) {
+            if ($hadBehavior) {
                 $this->storageTable->addBehavior('FileStorage.FileStorage', $tableConfig);
             }
         }
