@@ -190,6 +190,14 @@ class FileStorageBehavior extends Behavior
                 ], $this->table());
 
                 $file = $this->processImages($file, $entity);
+                // Move the cleanup handle forward BEFORE process() runs: the
+                // processor may write some variants to disk and then throw
+                // partway through. By the time we hit catch{}, the variant
+                // paths configured here live on $file, so passing this $file
+                // to fileStorage->remove() can clean up partially-written
+                // variants alongside the main blob (remove() skips variants
+                // whose path key is unset, so unwritten ones are no-ops).
+                $storedFile = $file;
 
                 $processor = $this->getFileProcessor();
 
@@ -199,8 +207,6 @@ class FileStorageBehavior extends Behavior
                 ], $this->table());
 
                 $file = $processor->process($file);
-                // Keep track of variants the processor wrote so cleanup can
-                // remove them too. fileStorage->remove() walks $file->variants().
                 $storedFile = $file;
 
                 $this->dispatchEvent('FileStorage.afterFileProcessing', [

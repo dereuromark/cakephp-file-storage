@@ -76,12 +76,11 @@ class CleanupService
 
     /**
      * Lazy iterator over file_storage rows matching $scopeConditions.
-     * The optional `&$checkedCount` ref is incremented as rows flow through
-     * for the first caller; later callers omit it.
      *
      * @param array<string, mixed> $scopeConditions
-     * @param int $checkedCount Out-param: counts rows as they iterate. Pass a
-     *     fresh `$x = 0` even if you don't care, to keep the ref consistent.
+     * @param int $checkedCount Pass a variable by reference only if you want
+     *     row counting (it is incremented as rows flow through); otherwise
+     *     omit the parameter.
      *
      * @return iterable<\FileStorage\Model\Entity\FileStorage>
      */
