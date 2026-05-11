@@ -352,7 +352,7 @@ class SignedUrlGeneratorTest extends TestCase
     /**
      * Apply the plugin's routes() callback against the global router so the
      * `url()` lookups in tests have something to match against. Idempotent
-     * across tests — Router::reset() clears the scope.
+     * across tests — Router::reload() resets registered scopes/routes.
      */
     protected function loadPluginRoutes(): void
     {

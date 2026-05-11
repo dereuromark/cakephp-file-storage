@@ -83,7 +83,7 @@ class FileStorageController extends Controller
     public function signed($id = null, ?string $signature = null): Response
     {
         if ($id === null || $id === '' || $signature === null || $signature === '') {
-            throw new BadRequestException('Missing id or signature.');
+            throw new BadRequestException(__d('file_storage', 'Missing id or signature.'));
         }
 
         /** @var \FileStorage\Model\Table\FileStorageTable $table */
@@ -92,7 +92,7 @@ class FileStorageController extends Controller
         /** @var \FileStorage\Model\Entity\FileStorage|null $entity */
         $entity = $table->find()->where(['FileStorage.id' => $id])->first();
         if ($entity === null) {
-            throw new NotFoundException('File not found.');
+            throw new NotFoundException(__d('file_storage', 'File not found.'));
         }
 
         $expires = $this->getRequest()->getQuery('expires');
@@ -106,7 +106,7 @@ class FileStorageController extends Controller
             // caller can't distinguish — the next-best outcome would be
             // 401, but that implies a way to authenticate, which signed
             // URLs don't have. 403 is the conventional choice.
-            throw new ForbiddenException('Invalid or expired signature.');
+            throw new ForbiddenException(__d('file_storage', 'Invalid or expired signature.'));
         }
 
         return $this->streamEntity($entity);
@@ -124,19 +124,23 @@ class FileStorageController extends Controller
      */
     protected function streamEntity(FileStorage $entity): Response
     {
+        if (!$entity->adapter) {
+            throw new NotFoundException(__d('file_storage', 'File is not stored on any adapter.'));
+        }
+
         $path = $entity->path;
         if (!$path) {
-            throw new NotFoundException('No path stored for the requested file.');
+            throw new NotFoundException(__d('file_storage', 'No path stored for the requested file.'));
         }
 
         $fileStorage = Configure::read('FileStorage.behaviorConfig.fileStorage');
         if ($fileStorage === null) {
-            throw new InternalErrorException('FileStorage adapter not configured.');
+            throw new InternalErrorException(__d('file_storage', 'FileStorage adapter not configured.'));
         }
 
         $adapter = $fileStorage->getStorage((string)$entity->adapter);
         if (!$adapter->fileExists($path)) {
-            throw new NotFoundException('Backing file is missing on the adapter.');
+            throw new NotFoundException(__d('file_storage', 'Backing file is missing on the adapter.'));
         }
 
         $mime = (string)$entity->mime_type !== ''
@@ -166,12 +170,13 @@ class FileStorageController extends Controller
     }
 
     /**
-     * If the storage adapter is local, reach into it via its public
-     * `prefixPath()` semantics to compute a real on-disk path. League's
-     * `LocalFilesystemAdapter` doesn't expose that directly, but its
-     * constructor stores the root and we can ask Flysystem to translate the
-     * logical path via `prefixPath()` reflection — that's the supported
-     * way to bridge to `withFile()`.
+     * If the storage adapter is local, reach into its private `prefixer`
+     * (PathPrefixer) via reflection to compute a real on-disk path so we
+     * can hand a filesystem path to `Response::withFile()` and get HTTP
+     * Range support for free. Flysystem's `LocalFilesystemAdapter` does
+     * not expose this publicly; this is a deliberate, narrow internal
+     * lookup that degrades to null on any mismatch (callers then fall
+     * back to `read()` + string body).
      *
      * Returns null for any non-local adapter so the caller falls back to
      * `read()` + string body.
@@ -188,12 +193,13 @@ class FileStorageController extends Controller
             return null;
         }
 
-        // LocalFilesystemAdapter stores its prefixed pather as a private
-        // property; the supported way to reach it is via reflection or by
-        // keeping the root alongside the adapter at construction time.
-        // The plugin's StorageService configures the adapter with a known
-        // `root`, so we read that back via reflection — same approach the
-        // CleanupService uses elsewhere in the plugin.
+        // LocalFilesystemAdapter stores its `prefixer` (PathPrefixer) as a
+        // private property and exposes no public accessor. Flysystem itself
+        // is consistent about this across 2.x/3.x, but the property name is
+        // technically an implementation detail — if it ever changes we
+        // simply fall back to the read()+string-body path below, which is
+        // why this method returns null on any structural mismatch instead
+        // of erroring.
         $ref = new ReflectionClass($adapter);
         if (!$ref->hasProperty('prefixer')) {
             return null;
