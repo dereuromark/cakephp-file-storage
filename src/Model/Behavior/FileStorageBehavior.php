@@ -168,6 +168,11 @@ class FileStorageBehavior extends Behavior
         }
 
         if ($entity->isDirty()) {
+            // Track the file as it moves through store → processImages → process so
+            // the rollback in catch{} can delete whatever made it to disk. Without
+            // this the previous behavior deleted the DB row but left the file
+            // (and any partially-written variants) orphaned on the storage adapter.
+            $storedFile = null;
             try {
                 $file = $this->entityToFileObject($entity);
 
@@ -177,6 +182,7 @@ class FileStorageBehavior extends Behavior
                 ], $this->table());
 
                 $file = $this->fileStorage->store($file);
+                $storedFile = $file;
 
                 $this->dispatchEvent('FileStorage.afterStoringFile', [
                     'entity' => $entity,
@@ -184,6 +190,14 @@ class FileStorageBehavior extends Behavior
                 ], $this->table());
 
                 $file = $this->processImages($file, $entity);
+                // Move the cleanup handle forward BEFORE process() runs: the
+                // processor may write some variants to disk and then throw
+                // partway through. By the time we hit catch{}, the variant
+                // paths configured here live on $file, so passing this $file
+                // to fileStorage->remove() can clean up partially-written
+                // variants alongside the main blob (remove() skips variants
+                // whose path key is unset, so unwritten ones are no-ops).
+                $storedFile = $file;
 
                 $processor = $this->getFileProcessor();
 
@@ -193,6 +207,7 @@ class FileStorageBehavior extends Behavior
                 ], $this->table());
 
                 $file = $processor->process($file);
+                $storedFile = $file;
 
                 $this->dispatchEvent('FileStorage.afterFileProcessing', [
                     'entity' => $entity,
@@ -217,6 +232,16 @@ class FileStorageBehavior extends Behavior
                 }
             } catch (Throwable $exception) {
                 $this->table()->delete($entity);
+                if ($storedFile !== null) {
+                    // Best-effort cleanup; if the storage adapter is itself the
+                    // source of the failure (e.g. the bucket went away), we
+                    // don't want to mask the original exception.
+                    try {
+                        $this->fileStorage->remove($storedFile);
+                    } catch (Throwable) {
+                        // Swallow: the original $exception is the real story.
+                    }
+                }
 
                 throw $exception;
             }

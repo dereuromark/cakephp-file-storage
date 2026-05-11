@@ -7,7 +7,13 @@ use Cake\Core\Configure;
 use Cake\Event\Event;
 use FileStorage\Model\Table\FileStorageTable;
 use FileStorage\Test\TestCase\FileStorageTestCase;
+use FilesystemIterator;
 use Laminas\Diactoros\UploadedFile;
+use PhpCollective\Infrastructure\Storage\FileInterface;
+use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use RuntimeException;
 
 /**
  * StorageBehaviorTest
@@ -208,6 +214,86 @@ class FileStorageBehaviorTest extends FileStorageTestCase
 
         $this->assertNotEmpty($result->variants());
         $this->assertArrayHasKey('large', $result->variants());
+    }
+
+    /**
+     * Regression: when the processor (or any post-store step) throws, the
+     * behavior used to delete the DB row but leave the just-stored file on
+     * the storage adapter. Verify the file is now also cleaned up.
+     *
+     * @return void
+     */
+    public function testAfterSaveRollbackRemovesStoredFileOnProcessorFailure(): void
+    {
+        $behaviorConfig = Configure::read('FileStorage.behaviorConfig');
+
+        $throwingProcessor = new class implements ProcessorInterface {
+            public function process(FileInterface $file): FileInterface
+            {
+                throw new RuntimeException('processor failure (test regression)');
+            }
+        };
+
+        $table = $this->getTableLocator()->get('FileStorage.FileStorage', ['alias' => 'IsolatedFileStorage']);
+        $table->removeBehavior('FileStorage');
+        $table->addBehavior('FileStorage.FileStorage', [
+            'fileStorage' => $behaviorConfig['fileStorage'],
+            'fileProcessor' => $throwingProcessor,
+        ]);
+
+        $beforeRegularFiles = $this->countRegularFilesUnder($this->testPath);
+
+        $entity = $table->newEntity([
+            'model' => 'Document',
+            'adapter' => 'Local',
+            'file' => new UploadedFile(
+                $this->fileFixtures . 'titus.jpg',
+                filesize($this->fileFixtures . 'titus.jpg'),
+                UPLOAD_ERR_OK,
+                'titus.jpg',
+                'image/jpeg',
+            ),
+        ]);
+
+        $caught = null;
+        try {
+            $table->saveOrFail($entity);
+        } catch (RuntimeException $e) {
+            $caught = $e;
+        }
+
+        $this->assertNotNull($caught, 'Expected the processor failure to propagate');
+        $this->assertSame('processor failure (test regression)', $caught->getMessage());
+        $this->assertSame(0, $table->find()->where(['model' => 'Document'])->count(), 'Entity row should have been rolled back');
+
+        $afterRegularFiles = $this->countRegularFilesUnder($this->testPath);
+        $this->assertSame(
+            $beforeRegularFiles,
+            $afterRegularFiles,
+            'Stored file should have been removed from disk as part of rollback (was leaving orphans)',
+        );
+    }
+
+    /**
+     * Helper for the rollback test: counts regular files under a directory
+     * tree, ignoring dotfiles and directories.
+     */
+    protected function countRegularFilesUnder(string $path): int
+    {
+        if (!is_dir($path)) {
+            return 0;
+        }
+        $count = 0;
+        $iter = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($path, FilesystemIterator::SKIP_DOTS),
+        );
+        foreach ($iter as $entry) {
+            if ($entry->isFile()) {
+                $count++;
+            }
+        }
+
+        return $count;
     }
 
     /**
