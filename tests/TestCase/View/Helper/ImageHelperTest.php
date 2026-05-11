@@ -206,8 +206,8 @@ class ImageHelperTest extends FileStorageTestCase
 
     /**
      * Happy path for `picture()`: entity has AVIF + WebP variants alongside
-     * the JPEG, helper renders a `<picture>` with three `<source>` entries
-     * (one per modern format) plus a fallback `<img>`.
+     * the JPEG, helper renders a `<picture>` with two `<source>` entries
+     * (one per modern format) plus a fallback `<img>` for the JPEG.
      *
      * @return void
      */

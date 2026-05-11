@@ -135,9 +135,11 @@ class ImageHelper extends Helper
      *
      * Convention: a `$format` source is fetched as `imageUrl($image,
      * "$version.$format")` (or `imageUrl($image, $format)` when no version
-     * is requested). If a format variant isn't defined or doesn't exist
-     * on the storage adapter, the source for that format is silently
-     * skipped — browsers degrade gracefully to the next entry.
+     * is requested). If a format variant isn't defined for the entity
+     * (`VariantDoesNotExistException`) or the variant URL is empty, the
+     * source for that format is silently skipped — browsers degrade
+     * gracefully to the next entry. Unexpected lookup errors are logged
+     * to the `debug` channel and the format is still skipped.
      *
      * Options:
      * - `formats` (array): list of format identifiers in preference order.
@@ -173,12 +175,13 @@ class ImageHelper extends Helper
             $variantName = $version !== null && $version !== '' ? $version . '.' . $format : $format;
             try {
                 $url = $this->imageUrl($image, $variantName, $options);
-            } catch (Exception $e) {
-                Log::write('debug', $e->getMessage());
-
+            } catch (VariantDoesNotExistException) {
+                // Expected when an alt-format variant hasn't been generated
+                // for this entity yet — degrade silently. Logging every miss
+                // produces noise on apps that haven't backfilled AVIF/WebP.
                 continue;
             }
-            if ($url === null) {
+            if ($url === null || $url === '') {
                 continue;
             }
             $sources[] = [
