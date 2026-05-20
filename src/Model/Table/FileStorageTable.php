@@ -22,7 +22,7 @@ use Cake\ORM\Table;
  * @author Florian Krämer
  * @copyright 2012 - 2020 Florian Krämer
  * @license MIT
- *
+ * @extends \Cake\ORM\Table<array{FileStorage: \FileStorage\Model\Behavior\FileStorageBehavior, Timestamp: \Cake\ORM\Behavior\TimestampBehavior}, \FileStorage\Model\Entity\FileStorage>
  * @method \FileStorage\Model\Entity\FileStorage newEmptyEntity()
  * @method \FileStorage\Model\Entity\FileStorage newEntity(array $data, array $options = [])
  * @method array<\FileStorage\Model\Entity\FileStorage> newEntities(array $data, array $options = [])
@@ -36,12 +36,11 @@ use Cake\ORM\Table;
  * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage> saveManyOrFail(iterable<\FileStorage\Model\Entity\FileStorage> $entities, array $options = [])
  * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage>|false deleteMany(iterable<\FileStorage\Model\Entity\FileStorage> $entities, array $options = [])
  * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage> deleteManyOrFail(iterable<\FileStorage\Model\Entity\FileStorage> $entities, array $options = [])
- * @mixin \Cake\ORM\Behavior\TimestampBehavior
- * @mixin \FileStorage\Model\Behavior\FileStorageBehavior
- * @extends \Cake\ORM\Table<array{FileStorage: \FileStorage\Model\Behavior\FileStorageBehavior, Timestamp: \Cake\ORM\Behavior\TimestampBehavior}, \FileStorage\Model\Entity\FileStorage>
  * @method bool delete(\FileStorage\Model\Entity\FileStorage $entity, array $options = [])
  * @method bool deleteOrFail(\FileStorage\Model\Entity\FileStorage $entity, array $options = [])
  * @method \FileStorage\Model\Entity\FileStorage|array<\FileStorage\Model\Entity\FileStorage> loadInto(\FileStorage\Model\Entity\FileStorage|array<\FileStorage\Model\Entity\FileStorage> $entities, array $contain)
+ * @mixin \Cake\ORM\Behavior\TimestampBehavior
+ * @mixin \FileStorage\Model\Behavior\FileStorageBehavior
  */
 class FileStorageTable extends Table
 {
