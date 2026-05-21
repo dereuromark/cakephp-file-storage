@@ -24,7 +24,12 @@
             "role": "Contributors"
         }
     ],
-    "homepage": "https://github.com/dereuromark/cakephp-file-storage",
+    "homepage": "https://dereuromark.github.io/cakephp-file-storage/",
+    "support": {
+        "issues": "https://github.com/dereuromark/cakephp-file-storage/issues",
+        "source": "https://github.com/dereuromark/cakephp-file-storage",
+        "docs": "https://dereuromark.github.io/cakephp-file-storage/"
+    },
     "require": {
         "php": ">=8.2",
         "brick/varexporter": "^0.5.0 || ^0.6.0 || ^0.7.0",
