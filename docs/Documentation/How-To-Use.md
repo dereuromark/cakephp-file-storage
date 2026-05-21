@@ -22,6 +22,9 @@ The FileStorage plugin uses a single table (`file_storage`) to track all uploade
 
 - **id**: Unique UUID for the file
 - **foreign_key**: The ID of the entity this file belongs to (e.g., user ID, post ID)
+  — stored as `CHAR(36)` by default. If your app uses integer primary keys, see
+  the [Database Setup](Installation.md#database-setup) note on overriding
+  `foreign_key`/`user_id` to integer columns.
 - **model**: The model name (e.g., 'User', 'Post')
 - **collection**: The collection/type of file (e.g., 'Avatar', 'Cover', 'Gallery')
 - **filename**: Original filename
