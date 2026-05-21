@@ -1,15 +1,17 @@
 # Validation
 
-In your config, you can set a `fileValidator` to be used:
+In your config you can set a `fileValidator` to be used:
+
 ```php
 'FileStorage' => [
-        'behaviorConfig' => [
-            'fileValidator' => \App\FileStorage\Validator\ImageValidator::class,
-        ],
+    'behaviorConfig' => [
+        'fileValidator' => \App\FileStorage\Validator\ImageValidator::class,
     ],
+],
 ```
 
-Such a class would implement `FileStorage\Model\Validation\UploadValidatorInterface`:
+Such a class implements `FileStorage\Model\Validation\UploadValidatorInterface`:
+
 ```php
 namespace App\FileStorage\Validator;
 
@@ -38,8 +40,9 @@ class ImageValidator implements UploadValidatorInterface
             'rule' => 'isValidImage',
             'message' => 'File must be a valid image (JPEG, PNG, GIF, or WebP)',
             'provider' => 'upload',
-            'on' => function($context) {
+            'on' => function ($context) {
                 $file = $context['data']['file'] ?? null;
+
                 return $file && $file->getError() === UPLOAD_ERR_OK;
             },
         ]);
@@ -48,8 +51,9 @@ class ImageValidator implements UploadValidatorInterface
             'rule' => ['isAboveMinHeight', 50],
             'message' => 'This image should at least be 50px high',
             'provider' => 'upload',
-            'on' => function($context) {
+            'on' => function ($context) {
                 $file = $context['data']['file'] ?? null;
+
                 return $file && $file->getError() === UPLOAD_ERR_OK;
             },
         ]);
@@ -57,8 +61,9 @@ class ImageValidator implements UploadValidatorInterface
             'rule' => ['isAboveMinWidth', 50],
             'message' => 'This image should at least be 50px wide',
             'provider' => 'upload',
-            'on' => function($context) {
+            'on' => function ($context) {
                 $file = $context['data']['file'] ?? null;
+
                 return $file && $file->getError() === UPLOAD_ERR_OK;
             },
         ]);
@@ -66,30 +71,39 @@ class ImageValidator implements UploadValidatorInterface
 }
 ```
 
-## Available Upload Validation Rules
+## Available upload validation rules
 
-The `UploadValidationTrait` provides the following validation methods. They all accept either a PSR-7 `UploadedFileInterface` or the legacy `$_FILES`-style array (`['tmp_name' => …, 'name' => …, 'type' => …, 'size' => …, 'error' => …]`).
+The `UploadValidationTrait` provides the following validation methods. They all
+accept either a PSR-7 `UploadedFileInterface` or the legacy `$_FILES`-style
+array (`['tmp_name' => …, 'name' => …, 'type' => …, 'size' => …, 'error' => …]`).
 
 ### File-error checks
 
-| Rule                        | Purpose                                                                                |
-|-----------------------------|----------------------------------------------------------------------------------------|
-| `isUnderPhpSizeLimit`       | False when the upload hit PHP's `upload_max_filesize` (`UPLOAD_ERR_INI_SIZE`).         |
-| `isUnderFormSizeLimit`      | False when the upload hit the HTML form's `MAX_FILE_SIZE` (`UPLOAD_ERR_FORM_SIZE`).    |
-| `isCompletedUpload`         | False when the upload was truncated (`UPLOAD_ERR_PARTIAL`).                            |
-| `isFileUpload`              | False when no file was supplied (`UPLOAD_ERR_NO_FILE`).                                |
-| `isSuccessfulWrite`         | False when the temp file could not be written (`UPLOAD_ERR_CANT_WRITE`).               |
+| Rule | Purpose |
+|------|---------|
+| `isUnderPhpSizeLimit` | False when the upload hit PHP's `upload_max_filesize` (`UPLOAD_ERR_INI_SIZE`). |
+| `isUnderFormSizeLimit` | False when the upload hit the HTML form's `MAX_FILE_SIZE` (`UPLOAD_ERR_FORM_SIZE`). |
+| `isCompletedUpload` | False when the upload was truncated (`UPLOAD_ERR_PARTIAL`). |
+| `isFileUpload` | False when no file was supplied (`UPLOAD_ERR_NO_FILE`). |
+| `isSuccessfulWrite` | False when the temp file could not be written (`UPLOAD_ERR_CANT_WRITE`). |
 
 ### Size checks
 
-| Rule                         | Purpose                              |
-|------------------------------|--------------------------------------|
+| Rule | Purpose |
+|------|---------|
 | `isAboveMinSize($check, $size)` | True when uploaded size ≥ `$size` bytes. |
 | `isBelowMaxSize($check, $size)` | True when uploaded size ≤ `$size` bytes. |
 
-### Allow-list checks (recommended for any upload that is not strictly an image)
+### Allow-list checks
 
-The client-supplied `name` / `type` (`Content-Type`) headers are **not trustworthy** — a request can claim `image/jpeg` while delivering a `.php` shell. The MIME helper sniffs server-side via `finfo` against the actual file contents by default, so callers get the value PHP detects, not what the user told it to.
+Recommended for any upload that is not strictly an image.
+
+::: warning Don't trust client headers
+The client-supplied `name` / `type` (`Content-Type`) headers are **not
+trustworthy** — a request can claim `image/jpeg` while delivering a `.php` shell.
+The MIME helper sniffs server-side via `finfo` against the actual file contents
+by default, so callers get the value PHP detects, not what the user claimed.
+:::
 
 ```php
 // Restrict by extension (case-insensitive, leading dot tolerant).
@@ -107,8 +121,8 @@ $validator->add('file', 'fileMimeAllowed', [
 ]);
 
 // Same, but trust the client header instead of sniffing. Only safe inside
-// trusted code paths (tests, internal-only forms). Disable sniff with a `false`
-// third argument:
+// trusted code paths (tests, internal-only forms). Disable the sniff with a
+// false third argument:
 $validator->add('file', 'fileMimeAllowedClient', [
     'rule' => ['hasAllowedMimeType', ['image/jpeg'], false],
     'message' => '…',
@@ -116,15 +130,18 @@ $validator->add('file', 'fileMimeAllowedClient', [
 ]);
 ```
 
-For images, `ImageValidationTrait::isValidImage()` (below) is a stricter check — it actually parses the image header — and should be preferred over `hasAllowedMimeType` when you only accept images.
+For images, `ImageValidationTrait::isValidImage()` (below) is a stricter check —
+it actually parses the image header — and should be preferred over
+`hasAllowedMimeType` when you only accept images.
 
-## Available Image Validation Rules
+## Available image validation rules
 
-The `ImageValidationTrait` provides the following validation methods:
+The `ImageValidationTrait` provides the following validation methods.
 
 ### isValidImage
 
-Validates that the uploaded file is a valid image. Use this before dimension checks to provide clear error messages when non-image files are uploaded.
+Validates that the uploaded file is a valid image. Use this before dimension
+checks to produce clear error messages when non-image files are uploaded.
 
 ```php
 // Default: allows JPEG, PNG, GIF, WebP
@@ -142,11 +159,12 @@ $validator->add('file', 'fileIsValidImage', [
 ]);
 ```
 
-### Dimension Validators
+### Dimension validators
 
-- `isAboveMinWidth($check, int $width)` - Check minimum width
-- `isBelowMaxWidth($check, int $width)` - Check maximum width
-- `isAboveMinHeight($check, int $height)` - Check minimum height
-- `isBelowMaxHeight($check, int $height)` - Check maximum height
+- `isAboveMinWidth($check, int $width)` — check minimum width.
+- `isBelowMaxWidth($check, int $width)` — check maximum width.
+- `isAboveMinHeight($check, int $height)` — check minimum height.
+- `isBelowMaxHeight($check, int $height)` — check maximum height.
 
-All dimension validators safely handle non-image files by returning `false` instead of throwing an error.
+All dimension validators safely handle non-image files by returning `false`
+instead of throwing an error.

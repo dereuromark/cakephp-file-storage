@@ -1,33 +1,41 @@
-Quick-Start Tutorial
-====================
+# Quick Start
 
-It is required that you have at least a basic understanding of how the event system of CakePHP works. If you're unsure it is recommended to read about it first. It is expected that you take the time to try to actually *understand* what you're doing instead of just copy and pasting the code. Understanding OOP and namespaces in PHP is required for this tutorial.
+This tutorial adds an **avatar image upload** for your users, end to end.
 
-This tutorial will assume that we're going to add an avatar image upload for our users.
+::: tip Prerequisites
+You should have at least a basic understanding of the CakePHP event system, OOP,
+and namespaces. Take the time to *understand* each step rather than copy-pasting.
+:::
 
-For image processing you'll need the `php-collective/file-storage-image-processor` library. If you don't have it already added, add it now:
+For image processing you'll need the `php-collective/file-storage-image-processor`
+library. Add it if you don't have it already:
 
-```sh
+```bash
 composer require php-collective/file-storage-image-processor
 ```
-See also other require-dev dependencies of the plugin, if they could be useful for you.
 
-In your application's `config/bootstrap.php` load the plugin:
+See also the other require-dev dependencies of the plugin — some may be useful
+for you.
 
-```php
-// CakePHP 5.x - plugins are auto-loaded via composer.json
-// The plugin is automatically available after running:
-// bin/cake plugin load FileStorage
+## Load the plugin
+
+In CakePHP 5.x the plugin is available after loading it:
+
+```bash
+bin/cake plugin load FileStorage
 ```
 
-If you need to manually load the plugin in your Application.php:
+If you prefer to load it manually in `src/Application.php`:
 
 ```php
-// In src/Application.php bootstrap() method
+// In src/Application.php bootstrap()
 $this->addPlugin('FileStorage');
 ```
 
-To make image processing work you'll have to add this to your applications bootstrap (or use a dedicated storage.php):
+## Configure storage and image processing
+
+To make image processing work, add this to your application's bootstrap (or a
+dedicated `config/storage.php`):
 
 ```php
 <?php
@@ -89,7 +97,7 @@ $collection->addNew(\App\Storage\StorageCollections::IMG_CROPPED)
 \Cake\Core\Configure::write([
     'FileStorage' => [
         // Structure: [ModelAlias][CollectionName][variants]
-        // Model comes from table alias, Collection from entity field
+        // Model comes from the table alias, Collection from the entity field
         'imageVariants' => [
             'Users' => [
                 'Avatar' => $collection->toArray(),
@@ -104,9 +112,11 @@ $collection->addNew(\App\Storage\StorageCollections::IMG_CROPPED)
 ]);
 ```
 
-We now assume that you have a table called `Users` and that you want to attach an avatar image to your users.
+## Add the association
 
-In your `App\Model\Table\UsersTable.php` file is a method called `initialize()`. Add the avatar file association there:
+We assume you have a `Users` table and want to attach an avatar image to your
+users. In `App\Model\Table\UsersTable::initialize()`, add the avatar
+association:
 
 ```php
 $this->hasOne('Avatars', [
@@ -119,13 +129,20 @@ $this->hasOne('Avatars', [
 ]);
 ```
 
-Especially pay attention to the `conditions` key in the config array of the association. You must specify both `model` and `collection` conditions or File Storage won't be able to identify that kind of file properly.
+::: warning Set model and collection
+Pay attention to the `conditions` key. You **must** specify both `model` and
+`collection` conditions, or FileStorage won't be able to identify that kind of
+file properly.
+:::
 
-Either save it through the association along with your users save call or save it separately. However, whatever you do, it is important that you set the `foreign_key`, `model`, and `collection` fields for the associated file storage entity.
+Either save it through the association along with your user's save call, or save
+it separately. Whatever you do, it is important that you set the `foreign_key`,
+`model`, and `collection` fields for the associated file-storage entity —
+otherwise the association won't find the correct files.
 
-If you don't specify these fields, the association won't find the correct files.
+## The form
 
-Inside the `edit.php` template view file of your Users::edit action:
+Inside the `edit.php` template of your `Users::edit` action:
 
 ```php
 echo $this->Form->create($user);
@@ -136,9 +153,10 @@ echo $this->Form->button(__('Submit'));
 echo $this->Form->end();
 ```
 
-You **must** use the `file` field for the uploaded file. The plugin will check the entity for this field.
+You **must** use the `file` field for the uploaded file — the plugin checks the
+entity for this field.
 
-Your users controller `edit()` method:
+## The controller
 
 ```php
 /**
@@ -161,12 +179,18 @@ class UsersController extends AppController
                 $this->Flash->success('User updated');
 
                 return $this->redirect(['action' => 'view', $user->id]);
-            } else {
-                $this->Flash->error('There was a problem updating the user.');
             }
+
+            $this->Flash->error('There was a problem updating the user.');
         }
 
         $this->set(compact('user'));
     }
 }
 ```
+
+## Where to go next
+
+- [Usage](./usage) — the full set of concepts, associations, and operations.
+- [Image variants and versioning](/images/) — configure and generate variants.
+- [The Image helper](/images/helper) — display images and variants in templates.
