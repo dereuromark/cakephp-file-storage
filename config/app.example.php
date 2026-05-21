@@ -51,6 +51,13 @@ $collection->addNew('crop')
 return [
     'FileStorage' => [
         'pathPrefix' => 'img/thumbs/',
+
+        // Secret used to sign temporary file-access URLs (SignedUrlGenerator,
+        // HMAC-SHA256). Should be a strong, random, app-specific string kept
+        // secret — anyone with it can forge valid signed URLs. No default is
+        // baked in: when unset, it falls back to the app's Security salt. Set
+        // this explicitly to decouple signed-URL invalidation from the salt.
+        // 'signatureSecret' => env('FILE_STORAGE_SECRET'),
         // Admin UI access gate. The admin controller is fail-closed: leaving this unset
         // (or null) means every action returns 403. Opt in with one of:
         //
@@ -110,6 +117,11 @@ return [
             'fileStorage' => $fileStorage,
             'fileProcessor' => null,
             'fileValidator' => \App\FileStorage\Validator\ImageValidator::class,
+            // Entity<->file object transformer used by the image variant queue task.
+            // Must be a FileStorage\FileStorage\DataTransformerInterface instance;
+            // anything else is ignored. Default (unset): a DataTransformer bound
+            // to the storage table.
+            // 'dataTransformer' => null,
         ],
     ],
 ];
