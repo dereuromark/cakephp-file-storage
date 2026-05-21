@@ -44,6 +44,7 @@ export default defineConfig({
   description: 'Store and serve files in any backend for CakePHP — FlySystem adapters, image variants, signed URLs, and a self-contained admin backend.',
   base: '/cakephp-file-storage/',
   lastUpdated: true,
+  cleanUrls: true,
   sitemap: {
     hostname: 'https://dereuromark.github.io/cakephp-file-storage/',
   },
