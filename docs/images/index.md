@@ -1,7 +1,8 @@
-Image Versioning
-================
+# Image Variants and Versioning
 
-Image variants allow you to automatically generate different sizes/versions of uploaded images. The plugin uses the `php-collective/file-storage-image-processor` library for image processing.
+Image variants let you automatically generate different sizes/versions of
+uploaded images. The plugin uses the `php-collective/file-storage-image-processor`
+library for image processing.
 
 ## Requirements
 
@@ -13,9 +14,10 @@ composer require php-collective/file-storage-image-processor
 
 ## Configuration
 
-### Using ImageVariantCollection (Recommended)
+### Using ImageVariantCollection (recommended)
 
-The modern approach uses `ImageVariantCollection` to define variants with a fluent API:
+The modern approach uses `ImageVariantCollection` to define variants with a
+fluent API:
 
 ```php
 use PhpCollective\Infrastructure\Storage\Processor\Image\ImageVariantCollection;
@@ -50,32 +52,33 @@ Configure::write('FileStorage', [
 ]);
 ```
 
-### Understanding Model and Collection
+### Understanding model and collection
 
 The variant configuration uses a two-level hierarchy:
 
-- **Model**: The table alias (e.g., `'Posts'`, `'Users'`) - comes from `$table->getAlias()`
-- **Collection**: A grouping within a model (e.g., `'Avatar'`, `'Cover'`, `'Gallery'`)
+- **Model** — the table alias (e.g. `Posts`, `Users`), from `$table->getAlias()`.
+- **Collection** — a grouping within a model (e.g. `Avatar`, `Cover`, `Gallery`).
 
-This allows different variant configurations for different file types within the same model.
+This allows different variant configurations for different file types within the
+same model.
 
-### Available Variant Operations
+### Available variant operations
 
-- `crop(width, height, x, y)` - Crop to exact dimensions at position (x, y optional)
-- `resize(width, height)` - Resize to exact dimensions (does not preserve aspect ratio)
-- `scale(width, height)` - Scale while preserving aspect ratio
-- `cover(width, height)` - Smart crop to cover exact dimensions
-- `widen(width)` - Resize by width, maintain aspect ratio
-- `heighten(height)` - Resize by height, maintain aspect ratio
-- `rotate(angle)` - Rotate by degrees
-- `flip(direction)` - Flip 'h' (horizontal) or 'v' (vertical)
-- `flipHorizontal()` - Flip horizontally
-- `flipVertical()` - Flip vertically
-- `sharpen(amount)` - Apply sharpening
-- `optimize()` - Apply optimization if available on system
-- `callback(callable)` - Custom processing with callback function
+- `crop(width, height, x, y)` — crop to exact dimensions at position (x, y optional).
+- `resize(width, height)` — resize to exact dimensions (does not preserve aspect ratio).
+- `scale(width, height)` — scale while preserving aspect ratio.
+- `cover(width, height)` — smart crop to cover exact dimensions.
+- `widen(width)` — resize by width, maintain aspect ratio.
+- `heighten(height)` — resize by height, maintain aspect ratio.
+- `rotate(angle)` — rotate by degrees.
+- `flip(direction)` — flip `'h'` (horizontal) or `'v'` (vertical).
+- `flipHorizontal()` — flip horizontally.
+- `flipVertical()` — flip vertically.
+- `sharpen(amount)` — apply sharpening.
+- `optimize()` — apply optimization if available on the system.
+- `callback(callable)` — custom processing with a callback function.
 
-### Array Configuration (Alternative)
+### Array configuration (alternative)
 
 You can also configure variants using arrays directly:
 
@@ -100,7 +103,7 @@ Configure::write('FileStorage', [
 ]);
 ```
 
-## Setting Up the Image Processor
+## Setting up the image processor
 
 Configure the image processor in your bootstrap or storage configuration:
 
@@ -109,24 +112,24 @@ use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use PhpCollective\Infrastructure\Storage\Processor\Image\ImageProcessor;
 
-// Create image manager with GD driver
+// Create the image manager with the GD driver
 $imageManager = new ImageManager(new Driver());
 
-// Create image processor
+// Create the image processor
 $imageProcessor = new ImageProcessor(
     $fileStorage,
     $pathBuilder,
     $imageManager,
 );
 
-// Add to behavior configuration
+// Add to the behavior configuration
 Configure::write('FileStorage.behaviorConfig', [
     'fileStorage' => $fileStorage,
     'fileProcessor' => $imageProcessor,
 ]);
 ```
 
-### Using Multiple Processors
+### Using multiple processors
 
 You can stack multiple processors using `StackProcessor`:
 
@@ -135,7 +138,7 @@ use PhpCollective\Infrastructure\Storage\Processor\StackProcessor;
 
 $stackProcessor = new StackProcessor([
     $imageProcessor,
-    $customProcessor, // Your custom processor
+    $customProcessor, // your custom processor
 ]);
 
 Configure::write('FileStorage.behaviorConfig', [
@@ -144,7 +147,7 @@ Configure::write('FileStorage.behaviorConfig', [
 ]);
 ```
 
-## File Storage Paths
+## File storage paths
 
 Image files are stored using the configured path builder. The default pattern is:
 
@@ -153,6 +156,7 @@ Image files are stored using the configured path builder. The default pattern is
 ```
 
 For example:
+
 ```
 /Users/Avatar/a1/b2c3d4e5/profile.jpg
 ```
@@ -163,22 +167,23 @@ Variant files are stored alongside the original with a hashed variant name:
 /Users/Avatar/a1/b2c3d4e5/profile.abc123.jpg
 ```
 
-## Accessing Variants
+## Accessing variants
 
-After upload, variant information is stored in the entity's `variants` field as JSON:
+After upload, variant information is stored in the entity's `variants` field as
+JSON:
 
 ```php
-// In your template
 $entity = $this->Posts->get($id, contain: ['CoverImages']);
 
-// Access original
+// Access the original
 $originalPath = $entity->cover_image->path;
 
-// Access variant
+// Access a variant
 $thumbPath = $entity->cover_image->variants['thumb']['path'] ?? null;
 ```
 
-See also:
-- [The Image Helper](The-Image-Helper.md) for displaying images
-- [The Image Version Shell](The-Image-Version-Shell.md) for regenerating variants
-- [Quick Start Tutorial](../Tutorials/Quick-Start.md) for a complete example
+## See also
+
+- [The Image helper](./helper) — display images and variants in templates.
+- [The variant command](./command) — generate or regenerate variants from the CLI.
+- [Quick Start](/guide/quick-start) — a complete avatar example.

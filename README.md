@@ -28,7 +28,7 @@ The plugin ships a self-contained admin backend at `/admin/file-storage`
 **fail-closed by default** — set `FileStorage.adminAccess` (`true` or a
 `Closure(\Cake\Http\ServerRequest): bool`) to opt in. The bundled
 Bootstrap 5 layout can be replaced with your host app's layout via
-`FileStorage.adminLayout`. See [docs/Documentation/Installation.md](docs/Documentation/Installation.md#the-admin-backend).
+`FileStorage.adminLayout`. See the [Admin Backend docs](https://dereuromark.github.io/cakephp-file-storage/admin/).
 
 For background image-variant regeneration from the admin UI, install
 [`dereuromark/cakephp-queue`](https://github.com/dereuromark/cakephp-queue);
@@ -43,7 +43,16 @@ without it the regenerate buttons render disabled.
 
 ## Documentation
 
-For documentation, as well as tutorials, see the [docs](docs/) directory of this repository.
+Full documentation lives at **[dereuromark.github.io/cakephp-file-storage](https://dereuromark.github.io/cakephp-file-storage/)**.
+
+A few good entry points:
+
+* [Getting started](https://dereuromark.github.io/cakephp-file-storage/guide/)
+* [Quick Start tutorial](https://dereuromark.github.io/cakephp-file-storage/guide/quick-start)
+* [Serving files and authorization](https://dereuromark.github.io/cakephp-file-storage/serving/)
+* [Configuration reference](https://dereuromark.github.io/cakephp-file-storage/reference/)
+
+The Markdown sources live in the [docs](docs/) directory of this repository.
 
 ## Support
 
