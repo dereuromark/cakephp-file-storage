@@ -13,7 +13,7 @@ your application. Each record contains:
 | Field | Description |
 |-------|-------------|
 | `id` | Unique UUID for the file. |
-| `foreign_key` | The id of the entity this file belongs to (e.g. user id, post id). Stored as `CHAR(36)` by default — see [Foreign key column types](./installation#foreign-key-column-types) to use integer ids. |
+| `foreign_key` | The id of the entity this file belongs to (e.g. user id, post id). A `BIGINTEGER` by default — see [Foreign key column types](./installation#foreign-key-column-types) to use UUID ids. |
 | `model` | The model name (e.g. `Users`, `Posts`). |
 | `collection` | The collection / type of file (e.g. `Avatar`, `Cover`, `Gallery`). |
 | `filename` | Original filename. |
