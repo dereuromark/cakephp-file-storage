@@ -64,11 +64,16 @@ config key (default `'integer'`). Accepted values:
 | `'uuid'` | `CHAR(36)` | No signed option (not applicable) |
 | `'binaryuuid'` | `BINARY(16)` | No signed option (not applicable) |
 
-To use UUID foreign keys, set the config before running migrations:
+To use UUID foreign keys, add the config key before running migrations on a *fresh
+install*. Existing installs require a separate app-side migration to alter the
+`foreign_key` column — changing this value after the initial migration has no
+effect on an already-created column.
 
 ```php
-// config/app.php or config/app_local.php
-Configure::write('Polymorphic.type', 'uuid'); // or 'binaryuuid'
+// config/app.php (merged into Configure at bootstrap, including the migrations CLI)
+'Polymorphic' => [
+    'type' => 'uuid', // integer (default) | biginteger | uuid | binaryuuid
+],
 ```
 
 ::: tip Why keep the id as CHAR(36)?
