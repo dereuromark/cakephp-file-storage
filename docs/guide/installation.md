@@ -39,45 +39,49 @@ your local `migrations migrate` instead.
 
 ### Foreign key column types
 
-::: warning Foreign keys default to UUID (CHAR(36)), not integers
-The shipped migration creates `file_storage` with a UUID primary key **and**
-UUID-shaped foreign-key columns:
+The shipped migration creates `file_storage` with the following column types:
 
 | Column | Default type | Purpose |
 |--------|--------------|---------|
-| `id` | `CHAR(36)` | The file row's own id (a UUID — keep as-is, see below). |
-| `foreign_key` | `CHAR(36)` | The owning record's id (your `Users.id`, `Posts.id`, …). |
-| `user_id` | `CHAR(36)` | Optional uploader / owner id. |
+| `id` | `CHAR(36)` | The file row's own id (a UUID — always stays CHAR(36)). |
+| `foreign_key` | `integer` | The owning record's id (your `Users.id`, `Posts.id`, …). Configurable via `Polymorphic.type`. |
+| `user_id` | `integer` | Optional uploader / owner id — a plain integer FK to the app's users table. |
 
-If your app uses **integer / auto-increment primary keys** (the CakePHP
-default), `CHAR(36)` is the wrong type for `foreign_key` and `user_id`: an
-integer id like `42` is silently stored as the string `"42"`, the column is
-oversized, and you cannot add a real DB foreign-key constraint or join cleanly
-against your integer-keyed tables.
-:::
+`user_id` and `foreign_key` both follow your application's primary-key signedness
+(via the `Migrations.unsigned_primary_keys` flag — signed by default) for integer
+variants. The `id` always stays a `CHAR(36)` UUID (the storage library's file
+identity).
 
-**To use integer foreign keys**, copy the migration into your app and change
-those two columns (keep everything else, including `id`):
+#### Configuring the foreign_key type
+
+The `foreign_key` column type is controlled by the global `Polymorphic.type`
+config key (default `'integer'`). Accepted values:
+
+| Value | Column type | Signedness |
+|-------|-------------|------------|
+| `'integer'` (default) | `INTEGER` | Follows `Migrations.unsigned_primary_keys` |
+| `'biginteger'` | `BIGINT` | Follows `Migrations.unsigned_primary_keys` |
+| `'uuid'` | `CHAR(36)` | No signed option (not applicable) |
+| `'binaryuuid'` | `BINARY(16)` | No signed option (not applicable) |
+
+To use UUID foreign keys, add the config key before running migrations on a *fresh
+install*. Existing installs require a separate app-side migration to alter the
+`foreign_key` column — changing this value after the initial migration has no
+effect on an already-created column.
 
 ```php
-$this->table('file_storage', ['id' => false, 'primary_key' => 'id'])
-    ->addColumn('id', 'char', ['limit' => 36])                          // keep: see note below
-    ->addColumn('user_id', 'integer', ['null' => true, 'default' => null])
-    ->addColumn('foreign_key', 'integer', ['null' => true, 'default' => null])
-    // … all remaining columns unchanged
-    ->create();
+// config/app.php (merged into Configure at bootstrap, including the migrations CLI)
+'Polymorphic' => [
+    'type' => 'uuid', // integer (default) | biginteger | uuid | binaryuuid
+],
 ```
-
-Use `biginteger` instead of `integer` if your tables use big-integer keys.
 
 ::: tip Why keep the id as CHAR(36)?
 The `file_storage.id` is the *file row's own* identifier, generated as a UUID by
 the plugin's storage / path layer (don't pre-fill it — let the table assign it).
-It is **not** a reference to one of your records. Only `foreign_key` / `user_id`
-point at *your* tables, so only those need to match your app's key type.
-
-A future major version may flip this default to integer foreign keys (UUID
-becoming opt-in) — see [issue #37](https://github.com/dereuromark/cakephp-file-storage/issues/37).
+It is **not** a reference to one of your records. Only `foreign_key` points at
+*your* polymorphic host records; `user_id` is a concrete integer FK to the users
+table.
 :::
 
 ## Adapter-specific configuration
