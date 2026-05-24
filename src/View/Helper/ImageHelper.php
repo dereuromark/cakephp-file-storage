@@ -60,7 +60,7 @@ class ImageHelper extends Helper
      */
     public function display(?FileStorageEntityInterface $image, ?string $version = null, array $options = []): string
     {
-        if (!$image instanceof FileStorageEntityInterface) {
+        if (!($image instanceof FileStorageEntityInterface)) {
             return $this->fallbackImage($options, $version);
         }
 
