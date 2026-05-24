@@ -65,7 +65,7 @@ class SignedUrlGeneratorTest extends TestCase
         $this->assertArrayHasKey('expires', $result);
         $this->assertSame($expires, $result['expires']);
         $this->assertIsString($result['signature']);
-        $this->assertSame(64, strlen($result['signature'])); // SHA256 hex = 64 chars
+        $this->assertSame(64, strlen((string) $result['signature'])); // SHA256 hex = 64 chars
     }
 
     /**

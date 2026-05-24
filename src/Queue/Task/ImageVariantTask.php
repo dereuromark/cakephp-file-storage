@@ -162,7 +162,7 @@ class ImageVariantTask extends Task
      */
     protected function getFileProcessor(): ProcessorInterface
     {
-        if ($this->processor !== null) {
+        if ($this->processor instanceof \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface) {
             return $this->processor;
         }
 
@@ -201,7 +201,7 @@ class ImageVariantTask extends Task
      */
     protected function getTransformer(): DataTransformerInterface
     {
-        if ($this->transformer !== null) {
+        if ($this->transformer instanceof \FileStorage\FileStorage\DataTransformerInterface) {
             return $this->transformer;
         }
 

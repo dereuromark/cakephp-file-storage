@@ -60,7 +60,7 @@ class ImageHelper extends Helper
      */
     public function display(?FileStorageEntityInterface $image, ?string $version = null, array $options = []): string
     {
-        if ($image === null) {
+        if (!$image instanceof \FileStorage\Model\Entity\FileStorageEntityInterface) {
             return $this->fallbackImage($options, $version);
         }
 
@@ -163,7 +163,7 @@ class ImageHelper extends Helper
         $formats = $options['formats'] ?? ['avif', 'webp'];
         unset($options['formats']);
 
-        if ($image === null) {
+        if (!$image instanceof \FileStorage\Model\Entity\FileStorageEntityInterface) {
             return $this->fallbackImage($options, $version);
         }
 
@@ -224,13 +224,8 @@ class ImageHelper extends Helper
     public function fallbackImage(array $options = [], ?string $version = null): string
     {
         if (isset($options['fallback'])) {
-            if ($options['fallback'] === true) {
-                $imageFile = 'placeholder/' . $version . '.jpg';
-            } else {
-                $imageFile = $options['fallback'];
-            }
+            $imageFile = $options['fallback'] === true ? 'placeholder/' . $version . '.jpg' : $options['fallback'];
             unset($options['fallback']);
-
             return $this->Html->image($imageFile, $options);
         }
 

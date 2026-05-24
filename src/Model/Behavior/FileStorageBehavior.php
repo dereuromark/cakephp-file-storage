@@ -315,7 +315,7 @@ class FileStorageBehavior extends Behavior
         } else {
             $upload['filesize'] = $uploadedFile['size'];
             $upload['mime_type'] = $uploadedFile['type'];
-            $upload['extension'] = pathinfo($uploadedFile['name'], PATHINFO_EXTENSION);
+            $upload['extension'] = pathinfo((string) $uploadedFile['name'], PATHINFO_EXTENSION);
             $upload['filename'] = $uploadedFile['name'];
         }
     }
@@ -388,9 +388,7 @@ class FileStorageBehavior extends Behavior
             return $file;
         }
 
-        $file = $file->withVariants($imageSizes[$model][$collection]);
-
-        return $file;
+        return $file->withVariants($imageSizes[$model][$collection]);
     }
 
     /**
@@ -400,7 +398,7 @@ class FileStorageBehavior extends Behavior
      */
     protected function getFileProcessor(): ProcessorInterface
     {
-        if ($this->processor !== null) {
+        if ($this->processor instanceof \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface) {
             return $this->processor;
         }
 
@@ -408,7 +406,7 @@ class FileStorageBehavior extends Behavior
             $this->processor = $this->getConfig('fileProcessor');
         }
 
-        if ($this->processor === null) {
+        if (!$this->processor instanceof \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface) {
             throw new RuntimeException('No processor found');
         }
 
@@ -420,7 +418,7 @@ class FileStorageBehavior extends Behavior
      */
     protected function getTransformer(): DataTransformerInterface
     {
-        if ($this->transformer !== null) {
+        if ($this->transformer instanceof \FileStorage\FileStorage\DataTransformerInterface) {
             return $this->transformer;
         }
 

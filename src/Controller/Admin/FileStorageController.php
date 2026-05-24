@@ -53,7 +53,7 @@ class FileStorageController extends FileStorageAppController
             ->extract('collection')
             ->toArray();
 
-        $this->set(compact('fileStorage', 'models', 'collections'));
+        $this->set(['fileStorage' => $fileStorage, 'models' => $models, 'collections' => $collections]);
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
         $this->set('filterValues', $this->indexFilterValues());
 
@@ -139,7 +139,7 @@ class FileStorageController extends FileStorageAppController
     {
         $fileStorage = $this->FileStorage->get($id);
 
-        $this->set(compact('fileStorage'));
+        $this->set(['fileStorage' => $fileStorage]);
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
 
         return null;
@@ -162,7 +162,7 @@ class FileStorageController extends FileStorageAppController
             }
             $this->Flash->error(__d('file_storage', 'The file storage could not be saved. Please, try again.'));
         }
-        $this->set(compact('fileStorage'));
+        $this->set(['fileStorage' => $fileStorage]);
 
         return null;
     }
@@ -290,7 +290,7 @@ class FileStorageController extends FileStorageAppController
             $report = $service->run($previewModel, $previewCollection, dryRun: true);
         }
 
-        $this->set(compact('models', 'report', 'previewModel', 'previewCollection'));
+        $this->set(['models' => $models, 'report' => $report, 'previewModel' => $previewModel, 'previewCollection' => $previewCollection]);
 
         return null;
     }

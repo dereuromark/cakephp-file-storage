@@ -100,8 +100,6 @@ class FileStorageAppController extends AppController
         if ($access instanceof Closure) {
             try {
                 $allowed = $access($this->request) === true;
-            } catch (ForbiddenException $e) {
-                throw $e;
             } catch (Throwable $e) {
                 Log::warning(sprintf(
                     'FileStorage.adminAccess threw %s: %s',
