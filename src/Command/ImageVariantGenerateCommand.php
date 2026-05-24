@@ -231,7 +231,7 @@ class ImageVariantGenerateCommand extends Command
      */
     protected function getFileProcessor(): ProcessorInterface
     {
-        if ($this->processor instanceof \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface) {
+        if ($this->processor instanceof ProcessorInterface) {
             return $this->processor;
         }
 
@@ -239,7 +239,7 @@ class ImageVariantGenerateCommand extends Command
             $this->processor = $this->getConfig('fileProcessor');
         }
 
-        if (!$this->processor instanceof \PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface) {
+        if (!$this->processor instanceof ProcessorInterface) {
             throw new RuntimeException('No processor found');
         }
 
@@ -291,7 +291,7 @@ class ImageVariantGenerateCommand extends Command
      */
     protected function getTransformer(): DataTransformerInterface
     {
-        if ($this->transformer instanceof \FileStorage\FileStorage\DataTransformerInterface) {
+        if ($this->transformer instanceof DataTransformerInterface) {
             return $this->transformer;
         }
 
