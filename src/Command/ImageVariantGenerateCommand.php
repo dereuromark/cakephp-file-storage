@@ -186,40 +186,38 @@ class ImageVariantGenerateCommand extends Command
 
         do {
             $images = $this->_getRecords($model, $collection, $limit, $offset);
-            if ($images) {
-                foreach ($images as $image) {
-                    $payload = [
-                        'entity' => $image,
-                        'storage' => $adapter,
-                        'operations' => $operations,
-                        'table' => $this->Table,
-                        'options' => $options,
-                    ];
-                    //$Event = new Event('ImageVariant.generate', $this->Table, $payload);
-                    //EventManager::instance()->dispatch($Event);
+            foreach ($images as $image) {
+                $payload = [
+                    'entity' => $image,
+                    'storage' => $adapter,
+                    'operations' => $operations,
+                    'table' => $this->Table,
+                    'options' => $options,
+                ];
+                //$Event = new Event('ImageVariant.generate', $this->Table, $payload);
+                //EventManager::instance()->dispatch($Event);
 
-                    if (empty($options['dryRun'])) {
-                        if ($enqueue && $queuedJobsTable !== null) {
-                            // Hand off the per-entity work to the queue. The
-                            // ImageVariantTask payload mirrors the inline path:
-                            // same operations, same merge semantics, same table.
-                            // We deliberately do NOT pass `adapter` — the task
-                            // resolves the storage adapter from the entity's
-                            // own `adapter` column, just like the inline path.
-                            $queuedJobsTable->createJob('FileStorage.ImageVariant', [
-                                'id' => $image->id,
-                                'operations' => $operations,
-                                'merge' => !($options['force'] ?? false),
-                                'storageTable' => $this->Table->getRegistryAlias(),
-                            ]);
-                            $io->verbose(__d('file_storage', '- ID {0} enqueued', $image->id));
-                        } else {
-                            $this->_processEntity($image, $operations, $options);
-                            $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
-                        }
+                if (empty($options['dryRun'])) {
+                    if ($enqueue && $queuedJobsTable !== null) {
+                        // Hand off the per-entity work to the queue. The
+                        // ImageVariantTask payload mirrors the inline path:
+                        // same operations, same merge semantics, same table.
+                        // We deliberately do NOT pass `adapter` — the task
+                        // resolves the storage adapter from the entity's
+                        // own `adapter` column, just like the inline path.
+                        $queuedJobsTable->createJob('FileStorage.ImageVariant', [
+                            'id' => $image->id,
+                            'operations' => $operations,
+                            'merge' => !($options['force'] ?? false),
+                            'storageTable' => $this->Table->getRegistryAlias(),
+                        ]);
+                        $io->verbose(__d('file_storage', '- ID {0} enqueued', $image->id));
                     } else {
+                        $this->_processEntity($image, $operations, $options);
                         $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
                     }
+                } else {
+                    $io->verbose(__d('file_storage', '- ID {0} would be processed', $image->id));
                 }
             }
             $offset += $limit;
@@ -233,7 +231,7 @@ class ImageVariantGenerateCommand extends Command
      */
     protected function getFileProcessor(): ProcessorInterface
     {
-        if ($this->processor !== null) {
+        if ($this->processor instanceof ProcessorInterface) {
             return $this->processor;
         }
 
@@ -241,7 +239,7 @@ class ImageVariantGenerateCommand extends Command
             $this->processor = $this->getConfig('fileProcessor');
         }
 
-        if ($this->processor === null) {
+        if (!($this->processor instanceof ProcessorInterface)) {
             throw new RuntimeException('No processor found');
         }
 
@@ -264,9 +262,7 @@ class ImageVariantGenerateCommand extends Command
             return $file;
         }
 
-        $file = $file->withVariants($operations, $merge);
-
-        return $file;
+        return $file->withVariants($operations, $merge);
     }
 
     /**
@@ -295,7 +291,7 @@ class ImageVariantGenerateCommand extends Command
      */
     protected function getTransformer(): DataTransformerInterface
     {
-        if ($this->transformer !== null) {
+        if ($this->transformer instanceof DataTransformerInterface) {
             return $this->transformer;
         }
 

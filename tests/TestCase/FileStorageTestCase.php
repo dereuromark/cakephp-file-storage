@@ -220,11 +220,7 @@ class FileStorageTestCase extends TestCase
      */
     protected function _createMockFile(string $file): string
     {
-        if (DS === '/') {
-            $file = str_replace('\\', DS, $file);
-        } else {
-            $file = str_replace('/', DS, $file);
-        }
+        $file = DS === '/' ? str_replace('\\', DS, $file) : str_replace('/', DS, $file);
 
         $path = dirname($file);
         if (!is_dir($this->testPath . $path)) {

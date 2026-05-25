@@ -155,12 +155,10 @@ class FileStorageController extends Controller
         // `read()` API, so we materialize the bytes once into the response.
         $localPath = $this->resolveLocalPath($adapter, $path);
         if ($localPath !== null) {
-            $response = $this->response
+            return $this->response
                 ->withFile($localPath, ['name' => $filename])
                 ->withType($mime)
                 ->withHeader('Content-Disposition', $disposition);
-
-            return $response;
         }
 
         return $this->response

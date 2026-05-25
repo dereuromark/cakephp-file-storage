@@ -140,11 +140,7 @@ trait UploadValidationTrait
             return false;
         }
 
-        if ($check instanceof UploadedFileInterface) {
-            $name = $check->getClientFilename();
-        } else {
-            $name = $check['name'] ?? null;
-        }
+        $name = $check instanceof UploadedFileInterface ? $check->getClientFilename() : ($check['name'] ?? null);
         if (!is_string($name) || $name === '') {
             return false;
         }

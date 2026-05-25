@@ -155,6 +155,6 @@ class FileStorageControllerTest extends FileStorageTestCase
         $controller = new FileStorageController(
             new ServerRequest(),
         );
-        $controller->signed(null, null);
+        $controller->signed();
     }
 }
