@@ -217,7 +217,7 @@ class ImageVariantGenerateCommand extends Command
                         $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
                     }
                 } else {
-                    $io->verbose(__d('file_storage', '- ID {0} processed', $image->id));
+                    $io->verbose(__d('file_storage', '- ID {0} would be processed', $image->id));
                 }
             }
             $offset += $limit;

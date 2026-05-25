@@ -406,7 +406,7 @@ class FileStorageBehavior extends Behavior
             $this->processor = $this->getConfig('fileProcessor');
         }
 
-        if (!$this->processor instanceof ProcessorInterface) {
+        if (!($this->processor instanceof ProcessorInterface)) {
             throw new RuntimeException('No processor found');
         }
 

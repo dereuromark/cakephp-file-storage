@@ -163,7 +163,7 @@ class ImageHelper extends Helper
         $formats = $options['formats'] ?? ['avif', 'webp'];
         unset($options['formats']);
 
-        if (!$image instanceof FileStorageEntityInterface) {
+        if ($image === null) {
             return $this->fallbackImage($options, $version);
         }
 

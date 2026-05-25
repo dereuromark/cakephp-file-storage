@@ -53,7 +53,7 @@ class FileStorageController extends FileStorageAppController
             ->extract('collection')
             ->toArray();
 
-        $this->set(['fileStorage' => $fileStorage, 'models' => $models, 'collections' => $collections]);
+        $this->set(compact('fileStorage', 'models', 'collections'));
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
         $this->set('filterValues', $this->indexFilterValues());
 
