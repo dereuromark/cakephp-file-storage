@@ -290,7 +290,7 @@ class FileStorageController extends FileStorageAppController
             $report = $service->run($previewModel, $previewCollection, dryRun: true);
         }
 
-        $this->set(['models' => $models, 'report' => $report, 'previewModel' => $previewModel, 'previewCollection' => $previewCollection]);
+        $this->set(compact('models', 'report', 'previewModel', 'previewCollection'));
 
         return null;
     }
