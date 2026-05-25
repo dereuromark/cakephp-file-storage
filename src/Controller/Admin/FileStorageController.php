@@ -139,7 +139,7 @@ class FileStorageController extends FileStorageAppController
     {
         $fileStorage = $this->FileStorage->get($id);
 
-        $this->set(['fileStorage' => $fileStorage]);
+        $this->set(compact('fileStorage'));
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
 
         return null;
@@ -162,7 +162,7 @@ class FileStorageController extends FileStorageAppController
             }
             $this->Flash->error(__d('file_storage', 'The file storage could not be saved. Please, try again.'));
         }
-        $this->set(['fileStorage' => $fileStorage]);
+        $this->set(compact('fileStorage'));
 
         return null;
     }

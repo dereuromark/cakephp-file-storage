@@ -113,17 +113,17 @@ class FileStorageDashboardController extends FileStorageAppController
             ->all()
             ->toArray();
 
-        $this->set([
-            'totalCount' => $totalCount,
-            'totalBytes' => $totalBytes,
-            'orphanCount' => $orphanCount,
-            'byCollection' => $byCollection,
-            'byModel' => $byModel,
-            'byAdapter' => $byAdapter,
-            'byMime' => $byMime,
-            'largest' => $largest,
-            'recent' => $recent,
-        ]);
+        $this->set(compact(
+            'totalCount',
+            'totalBytes',
+            'orphanCount',
+            'byCollection',
+            'byModel',
+            'byAdapter',
+            'byMime',
+            'largest',
+            'recent',
+        ));
         $this->set('queueLoaded', Plugin::isLoaded('Queue'));
 
         return null;
