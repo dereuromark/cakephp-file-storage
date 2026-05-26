@@ -121,6 +121,25 @@
             letter-spacing: 0.025em;
             color: var(--fs-secondary);
         }
+        .fs-table thead th a {
+            color: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            text-decoration: none;
+        }
+        .fs-table thead th a.asc,
+        .fs-table thead th a.desc {
+            color: var(--fs-dark);
+        }
+        .fs-table thead th a.asc::after {
+            content: "\2191";
+            font-size: 0.875em;
+        }
+        .fs-table thead th a.desc::after {
+            content: "\2193";
+            font-size: 0.875em;
+        }
         .fs-table tbody tr:hover { background-color: rgba(13, 110, 253, 0.04); }
 
         .card { border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-radius: 0.5rem; }
