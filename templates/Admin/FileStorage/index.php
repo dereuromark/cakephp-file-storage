@@ -206,4 +206,15 @@ $activeFilters = array_filter($filterValues, static fn (string $v): bool => $v !
 </div>
 <?= $this->Form->end() ?>
 
-<?= $this->element('FileStorage.pagination') ?>
+<?php if (Plugin::isLoaded('Tools')) {
+    echo $this->element('Tools.pagination');
+} else { ?>
+    <nav class="mt-3">
+        <ul class="pagination">
+            <?= $this->Paginator->prev('« ' . __d('file_storage', 'previous')) ?>
+            <?= $this->Paginator->numbers() ?>
+            <?= $this->Paginator->next(__d('file_storage', 'next') . ' »') ?>
+        </ul>
+        <p><?= $this->Paginator->counter() ?></p>
+    </nav>
+<?php } ?>
