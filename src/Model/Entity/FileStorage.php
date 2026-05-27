@@ -14,9 +14,9 @@ use Cake\ORM\Entity;
  *
  * @property array $variants
  * @property array $metadata
- * @property int $id
- * @property int|null $user_id
- * @property int|null $foreign_key
+ * @property string $id
+ * @property int|string|null $user_id
+ * @property int|string|null $foreign_key
  * @property string|null $model
  * @property string|null $filename
  * @property int|null $filesize
