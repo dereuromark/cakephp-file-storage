@@ -382,7 +382,7 @@ class FileStorageBehavior extends Behavior
         $imageSizes = (array)Configure::read('FileStorage.imageVariants');
 
         $collection = $entity->get('collection');
-        $model = $this->table()->getAlias();
+        $model = $entity->get('model');
 
         if (!isset($imageSizes[$model][$collection])) {
             return $file;
