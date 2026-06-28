@@ -237,7 +237,7 @@ class FileStorageController extends FileStorageAppController
                 $deleted,
                 $deleted,
             ));
-        } elseif ($deleted > 0 && $failed > 0) {
+        } elseif ($deleted > 0) {
             $this->Flash->warning(__d('file_storage', '{0} deleted, {1} failed.', $deleted, $failed));
         } else {
             $this->Flash->error(__d('file_storage', 'Bulk delete failed.'));

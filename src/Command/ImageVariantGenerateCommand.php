@@ -101,7 +101,7 @@ class ImageVariantGenerateCommand extends Command
         }
 
         // Wrap operations in proper structure for processing
-        if ($key) {
+        if ($model && $collection) {
             if ($variant) {
                 // Single variant: wrap it
                 $operations = [$variant => $operations];
