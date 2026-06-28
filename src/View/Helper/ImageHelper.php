@@ -24,7 +24,7 @@ class ImageHelper extends Helper
     /**
      * Helpers
      *
-     * @var array<mixed>
+     * @var array<int|string, array<string, mixed>|string>
      */
     protected array $helpers = [
         'Html',
