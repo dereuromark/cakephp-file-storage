@@ -198,7 +198,7 @@ class ImageVariantGenerateCommand extends Command
                 //EventManager::instance()->dispatch($Event);
 
                 if (empty($options['dryRun'])) {
-                    if ($enqueue && $queuedJobsTable !== null) {
+                    if ($queuedJobsTable !== null) {
                         // Hand off the per-entity work to the queue. The
                         // ImageVariantTask payload mirrors the inline path:
                         // same operations, same merge semantics, same table.
