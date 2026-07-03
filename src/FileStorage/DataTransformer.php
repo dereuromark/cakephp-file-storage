@@ -41,7 +41,7 @@ class DataTransformer implements DataTransformerInterface
             (array)$entity->get('variants'),
         );
 
-        $file = $file->withUuid((string)$entity->get('id'));
+        $file = $file->withUuid((string)$entity->get('uuid'));
 
         if ($entity->has('path')) {
             $file = $file->withPath($entity->get('path'));
@@ -67,7 +67,7 @@ class DataTransformer implements DataTransformerInterface
     public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity): EntityInterface
     {
         $data = [
-            'id' => $file->uuid(),
+            'uuid' => $file->uuid(),
             'model' => $file->model(),
             'foreign_key' => $file->modelId(),
             'collection' => $file->collection(), // aka alias
@@ -80,18 +80,15 @@ class DataTransformer implements DataTransformerInterface
             'path' => $file->path(),
         ];
 
+        $options = [
+            'validate' => false,
+            'accessibleFields' => ['*' => true],
+        ];
+
         if ($entity) {
-            return $this->table->patchEntity($entity, $data, ['validate' => false, 'guard' => false]);
+            return $this->table->patchEntity($entity, $data, $options);
         }
 
-        // For new entities, create without ID first, then set it directly
-        // because $_accessible['id'] = false prevents mass assignment
-        $uuid = $data['id'];
-        unset($data['id']);
-        /** @var \Cake\ORM\Entity $entity */
-        $entity = $this->table->newEntity($data, ['validate' => false, 'guard' => false]);
-        $entity->id = $uuid;
-
-        return $entity;
+        return $this->table->newEntity($data, $options);
     }
 }

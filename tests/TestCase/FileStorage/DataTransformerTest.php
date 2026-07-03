@@ -35,8 +35,10 @@ class DataTransformerTest extends TestCase
             'metadata' => ['width' => 800],
             'variants' => ['thumb' => ['path' => 'thumb.jpg']],
             'path' => 'Item/test.jpg',
+            'uuid' => 'test-uuid-123',
+        ], [
+            'accessibleFields' => ['*' => true],
         ]);
-        $entity->id = 'test-uuid-123'; // Set after creation to avoid auto-generation
 
         $file = $transformer->entityToFileObject($entity);
 
@@ -78,7 +80,8 @@ class DataTransformerTest extends TestCase
         $entity = $transformer->fileObjectToEntity($file, null);
 
         $this->assertInstanceOf(FileStorage::class, $entity);
-        $this->assertSame('new-uuid-456', $entity->id);
+        $this->assertSame('new-uuid-456', $entity->uuid);
+        $this->assertNull($entity->id);
         $this->assertSame('new-file.png', $entity->filename);
         $this->assertSame(54321, $entity->filesize);
         $this->assertSame('image/png', $entity->mime_type);
@@ -113,12 +116,13 @@ class DataTransformerTest extends TestCase
             [],
             [],
         );
-        $file = $file->withUuid('1')
+        $file = $file->withUuid('updated-uuid')
             ->withPath('Item/updated.png');
 
         $entity = $transformer->fileObjectToEntity($file, $existing);
 
         $this->assertSame($existing, $entity);
+        $this->assertSame('updated-uuid', $entity->uuid);
         $this->assertSame('updated.png', $entity->filename);
         $this->assertSame(99999, $entity->filesize);
         $this->assertSame('Item/updated.png', $entity->path);

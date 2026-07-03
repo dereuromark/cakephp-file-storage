@@ -198,9 +198,8 @@ class ItemsTableTest extends FileStorageTestCase
     /**
      * @return void
      */
-    public function testUploadHasOneUsesEntityModelForVariantsWhenEnabled(): void
+    public function testUploadHasOneUsesEntityModelForVariants(): void
     {
-        Configure::write('FileStorage.useEntityModelForVariants', true);
         Configure::write('FileStorage.imageVariants', [
             'Items' => [
                 'Avatars' => [

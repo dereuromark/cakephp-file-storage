@@ -27,6 +27,7 @@ class FileStorageFixture extends TestFixture
      */
     public $fields = [
         'id' => ['type' => 'integer', 'autoIncrement' => true],
+        'uuid' => ['type' => 'string', 'null' => false, 'length' => 36],
         'user_id' => ['type' => 'integer', 'null' => true, 'default' => null],
         'foreign_key' => ['type' => 'integer', 'null' => true, 'default' => null],
         'model' => ['type' => 'string', 'null' => true, 'default' => null, 'length' => 64],
@@ -44,6 +45,7 @@ class FileStorageFixture extends TestFixture
         'modified' => ['type' => 'datetime', 'null' => true, 'default' => null],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id']],
+            'uuid' => ['type' => 'unique', 'columns' => ['uuid']],
         ],
     ];
 
@@ -54,6 +56,7 @@ class FileStorageFixture extends TestFixture
      */
     public array $records = [
         [
+            'uuid' => '10000000-0000-4000-8000-000000000001',
             'user_id' => 1,
             'foreign_key' => 1,
             'model' => 'Item',
@@ -70,6 +73,7 @@ class FileStorageFixture extends TestFixture
             'modified' => '2012-01-01 12:00:00',
         ],
         [
+            'uuid' => '10000000-0000-4000-8000-000000000002',
             'user_id' => 1,
             'foreign_key' => 1,
             'model' => 'Item',
@@ -86,6 +90,7 @@ class FileStorageFixture extends TestFixture
             'modified' => '2012-01-01 12:00:00',
         ],
         [
+            'uuid' => '10000000-0000-4000-8000-000000000003',
             'user_id' => 1,
             'foreign_key' => 2,
             'model' => 'Item',
@@ -102,6 +107,7 @@ class FileStorageFixture extends TestFixture
             'modified' => '2012-01-01 12:00:00',
         ],
         [
+            'uuid' => '10000000-0000-4000-8000-000000000004',
             'user_id' => 1,
             'foreign_key' => 4,
             'model' => 'Item',

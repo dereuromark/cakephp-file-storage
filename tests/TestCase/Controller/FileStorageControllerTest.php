@@ -54,7 +54,7 @@ class FileStorageControllerTest extends FileStorageTestCase
             'prefix' => false,
             'controller' => 'FileStorage',
             'action' => 'signed',
-            $entity->id,
+            $entity->uuid,
             $signed['signature'],
         ]);
 
@@ -87,7 +87,7 @@ class FileStorageControllerTest extends FileStorageTestCase
             'prefix' => false,
             'controller' => 'FileStorage',
             'action' => 'signed',
-            $entity->id,
+            $entity->uuid,
             str_repeat('0', 64),
         ]);
     }
@@ -115,14 +115,14 @@ class FileStorageControllerTest extends FileStorageTestCase
             'prefix' => false,
             'controller' => 'FileStorage',
             'action' => 'signed',
-            $entity->id,
+            $entity->uuid,
             $signed['signature'],
             '?' => ['expires' => $signed['expires']],
         ]);
     }
 
     /**
-     * Unknown entity id → 404.
+     * Unknown entity UUID → 404.
      *
      * @return void
      */

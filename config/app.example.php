@@ -95,9 +95,7 @@ return [
         //   renders disabled (with a tooltip) when Queue is not loaded.
         // Image variants configuration
         // Structure: [ModelAlias][CollectionName][variants]
-        // By default, ModelAlias is the current FileStorage table alias for
-        // backwards compatibility. Set useEntityModelForVariants to true below
-        // to use the file_storage.model value instead (recommended for new apps).
+        // ModelAlias is the persisted file_storage.model value.
         // CollectionName can be different (e.g., 'Cover', 'Avatar', 'Gallery')
         'imageVariants' => [
             'EventImages' => [
@@ -115,10 +113,6 @@ return [
             //     'GalleryImages' => $galleryVariants->toArray(),
             // ],
         ],
-        // Opt in to resolving image variants by file_storage.model instead of
-        // the FileStorage table/association alias. This matches the persisted
-        // file metadata and is the intended default for the next major release.
-        'useEntityModelForVariants' => false,
         'behaviorConfig' => [
             'fileStorage' => $fileStorage,
             'fileProcessor' => null,

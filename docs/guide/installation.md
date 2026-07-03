@@ -43,14 +43,14 @@ The shipped migration creates `file_storage` with the following column types:
 
 | Column | Default type | Purpose |
 |--------|--------------|---------|
-| `id` | `CHAR(36)` | The file row's own id (a UUID — always stays CHAR(36)). |
+| `id` | `integer` | The file row's own database primary key. |
+| `uuid` | `CHAR(36)` | The file row's public / storage identity. |
 | `foreign_key` | `integer` | The owning record's id (your `Users.id`, `Posts.id`, …). Configurable via `Polymorphic.type`. |
 | `user_id` | `integer` | Optional uploader / owner id — a plain integer FK to the app's users table. |
 
 `user_id` and `foreign_key` both follow your application's primary-key signedness
 (via the `Migrations.unsigned_primary_keys` flag — signed by default) for integer
-variants. The `id` always stays a `CHAR(36)` UUID (the storage library's file
-identity).
+variants. The `uuid` column stores the storage library's file identity.
 
 #### Configuring the foreign_key type
 
@@ -76,12 +76,12 @@ effect on an already-created column.
 ],
 ```
 
-::: tip Why keep the id as CHAR(36)?
-The `file_storage.id` is the *file row's own* identifier, generated as a UUID by
-the plugin's storage / path layer (don't pre-fill it — let the table assign it).
-It is **not** a reference to one of your records. Only `foreign_key` points at
-*your* polymorphic host records; `user_id` is a concrete integer FK to the users
-table.
+::: tip Upgrading from the UUID primary key schema
+Older versions used `file_storage.id` as a `CHAR(36)` UUID. The next-major
+upgrade migration creates an integer `id` primary key and copies the old UUID
+values into the new `uuid` column. If your app stores references to
+`file_storage.id` outside this plugin, migrate those app tables to reference the
+new integer `id` or keep using the copied `uuid` column deliberately.
 :::
 
 ## Adapter-specific configuration

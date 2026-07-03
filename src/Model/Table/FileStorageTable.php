@@ -57,6 +57,7 @@ class FileStorageTable extends Table
         $this->setDisplayField('filename');
 
         $this->getSchema()
+            ->addColumn('uuid', 'string')
             ->addColumn('variants', 'json')
             ->addColumn('metadata', 'json');
 

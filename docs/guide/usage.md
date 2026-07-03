@@ -89,10 +89,6 @@ Configure::write('FileStorage.behaviorConfig', [
     'fileProcessor' => null, // add an image processor if needed
     'fileValidator' => null, // add a custom validator if needed
 ]);
-
-// Recommended for new apps: resolve image variants by the persisted
-// file_storage.model value instead of the FileStorage association alias.
-Configure::write('FileStorage.useEntityModelForVariants', true);
 ```
 
 ### 3. Use the right behavior for the right table

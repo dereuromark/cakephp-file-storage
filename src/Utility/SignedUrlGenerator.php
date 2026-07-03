@@ -20,7 +20,7 @@ class SignedUrlGenerator
  /**
   * Generate signature data for a file
   *
-  * The signature includes the file ID, path, modification time, and expiration
+  * The signature includes the file UUID, path, modification time, and expiration
   * to ensure it becomes invalid if the file changes or time expires.
   *
   * @param \FileStorage\Model\Entity\FileStorage $entity File storage entity
@@ -39,7 +39,7 @@ class SignedUrlGenerator
 
         // Include data that should invalidate signature if changed
         $data = implode('|', [
-            $entity->id,
+            $entity->uuid,
             $entity->path,
             $entity->modified->toUnixString(),
             $expires ?? '',
@@ -114,7 +114,7 @@ class SignedUrlGenerator
             'prefix' => false,
             'controller' => 'FileStorage',
             'action' => 'signed',
-            $entity->id,
+            $entity->uuid,
             $signed['signature'],
         ];
         if ($signed['expires'] !== null) {

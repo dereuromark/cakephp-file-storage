@@ -49,7 +49,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testGenerate(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -76,7 +76,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testGenerateWithoutExpiration(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -98,7 +98,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testGenerateWithCustomSecret(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -125,7 +125,7 @@ class SignedUrlGeneratorTest extends TestCase
         Configure::write('FileStorage.signatureSecret', 'configured-secret');
 
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -150,7 +150,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testVerifyAcceptsValidSignature(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -178,7 +178,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testVerifyRejectsInvalidSignature(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -200,7 +200,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testVerifyRejectsExpiredSignature(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -228,7 +228,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testVerifyInvalidatesSignatureWhenFileChanges(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -255,7 +255,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testVerifyWorksWithoutExpiration(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -279,7 +279,7 @@ class SignedUrlGeneratorTest extends TestCase
     public function testVerifyRespectsCustomSecret(): void
     {
         $fileStorage = new FileStorage([
-            'id' => 'test-uuid-123',
+            'uuid' => 'test-uuid-123',
             'path' => 'files/test.jpg',
             'modified' => new DateTime('2025-01-01 12:00:00'),
         ]);
@@ -317,7 +317,7 @@ class SignedUrlGeneratorTest extends TestCase
     {
         $this->loadPluginRoutes();
         $fileStorage = new FileStorage([
-            'id' => 'urn-test',
+            'uuid' => 'urn-test',
             'path' => 'Item/file.png',
             'modified' => new DateTime('2026-05-11 12:00:00'),
         ]);
@@ -339,7 +339,7 @@ class SignedUrlGeneratorTest extends TestCase
     {
         $this->loadPluginRoutes();
         $fileStorage = new FileStorage([
-            'id' => 'urn-no-expiry',
+            'uuid' => 'urn-no-expiry',
             'path' => 'Item/file.png',
             'modified' => new DateTime('2026-05-11 12:00:00'),
         ]);

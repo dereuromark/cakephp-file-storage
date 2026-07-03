@@ -14,7 +14,7 @@ useful for:
 This is the simplest path — no serving controller required.
 :::
 
-The plugin ships a public action at `/file-storage/signed/{id}/{signature}` that
+The plugin ships a public action at `/file-storage/signed/{uuid}/{signature}` that
 verifies the signature, looks up the file, and streams it directly. For
 local-filesystem adapters it uses `Response::withFile()`, giving HTTP `Range`
 support for `<video>` and `<audio>` elements for free; non-local adapters fall
@@ -29,14 +29,14 @@ $url = SignedUrlGenerator::url($fileStorage, [
     'expires' => strtotime('+24 hours'),
     'fullBase' => true, // absolute URL for email
 ]);
-// → http://example.com/file-storage/signed/<id>/<sha256>?expires=1799999999
+// → http://example.com/file-storage/signed/<uuid>/<sha256>?expires=1799999999
 ```
 
 The helper places the signature in the path segment (so reverse-proxy access
 logs that scrub query strings don't shred half the credential) and `expires` in
 the query string. The matching action handles:
 
-- **404** for an unknown id;
+- **404** for an unknown UUID;
 - **403** for tampered or expired signatures (same status either way, so probing
   callers can't distinguish);
 - **404** if the backing file disappeared from the adapter.
@@ -70,7 +70,7 @@ public function share($fileStorageId)
     $url = Router::url([
         'controller' => 'Files',
         'action' => 'serve',
-        $fileStorage->id,
+        $fileStorage->uuid,
         '?' => $signatureData,
         '_full' => true,
     ]);

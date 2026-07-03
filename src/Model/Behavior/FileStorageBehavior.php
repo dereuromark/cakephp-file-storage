@@ -8,6 +8,7 @@ use Cake\Datasource\EntityInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventInterface;
 use Cake\ORM\Behavior;
+use Cake\Utility\Text;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Validation\UploadValidatorInterface;
@@ -261,6 +262,10 @@ class FileStorageBehavior extends Behavior
     protected function checkEntityBeforeSave(EntityInterface $entity): void
     {
         if ($entity->isNew()) {
+            if (!$entity->get('uuid')) {
+                $entity->set('uuid', Text::uuid());
+            }
+
             if (!$entity->has('adapter')) {
                 $entity->set('adapter', $this->getConfig('defaultStorageConfig'));
             }
@@ -382,10 +387,7 @@ class FileStorageBehavior extends Behavior
         $imageSizes = (array)Configure::read('FileStorage.imageVariants');
 
         $collection = $entity->get('collection');
-        $model = $this->table()->getAlias();
-        if (Configure::read('FileStorage.useEntityModelForVariants') === true) {
-            $model = (string)$entity->get('model');
-        }
+        $model = (string)$entity->get('model');
 
         if (!isset($imageSizes[$model][$collection])) {
             return $file;

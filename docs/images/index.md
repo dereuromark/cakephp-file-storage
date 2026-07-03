@@ -39,7 +39,6 @@ $collection->addNew('large')
 
 // Configure in your application
 Configure::write('FileStorage', [
-    'useEntityModelForVariants' => true,
     'imageVariants' => [
         // Structure: [ModelAlias][CollectionName] => variants
         'Posts' => [
@@ -57,18 +56,11 @@ Configure::write('FileStorage', [
 
 The variant configuration uses a two-level hierarchy:
 
-- **Model** — by default, the FileStorage table/association alias for backwards
-  compatibility. With `FileStorage.useEntityModelForVariants` enabled, this is
-  the stored `file_storage.model` value (e.g. `Posts`, `Users`).
+- **Model** — the stored `file_storage.model` value (e.g. `Posts`, `Users`).
 - **Collection** — a grouping within a model (e.g. `Avatar`, `Cover`, `Gallery`).
 
 This allows different variant configurations for different file types within the
 same model.
-
-For new applications, enable `useEntityModelForVariants` and key variants by the
-owning model stored in `file_storage.model`. Existing applications can keep the
-default `false` value until their config has been migrated from association-alias
-keys to entity-model keys.
 
 ### Available variant operations
 

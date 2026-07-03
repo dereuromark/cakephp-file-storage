@@ -15,8 +15,9 @@ use Cake\ORM\Entity;
  * @property array $variants
  * @property array $metadata
  * @property int $id
+ * @property string $uuid
  * @property int|null $user_id
- * @property int|null $foreign_key
+ * @property int|string|null $foreign_key
  * @property string|null $model
  * @property string|null $filename
  * @property int|null $filesize
@@ -28,7 +29,6 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\DateTime $created
  * @property \Cake\I18n\DateTime $modified
  * @property string|null $collection
- * @property array<string, string> $variant_urls !
  */
 class FileStorage extends Entity implements FileStorageEntityInterface
 {
@@ -40,13 +40,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     protected array $_accessible = [
         '*' => true,
         'id' => false,
-    ];
-
-    /**
-     * @var list<string>
-     */
-    protected array $_virtual = [
-        'variantUrls',
+        'uuid' => false,
     ];
 
     /**
@@ -99,28 +93,5 @@ class FileStorage extends Entity implements FileStorageEntityInterface
         }
 
         return $variants[$variant]['path'];
-    }
-
-    /**
-     * Making it backward compatible
-     *
-     * @see \FileStorage\Model\Entity\FileStorage::$variant_urls
-     *
-     * @return array<string, string>
-     */
-    protected function _getVariantUrls(): array
-    {
-        $variants = (array)$this->get('variants');
-        $list = [
-            'original' => $this->get('url'),
-        ];
-
-        foreach ($variants as $name => $data) {
-            if (!empty($data['url'])) {
-                $list[$name] = $data['url'];
-            }
-        }
-
-        return $list;
     }
 }

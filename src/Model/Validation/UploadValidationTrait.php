@@ -198,11 +198,7 @@ trait UploadValidationTrait
             if (is_string($path) && $path !== '' && is_file($path)) {
                 $finfo = finfo_open(FILEINFO_MIME_TYPE);
                 if ($finfo !== false) {
-                    try {
-                        $sniffed = finfo_file($finfo, $path);
-                    } finally {
-                        finfo_close($finfo);
-                    }
+                    $sniffed = finfo_file($finfo, $path);
                     if (is_string($sniffed) && $sniffed !== '') {
                         return in_array(strtolower($sniffed), $allowed, true);
                     }

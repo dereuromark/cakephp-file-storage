@@ -79,7 +79,6 @@ class FileStorageTestCase extends TestCase
         }
 
         $this->prepareDependencies();
-        Configure::delete('FileStorage.useEntityModelForVariants');
         $this->configureImageVariants();
 
         $this->FileStorage = $this
@@ -93,7 +92,7 @@ class FileStorageTestCase extends TestCase
     protected function configureImageVariants(): void
     {
         Configure::write('FileStorage.imageVariants', [
-            'Photos' => [
+            'Items' => [
                 'Photos' => [
                     'thumbnail' => [
                         'width' => 50,
@@ -106,8 +105,6 @@ class FileStorageTestCase extends TestCase
                         'height' => 150,
                     ],
                 ],
-            ],
-            'Avatars' => [
                 'Avatars' => [
                     'thumbnail' => [
                         'width' => 80,
