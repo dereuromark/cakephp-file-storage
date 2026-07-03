@@ -1,11 +1,19 @@
 # Behavior Options
 
-The `FileStorage.FileStorage` behavior wires upload handling into your table's
-save/delete lifecycle. Attach it in your table's `initialize()`:
+The `FileStorage.FileStorage` behavior wires upload handling into the
+`FileStorage.FileStorage` table's save/delete lifecycle. The plugin table
+attaches it automatically.
+
+Only attach this behavior directly when you are creating a custom file storage
+table that saves upload entities itself:
 
 ```php
 $this->addBehavior('FileStorage.FileStorage', Configure::read('FileStorage.behaviorConfig'));
 ```
+
+For uploads saved through another app table, such as `Posts` with a
+`CoverImages` association, attach `FileStorage.FileAssociation` to the app table
+instead. See [Usage](/guide/usage#use-the-right-behavior-for-the-right-table).
 
 ## Options
 

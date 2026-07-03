@@ -91,38 +91,48 @@ Configure::write('FileStorage.behaviorConfig', [
 ]);
 ```
 
-### 3. Attach the behavior to your table
+### 3. Use the right behavior for the right table
 
-In your table class (e.g. `UsersTable.php`):
+The `FileStorage.FileStorage` behavior processes the upload entity itself. It is
+attached to the plugin's `FileStorage.FileStorage` table automatically.
+
+For uploads saved through an app table association, attach
+`FileStorage.FileAssociation` to your app table instead. This behavior fills the
+`model`, `collection`, and `foreign_key` fields on the associated file entity and
+then lets the plugin table process the upload.
 
 ```php
-public function initialize(array $config): void
-{
-    parent::initialize($config);
-
-    $this->addBehavior('FileStorage.FileStorage', Configure::read('FileStorage.behaviorConfig'));
-}
+$this->addBehavior('FileStorage.FileAssociation', [
+    'associations' => [
+        'CoverImages' => [
+            'collection' => 'Cover',
+            'replace' => true,
+        ],
+    ],
+]);
 ```
 
-The behavior accepts several options — `fileStorage` (required), `fileProcessor`,
-`fileValidator`, `fileField`, `defaultStorageConfig`, and `ignoreEmptyFile`. See
-the [Behavior Options reference](/reference/behavior) for the full list.
+Do not add `FileStorage.FileStorage` directly to your `UsersTable`, `PostsTable`,
+or other app tables for associated uploads. It expects a top-level upload field
+on the entity it is saving, so it can stop the parent entity save before CakePHP
+gets to the associated file entity.
 
 #### The `fileField` option
 
-By default the behavior looks for a `'file'` field in the uploaded data, so your
-form field should be named `*.file`:
+By default the upload entity behavior looks for a `'file'` field in the uploaded
+file data, so associated form fields should be named `*.file`:
 
 ```php
 // Default: fileField => 'file'
 echo $this->Form->control('avatar.file', ['type' => 'file']);
 ```
 
-To use a different field name, configure it:
+To use a different field name, configure the plugin table behavior through
+`FileStorage.behaviorConfig`:
 
 ```php
-$this->addBehavior('FileStorage.FileStorage', [
-    'fileStorage' => $fileStorage,
+Configure::write('FileStorage.behaviorConfig', [
+    // ...
     'fileField' => 'upload', // custom field name
 ]);
 ```
@@ -153,6 +163,8 @@ public function initialize(array $config): void
             'CoverImages.model' => 'Posts',
             'CoverImages.collection' => 'Cover',
         ],
+        'dependent' => true,
+        'cascadeCallbacks' => true,
     ]);
 
     // Multiple files association (hasMany)
@@ -162,6 +174,20 @@ public function initialize(array $config): void
         'conditions' => [
             'GalleryImages.model' => 'Posts',
             'GalleryImages.collection' => 'Gallery',
+        ],
+        'dependent' => true,
+        'cascadeCallbacks' => true,
+    ]);
+
+    $this->addBehavior('FileStorage.FileAssociation', [
+        'associations' => [
+            'CoverImages' => [
+                'collection' => 'Cover',
+                'replace' => true,
+            ],
+            'GalleryImages' => [
+                'collection' => 'Gallery',
+            ],
         ],
     ]);
 }
@@ -218,14 +244,7 @@ public function add()
     if ($this->request->is('post')) {
         $post = $this->Posts->patchEntity($post, $this->request->getData());
 
-        // Set the required fields for file storage
-        if (isset($post->cover_image)) {
-            $post->cover_image->model = 'Posts';
-            $post->cover_image->collection = 'Cover';
-            $post->cover_image->adapter = 'Local';
-        }
-
-        if ($this->Posts->save($post, ['associated' => ['CoverImages']])) {
+        if ($this->Posts->save($post)) {
             $this->Flash->success(__('The post has been saved.'));
 
             return $this->redirect(['action' => 'index']);
