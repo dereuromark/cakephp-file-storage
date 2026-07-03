@@ -135,7 +135,6 @@ class AdapterMigrationService
         if (($options['limit'] ?? null) !== null) {
             $query->limit((int)$options['limit']);
         }
-        $query->disableBufferedResults();
 
         foreach ($query as $entity) {
             if (!$entity instanceof FileStorage) {
