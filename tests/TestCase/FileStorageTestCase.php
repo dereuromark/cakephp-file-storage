@@ -79,6 +79,7 @@ class FileStorageTestCase extends TestCase
         }
 
         $this->prepareDependencies();
+        Configure::delete('FileStorage.useEntityModelForVariants');
         $this->configureImageVariants();
 
         $this->FileStorage = $this

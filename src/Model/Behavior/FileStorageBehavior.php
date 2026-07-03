@@ -383,6 +383,9 @@ class FileStorageBehavior extends Behavior
 
         $collection = $entity->get('collection');
         $model = $this->table()->getAlias();
+        if (Configure::read('FileStorage.useEntityModelForVariants') === true) {
+            $model = (string)$entity->get('model');
+        }
 
         if (!isset($imageSizes[$model][$collection])) {
             return $file;

@@ -2,6 +2,7 @@
 
 namespace FileStorage\Test\TestCase\Model\Table;
 
+use Cake\Core\Configure;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use Laminas\Diactoros\UploadedFile;
 
@@ -191,6 +192,48 @@ class ItemsTableTest extends FileStorageTestCase
         $this->assertSame('Avatars', $entity->avatar->collection);
         $this->assertNotEmpty($entity->avatar->metadata);
         $this->assertNotEmpty($entity->avatar->variants);
+        $this->assertStringStartsWith('Items/Avatars/', $entity->avatar->path);
+    }
+
+    /**
+     * @return void
+     */
+    public function testUploadHasOneUsesEntityModelForVariantsWhenEnabled(): void
+    {
+        Configure::write('FileStorage.useEntityModelForVariants', true);
+        Configure::write('FileStorage.imageVariants', [
+            'Items' => [
+                'Avatars' => [
+                    'thumbnail' => [
+                        'width' => 80,
+                        'height' => 80,
+                    ],
+                ],
+            ],
+        ]);
+
+        $entity = $this->table->newEntity([
+            'name' => 'Test',
+            'avatar' => [
+                'file' => new UploadedFile(
+                    $this->fileFixtures . 'titus.jpg',
+                    filesize($this->fileFixtures . 'titus.jpg'),
+                    UPLOAD_ERR_OK,
+                    'tituts.jpg',
+                    'image/jpeg',
+                ),
+            ],
+        ]);
+        $this->assertSame([], $entity->getErrors());
+
+        $this->table->saveOrFail($entity);
+
+        $entity = $this->table->get($entity->id, contain: ['Avatars']);
+
+        $this->assertNotEmpty($entity->avatar);
+        $this->assertSame('Items', $entity->avatar->model);
+        $this->assertSame('Avatars', $entity->avatar->collection);
+        $this->assertArrayHasKey('thumbnail', $entity->avatar->variants);
         $this->assertStringStartsWith('Items/Avatars/', $entity->avatar->path);
     }
 
