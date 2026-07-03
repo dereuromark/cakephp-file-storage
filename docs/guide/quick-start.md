@@ -96,8 +96,9 @@ $collection->addNew(\App\Storage\StorageCollections::IMG_CROPPED)
 
 \Cake\Core\Configure::write([
     'FileStorage' => [
+        'useEntityModelForVariants' => true,
         // Structure: [ModelAlias][CollectionName][variants]
-        // Model comes from the table alias, Collection from the entity field
+        // Model comes from file_storage.model, Collection from file_storage.collection
         'imageVariants' => [
             'Users' => [
                 'Avatar' => $collection->toArray(),

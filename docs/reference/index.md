@@ -17,6 +17,7 @@ you can copy from.
 | `adminBackUrl` | `array\|string` | *(unset)* | Optional "back to app" link in the admin header. |
 | `adminBackLabel` | `string` | `'Back to App'` | Label for `adminBackUrl`. |
 | `imageVariants` | `array` | `[]` | [Variant definitions](/images/) keyed by `[Model][Collection]`. |
+| `useEntityModelForVariants` | `bool` | `false` | Use `file_storage.model` instead of the FileStorage table alias for inline variant lookup. |
 | `behaviorConfig` | `array` | `[]` | Default config for the [FileStorage behavior](./behavior). |
 | `serveRoute` | `array` | *(unset)* | Route to your custom [serving controller](/serving/). |
 
@@ -33,6 +34,46 @@ Variant definitions in a two-level hierarchy — `[ModelAlias][CollectionName]`.
 See [Image variants and versioning](/images/) for the full operation list.
 
 ```php
+'imageVariants' => [
+    'Users' => [
+        'Avatar' => $collection->toArray(),
+    ],
+],
+```
+
+### `useEntityModelForVariants`
+
+By default, inline upload processing resolves the first `imageVariants` key from
+the current FileStorage table alias. This keeps existing alias-keyed
+configurations working in the current major release.
+
+Set `useEntityModelForVariants` to `true` to resolve variants from the persisted
+`file_storage.model` field instead. This is recommended for new apps and for apps
+that use app-table associations such as `Users -> Avatars`.
+
+```php
+'FileStorage' => [
+    'useEntityModelForVariants' => true,
+    'imageVariants' => [
+        'Users' => [
+            'Avatar' => $collection->toArray(),
+        ],
+    ],
+],
+```
+
+When this flag is enabled, audit existing variant config that was keyed by the
+association alias:
+
+```php
+// Legacy alias-keyed config
+'imageVariants' => [
+    'Avatars' => [
+        'Avatar' => $collection->toArray(),
+    ],
+],
+
+// Entity-model-keyed config
 'imageVariants' => [
     'Users' => [
         'Avatar' => $collection->toArray(),
