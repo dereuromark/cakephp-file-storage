@@ -82,6 +82,8 @@ upgrade migration creates an integer `id` primary key and copies the old UUID
 values into the new `uuid` column. If your app stores references to
 `file_storage.id` outside this plugin, migrate those app tables to reference the
 new integer `id` or keep using the copied `uuid` column deliberately.
+
+See the [upgrade guide](./upgrading) for the full migration checklist.
 :::
 
 ## Adapter-specific configuration

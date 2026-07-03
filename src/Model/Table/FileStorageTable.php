@@ -4,6 +4,7 @@ namespace FileStorage\Model\Table;
 
 use Cake\Core\Configure;
 use Cake\ORM\Table;
+use FileStorage\Model\Entity\FileStorage;
 
 /**
  * FileStorageTable
@@ -66,5 +67,22 @@ class FileStorageTable extends Table
             'FileStorage.FileStorage',
             (array)Configure::read('FileStorage.behaviorConfig'),
         );
+    }
+
+    /**
+     * Look up a file row by its public/storage UUID.
+     *
+     * @param string $uuid Public/storage UUID.
+     *
+     * @return \FileStorage\Model\Entity\FileStorage|null
+     */
+    public function getByUuid(string $uuid): ?FileStorage
+    {
+        /** @var \FileStorage\Model\Entity\FileStorage|null $entity */
+        $entity = $this->find()
+            ->where([$this->aliasField('uuid') => $uuid])
+            ->first();
+
+        return $entity;
     }
 }

@@ -89,8 +89,7 @@ class FileStorageController extends Controller
         /** @var \FileStorage\Model\Table\FileStorageTable $table */
         $table = $this->fetchTable('FileStorage.FileStorage');
 
-        /** @var \FileStorage\Model\Entity\FileStorage|null $entity */
-        $entity = $table->find()->where(['FileStorage.uuid' => $uuid])->first();
+        $entity = $table->getByUuid($uuid);
         if ($entity === null) {
             throw new NotFoundException(__d('file_storage', 'File not found.'));
         }

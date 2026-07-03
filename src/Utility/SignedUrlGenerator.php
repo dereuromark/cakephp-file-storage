@@ -6,6 +6,7 @@ use Cake\Core\Configure;
 use Cake\Routing\Router;
 use Cake\Utility\Security;
 use FileStorage\Model\Entity\FileStorage;
+use InvalidArgumentException;
 
 /**
  * Generate and verify signed URLs for temporary file access
@@ -28,10 +29,19 @@ class SignedUrlGenerator
   *   - expires: Unix timestamp when signature expires (optional)
   *   - secret: Custom secret key (defaults to configured secret or Security salt)
   *
+  * @throws \InvalidArgumentException
+  *
   * @return array<string, int|string|null> Array with 'signature' and 'expires' keys
   */
     public static function generate(FileStorage $entity, array $options = []): array
     {
+        if (!$entity->publicId()) {
+            throw new InvalidArgumentException('Cannot sign a file storage entity without a UUID.');
+        }
+        if (!$entity->path) {
+            throw new InvalidArgumentException('Cannot sign a file storage entity without a path.');
+        }
+
         $expires = $options['expires'] ?? null;
         $secret = $options['secret'] ??
                   Configure::read('FileStorage.signatureSecret') ??
@@ -39,7 +49,7 @@ class SignedUrlGenerator
 
         // Include data that should invalidate signature if changed
         $data = implode('|', [
-            $entity->uuid,
+            $entity->publicId(),
             $entity->path,
             $entity->modified->toUnixString(),
             $expires ?? '',
@@ -114,7 +124,7 @@ class SignedUrlGenerator
             'prefix' => false,
             'controller' => 'FileStorage',
             'action' => 'signed',
-            $entity->uuid,
+            $entity->publicId(),
             $signed['signature'],
         ];
         if ($signed['expires'] !== null) {

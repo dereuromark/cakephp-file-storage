@@ -7,6 +7,7 @@ use Cake\Core\BasePlugin;
 use Cake\Routing\RouteBuilder;
 use FileStorage\Command\CleanupCommand;
 use FileStorage\Command\ImageVariantGenerateCommand;
+use FileStorage\Command\MigrateAdapterCommand;
 
 /**
  * FileStorage Plugin for CakePHP
@@ -72,6 +73,7 @@ class FileStoragePlugin extends BasePlugin
     {
         $commands->add('file_storage cleanup', CleanupCommand::class);
         $commands->add('file_storage generate_image_variant', ImageVariantGenerateCommand::class);
+        $commands->add('file_storage migrate_adapter', MigrateAdapterCommand::class);
 
         return $commands;
     }

@@ -38,6 +38,17 @@ class FileStorageTableTest extends FileStorageTestCase
     }
 
     /**
+     * @return void
+     */
+    public function testGetByUuid(): void
+    {
+        $entity = $this->FileStorage->getByUuid('10000000-0000-4000-8000-000000000001');
+
+        $this->assertNotNull($entity);
+        $this->assertSame(1, $entity->id);
+    }
+
+    /**
      * Testing a complete save call
      *
      * @link https://github.com/burzum/cakephp-file-storage/issues/85

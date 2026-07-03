@@ -1,6 +1,6 @@
 # Console Commands
 
-The plugin ships two console commands, both under the `file_storage` namespace.
+The plugin ships console commands under the `file_storage` namespace.
 
 ## `file_storage cleanup`
 
@@ -51,3 +51,31 @@ has its own page with all arguments, options, and the queue-backed background
 mode:
 
 - [The variant command](/images/command)
+
+## `file_storage migrate_adapter`
+
+Copies stored files from one configured adapter to another and updates matching
+`file_storage.adapter` rows after each row's files were copied successfully.
+
+```bash
+bin/cake file_storage migrate_adapter <source> <target> [options]
+```
+
+### Arguments
+
+- **source** — source adapter config name, e.g. `Local`.
+- **target** — target adapter config name, e.g. `S3`.
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `--dryRun`, `-d` | Preview only; do not copy files or update rows. |
+| `--model` | Limit the migration to one `file_storage.model`. |
+| `--collection` | Limit the migration to one collection. |
+| `--limit` | Maximum number of rows to inspect. |
+| `--overwrite` | Replace files that already exist on the target adapter. |
+| `--deleteSource` | Delete source files after a successful copy and row update. |
+
+Always run `--dryRun` first. Missing source files and existing target files skip
+the affected row, unless `--overwrite` allows replacing target files.

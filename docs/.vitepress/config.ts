@@ -7,6 +7,7 @@ function guideSidebar() {
       items: [
         { text: 'Overview', link: '/guide/' },
         { text: 'Installation', link: '/guide/installation' },
+        { text: 'Upgrading', link: '/guide/upgrading' },
         { text: 'Quick Start', link: '/guide/quick-start' },
         { text: 'Usage', link: '/guide/usage' },
         { text: 'Validation', link: '/guide/validation' },
