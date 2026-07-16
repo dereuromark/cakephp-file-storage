@@ -55,4 +55,19 @@ class FileStorageTest extends FileStorageTestCase
         $result = $fileStorage->getVariantPath('nonexistent');
         $this->assertNull($result);
     }
+
+    /**
+     * @return void
+     */
+    public function testPublicId(): void
+    {
+        $fileStorage = new FileStorage([
+            'uuid' => '10000000-0000-4000-8000-000000000001',
+        ], [
+            'accessibleFields' => ['*' => true],
+        ]);
+
+        $this->assertSame('10000000-0000-4000-8000-000000000001', $fileStorage->publicId());
+        $this->assertSame('10000000-0000-4000-8000-000000000001', $fileStorage->storageIdentity());
+    }
 }

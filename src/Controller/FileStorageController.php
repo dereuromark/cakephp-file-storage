@@ -58,11 +58,11 @@ class FileStorageController extends Controller
     /**
      * Stream a file via a signed URL.
      *
-     * URL: `/file-storage/signed/{id}/{signature}?expires={timestamp}`
+     * URL: `/file-storage/signed/{uuid}/{signature}?expires={timestamp}`
      *
      * The signature must match what `SignedUrlGenerator::generate()` produced
      * for this entity with the same `expires` (if any). Mismatched signatures
-     * 403; expired signatures 403; unknown ids 404; valid signatures whose
+     * 403; expired signatures 403; unknown UUIDs 404; valid signatures whose
      * backing file disappeared on the adapter 404.
      *
      * For local-filesystem adapters the response uses `Response::withFile()`,
@@ -71,7 +71,7 @@ class FileStorageController extends Controller
      * non-local adapters (S3, etc.) we read the bytes once and emit them
      * with `Response::withStringBody()`; clients fall back to plain GET.
      *
-     * @param string|int|null $id File storage row id.
+     * @param string|null $uuid File storage UUID.
      * @param string|null $signature URL-supplied signature.
      *
      * @throws \Cake\Http\Exception\BadRequestException
@@ -80,17 +80,16 @@ class FileStorageController extends Controller
      *
      * @return \Cake\Http\Response
      */
-    public function signed($id = null, ?string $signature = null): Response
+    public function signed(?string $uuid = null, ?string $signature = null): Response
     {
-        if ($id === null || $id === '' || $signature === null || $signature === '') {
-            throw new BadRequestException(__d('file_storage', 'Missing id or signature.'));
+        if ($uuid === null || $uuid === '' || $signature === null || $signature === '') {
+            throw new BadRequestException(__d('file_storage', 'Missing UUID or signature.'));
         }
 
         /** @var \FileStorage\Model\Table\FileStorageTable $table */
         $table = $this->fetchTable('FileStorage.FileStorage');
 
-        /** @var \FileStorage\Model\Entity\FileStorage|null $entity */
-        $entity = $table->find()->where(['FileStorage.id' => $id])->first();
+        $entity = $table->getByUuid($uuid);
         if ($entity === null) {
             throw new NotFoundException(__d('file_storage', 'File not found.'));
         }

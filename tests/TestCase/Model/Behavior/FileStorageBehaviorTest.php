@@ -171,8 +171,9 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         ]);
 
         $entity = $this->FileStorage->newEmptyEntity();
+        $entity->model = 'FileStorage';
         $entity->collection = 'Photos';
-        $entity->id = 'test-id';
+        $entity->uuid = 'test-id';
         $entity->path = 'test/path.jpg';
         $entity->adapter = 'Local';
 
@@ -203,8 +204,9 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         ]);
 
         $entity = $this->FileStorage->newEmptyEntity();
+        $entity->model = 'FileStorage';
         $entity->collection = 'Cover';
-        $entity->id = 'test-id';
+        $entity->uuid = 'test-id';
         $entity->path = 'test/path.jpg';
         $entity->adapter = 'Local';
 
@@ -219,7 +221,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
     /**
      * @return void
      */
-    public function testProcessImagesUsesTableAliasByDefault(): void
+    public function testProcessImagesUsesEntityModel(): void
     {
         Configure::write('FileStorage.imageVariants', [
             'FileStorage' => [
@@ -243,47 +245,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $entity = $this->FileStorage->newEmptyEntity();
         $entity->model = 'Issuers';
         $entity->collection = 'Logo';
-        $entity->id = 'test-id';
-        $entity->path = 'test/path.jpg';
-        $entity->adapter = 'Local';
-
-        $file = $this->FileStorage->behaviors()->FileStorage->entityToFileObject($entity);
-
-        $result = $this->FileStorage->behaviors()->FileStorage->processImages($file, $entity);
-
-        $this->assertArrayHasKey('legacy', $result->variants());
-        $this->assertArrayNotHasKey('entityModel', $result->variants());
-    }
-
-    /**
-     * @return void
-     */
-    public function testProcessImagesUsesEntityModelWhenEnabled(): void
-    {
-        Configure::write('FileStorage.useEntityModelForVariants', true);
-        Configure::write('FileStorage.imageVariants', [
-            'FileStorage' => [
-                'Logo' => [
-                    'legacy' => [
-                        'width' => 800,
-                        'height' => 600,
-                    ],
-                ],
-            ],
-            'Issuers' => [
-                'Logo' => [
-                    'entityModel' => [
-                        'width' => 400,
-                        'height' => 300,
-                    ],
-                ],
-            ],
-        ]);
-
-        $entity = $this->FileStorage->newEmptyEntity();
-        $entity->model = 'Issuers';
-        $entity->collection = 'Logo';
-        $entity->id = 'test-id';
+        $entity->uuid = 'test-id';
         $entity->path = 'test/path.jpg';
         $entity->adapter = 'Local';
 
@@ -384,7 +346,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
     {
         $entity = $this->FileStorage->newEmptyEntity();
         $entity->collection = 'NonExistentCollection';
-        $entity->id = 'test-id';
+        $entity->uuid = 'test-id';
         $entity->path = 'test/path.jpg';
         $entity->adapter = 'Local';
 

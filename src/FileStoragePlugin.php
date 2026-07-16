@@ -7,6 +7,7 @@ use Cake\Core\BasePlugin;
 use Cake\Routing\RouteBuilder;
 use FileStorage\Command\CleanupCommand;
 use FileStorage\Command\ImageVariantGenerateCommand;
+use FileStorage\Command\MigrateAdapterCommand;
 
 /**
  * FileStorage Plugin for CakePHP
@@ -54,9 +55,9 @@ class FileStoragePlugin extends BasePlugin
         // or hidden in reverse-proxy access logs that strip the query.
         $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes): void {
             $routes->connect(
-                '/signed/{id}/{signature}',
+                '/signed/{uuid}/{signature}',
                 ['controller' => 'FileStorage', 'action' => 'signed'],
-                ['pass' => ['id', 'signature'], 'signature' => '[a-f0-9]{64}'],
+                ['pass' => ['uuid', 'signature'], 'signature' => '[a-f0-9]{64}'],
             );
         });
     }
@@ -72,6 +73,7 @@ class FileStoragePlugin extends BasePlugin
     {
         $commands->add('file_storage cleanup', CleanupCommand::class);
         $commands->add('file_storage generate_image_variant', ImageVariantGenerateCommand::class);
+        $commands->add('file_storage migrate_adapter', MigrateAdapterCommand::class);
 
         return $commands;
     }

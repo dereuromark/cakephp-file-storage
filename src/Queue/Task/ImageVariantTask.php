@@ -33,7 +33,7 @@ use RuntimeException;
  *
  * ```php
  * [
- *     'id' => 'fs-entity-uuid-or-id', // REQUIRED — FileStorage row id
+ *     'id' => 123, // REQUIRED — FileStorage row id
  *     'operations' => [ // REQUIRED — variant config map,
  *         'thumbnail' => ['width' => 100], // same shape `imageVariants` uses.
  *         'medium' => ['width' => 600],
