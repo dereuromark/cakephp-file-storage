@@ -23,20 +23,23 @@ use FileStorage\Model\Entity\FileStorage;
  * @author Florian Krämer
  * @copyright 2012 - 2020 Florian Krämer
  * @license MIT
- *
+ * @extends \Cake\ORM\Table<array{FileStorage: \FileStorage\Model\Behavior\FileStorageBehavior, Timestamp: \Cake\ORM\Behavior\TimestampBehavior}, \FileStorage\Model\Entity\FileStorage>
  * @method \FileStorage\Model\Entity\FileStorage newEmptyEntity()
  * @method \FileStorage\Model\Entity\FileStorage newEntity(array $data, array $options = [])
  * @method array<\FileStorage\Model\Entity\FileStorage> newEntities(array $data, array $options = [])
  * @method \FileStorage\Model\Entity\FileStorage get(mixed $primaryKey, array|string $finder = 'all', \Psr\SimpleCache\CacheInterface|string|null $cache = null, \Closure|string|null $cacheKey = null, mixed ...$args)
- * @method \FileStorage\Model\Entity\FileStorage findOrCreate($search, ?callable $callback = null, array $options = [])
- * @method \FileStorage\Model\Entity\FileStorage patchEntity(\Cake\Datasource\EntityInterface $entity, array $data, array $options = [])
- * @method array<\FileStorage\Model\Entity\FileStorage> patchEntities(iterable $entities, array $data, array $options = [])
- * @method \FileStorage\Model\Entity\FileStorage|false save(\Cake\Datasource\EntityInterface $entity, array $options = [])
- * @method \FileStorage\Model\Entity\FileStorage saveOrFail(\Cake\Datasource\EntityInterface $entity, array $options = [])
- * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage>|false saveMany(iterable $entities, array $options = [])
- * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage> saveManyOrFail(iterable $entities, array $options = [])
- * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage>|false deleteMany(iterable $entities, array $options = [])
- * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage> deleteManyOrFail(iterable $entities, array $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage findOrCreate(\Cake\ORM\Query\SelectQuery|callable|array $search, ?callable $callback = null, array $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage patchEntity(\FileStorage\Model\Entity\FileStorage $entity, array $data, array $options = [])
+ * @method array<\FileStorage\Model\Entity\FileStorage> patchEntities(iterable<\FileStorage\Model\Entity\FileStorage> $entities, array $data, array $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage|false save(\FileStorage\Model\Entity\FileStorage $entity, array $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage saveOrFail(\FileStorage\Model\Entity\FileStorage $entity, array $options = [])
+ * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage>|false saveMany(iterable<\FileStorage\Model\Entity\FileStorage> $entities, array $options = [])
+ * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage> saveManyOrFail(iterable<\FileStorage\Model\Entity\FileStorage> $entities, array $options = [])
+ * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage>|false deleteMany(iterable<\FileStorage\Model\Entity\FileStorage> $entities, array $options = [])
+ * @method \Cake\Datasource\ResultSetInterface<\FileStorage\Model\Entity\FileStorage> deleteManyOrFail(iterable<\FileStorage\Model\Entity\FileStorage> $entities, array $options = [])
+ * @method bool delete(\FileStorage\Model\Entity\FileStorage $entity, array $options = [])
+ * @method bool deleteOrFail(\FileStorage\Model\Entity\FileStorage $entity, array $options = [])
+ * @method \FileStorage\Model\Entity\FileStorage|array<\FileStorage\Model\Entity\FileStorage> loadInto(\FileStorage\Model\Entity\FileStorage|array<\FileStorage\Model\Entity\FileStorage> $entities, array $contain)
  * @mixin \Cake\ORM\Behavior\TimestampBehavior
  * @mixin \FileStorage\Model\Behavior\FileStorageBehavior
  */
