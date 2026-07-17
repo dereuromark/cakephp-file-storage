@@ -77,13 +77,16 @@ effect on an already-created column.
 ```
 
 ::: tip Upgrading from the UUID primary key schema
-Older versions used `file_storage.id` as a `CHAR(36)` UUID. The next-major
-upgrade migration creates an integer `id` primary key and copies the old UUID
-values into the new `uuid` column. If your app stores references to
-`file_storage.id` outside this plugin, migrate those app tables to reference the
-new integer `id` or keep using the copied `uuid` column deliberately.
+Older versions used `file_storage.id` as a `CHAR(36)` UUID. The next major moves
+the public/storage identity into a dedicated `uuid` column. You can upgrade two
+ways: a minimal, non-destructive migration that just adds `uuid` and keeps your
+current primary key, or the full restructure to an integer `id` primary key. If
+your app stores references to `file_storage.id` outside this plugin, migrate
+those app tables to the new integer `id` or keep using the `uuid` column
+deliberately.
 
-See the [upgrade guide](./upgrading) for the full migration checklist.
+See the [upgrade guide](./upgrading) for both paths and the full migration
+checklist.
 :::
 
 ## Adapter-specific configuration
