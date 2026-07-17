@@ -47,8 +47,7 @@ The plugin now exposes this split explicitly:
 ```php
 $fileStorage->id; // integer row id
 $fileStorage->uuid; // public/storage UUID
-$fileStorage->publicId(); // same UUID, named for public use
-$fileStorage->storageIdentity(); // same UUID, named for storage use
+$fileStorage->publicId(); // same UUID, for public/storage-facing use
 $fileStorageTable->getByUuid($uuid);
 ```
 
@@ -97,6 +96,23 @@ methods instead:
 $fileStorage->getVariantUrl('thumbnail');
 $fileStorage->getVariantPath('thumbnail');
 ```
+
+## ImageHelper parameter renamed to `$variant`
+
+The `ImageHelper` methods `display()`, `picture()` and `fallbackImage()` now name
+their second parameter `$variant` (previously `$version`), matching `imageUrl()`
+and the rest of the plugin's variant terminology. Positional calls are
+unaffected. Only callers using PHP named arguments need to update:
+
+```php
+// Before
+$this->Image->display($image, version: 'thumbnail');
+// After
+$this->Image->display($image, variant: 'thumbnail');
+```
+
+The removed `FileStorage::storageIdentity()` alias is another such rename: use
+`FileStorage::publicId()`, which returns the same UUID.
 
 ## Moving files between adapters
 

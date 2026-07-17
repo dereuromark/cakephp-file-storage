@@ -256,7 +256,7 @@ class ImageVariantGenerateCommand extends Command
      *
      * @return \PhpCollective\Infrastructure\Storage\FileInterface
      */
-    public function processImages(FileInterface $file, EntityInterface $entity, array $operations, bool $merge = false): FileInterface
+    protected function processImages(FileInterface $file, EntityInterface $entity, array $operations, bool $merge = false): FileInterface
     {
         if (!$operations) {
             return $file;
@@ -270,7 +270,7 @@ class ImageVariantGenerateCommand extends Command
      *
      * @return \PhpCollective\Infrastructure\Storage\FileInterface
      */
-    public function entityToFileObject(EntityInterface $entity): FileInterface
+    protected function entityToFileObject(EntityInterface $entity): FileInterface
     {
         return $this->getTransformer()->entityToFileObject($entity);
     }
@@ -281,7 +281,7 @@ class ImageVariantGenerateCommand extends Command
      *
      * @return \Cake\Datasource\EntityInterface
      */
-    public function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity): EntityInterface
+    protected function fileObjectToEntity(FileInterface $file, ?EntityInterface $entity): EntityInterface
     {
         return $this->getTransformer()->fileObjectToEntity($file, $entity);
     }
@@ -304,11 +304,11 @@ class ImageVariantGenerateCommand extends Command
     }
 
     /**
-     * Get the table instance this behavior is bound to.
+     * Get the table instance this command is bound to.
      *
      * @return \Cake\ORM\Table The bound table instance.
      */
-    public function table(): Table
+    protected function table(): Table
     {
         return $this->Table;
     }
