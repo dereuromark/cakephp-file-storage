@@ -162,24 +162,63 @@ The route path is:
 If you build URLs manually, stop passing the integer row id. Use the UUID or the
 generator.
 
-## Image variant config
+## Image variant config (breaking: re-key by model)
 
 The previous `FileStorage.useEntityModelForVariants` opt-in is now the default
-behavior. Variant config is resolved by the persisted `file_storage.model` value:
+behavior. `imageVariants` is resolved by the **persisted `file_storage.model`
+value**, then the collection — `FileStorageBehavior::processImages()` reads
+`$imageVariants[$model][$collection]`. Previously it resolved by the **FileStorage
+association alias**.
+
+::: danger This is a silent breaking change — re-key your config
+If your `imageVariants` config is keyed by association alias and the alias
+differs from the owning table alias, the lookup now misses. There is **no error**:
+`processImages()` simply returns the file unprocessed, so new uploads are saved
+with **empty `variants`** and thumbnails never appear. Re-key the outer level to
+the model (the owning table alias) stored in `file_storage.model`.
+:::
+
+The outer key is the owning table's alias (what the `FileAssociation` behavior
+writes into `file_storage.model`), not the association name:
 
 ```php
+// Before — keyed by association alias (e.g. hasOne('ProfilePhotos'))
 'FileStorage' => [
     'imageVariants' => [
-        'Posts' => [
-            'Cover' => $coverVariants->toArray(),
+        'ProfilePhotos' => [       // association alias
+            'Photos' => $variants->toArray(),
+        ],
+    ],
+],
+
+// After — keyed by the persisted file_storage.model value
+'FileStorage' => [
+    'imageVariants' => [
+        'Profiles' => [            // owning model / table alias
+            'Photos' => $variants->toArray(),
         ],
     ],
 ],
 ```
 
-Remove `useEntityModelForVariants` from app config during the upgrade. If your
-old config was keyed by FileStorage association aliases, re-key it by the owning
-model stored in `file_storage.model`.
+If you are unsure what value your rows carry, check it:
+
+```sql
+SELECT DISTINCT model, collection FROM file_storage;
+```
+
+Then remove `useEntityModelForVariants` from your app config.
+
+Any images uploaded **after** the upgrade but **before** you re-key are stored
+with empty variants. After fixing the config, regenerate them:
+
+```bash
+bin/cake file_storage generate_image_variant <Model> <Collection>
+```
+
+Existing rows whose variants were generated before the upgrade are unaffected —
+their variant paths are already persisted and still render; only the write path
+(new uploads and regeneration) depends on this config.
 
 ## Removed compatibility virtual
 
