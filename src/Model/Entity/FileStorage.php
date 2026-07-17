@@ -54,16 +54,6 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     }
 
     /**
-     * Alias for code that wants a storage-domain name instead of public URL wording.
-     *
-     * @return string
-     */
-    public function storageIdentity(): string
-    {
-        return $this->publicId();
-    }
-
-    /**
      * @param string $variant Variant
      *
      * @return string|null

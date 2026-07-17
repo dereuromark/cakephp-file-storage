@@ -53,19 +53,19 @@ class ImageHelper extends Helper
      *
      * @param \FileStorage\Model\Entity\FileStorageEntityInterface|null $image FileStorage entity or whatever else table that matches this helpers needs without
      * the model, we just want the record fields
-     * @param string|null $version Image version string
+     * @param string|null $variant Image variant string
      * @param array<string, mixed> $options HtmlHelper::image(), 2nd arg options array
      *
      * @return string
      */
-    public function display(?FileStorageEntityInterface $image, ?string $version = null, array $options = []): string
+    public function display(?FileStorageEntityInterface $image, ?string $variant = null, array $options = []): string
     {
         if (!($image instanceof FileStorageEntityInterface)) {
-            return $this->fallbackImage($options, $version);
+            return $this->fallbackImage($options, $variant);
         }
 
         try {
-            $url = $this->imageUrl($image, $version, $options);
+            $url = $this->imageUrl($image, $variant, $options);
         } catch (Exception $e) {
             Log::write('debug', $e->getMessage());
             $url = null;
@@ -74,7 +74,7 @@ class ImageHelper extends Helper
             return $this->Html->image($url, $options);
         }
 
-        return $this->fallbackImage($options, $version);
+        return $this->fallbackImage($options, $variant);
     }
 
     /**
@@ -82,7 +82,7 @@ class ImageHelper extends Helper
      *
      * @param \FileStorage\Model\Entity\FileStorageEntityInterface $image FileStorage entity or whatever else table that matches this helpers needs without
      * the model, we just want the record fields
-     * @param string|null $variant Image version string
+     * @param string|null $variant Image variant string
      * @param array<string, mixed> $options HtmlHelper::image(), 2nd arg options array
      *
      * @throws \PhpCollective\Infrastructure\Storage\Processor\Exception\VariantDoesNotExistException
@@ -134,7 +134,7 @@ class ImageHelper extends Helper
      * existing pipeline writes them. The helper just looks them up.
      *
      * Convention: a `$format` source is fetched as `imageUrl($image,
-     * "$version.$format")` (or `imageUrl($image, $format)` when no version
+     * "$variant.$format")` (or `imageUrl($image, $format)` when no variant
      * is requested). If a format variant isn't defined for the entity
      * (`VariantDoesNotExistException`) or the variant URL is empty, the
      * source for that format is silently skipped — browsers degrade
@@ -149,7 +149,7 @@ class ImageHelper extends Helper
      * - All other options are forwarded to `imageUrl()` / `Html->image()`.
      *
      * @param \FileStorage\Model\Entity\FileStorageEntityInterface|null $image
-     * @param string|null $version
+     * @param string|null $variant
      * @param array<string, mixed> $options
      *
      * @return string `<picture>...</picture>` (or just the `<img>` when no
@@ -157,14 +157,14 @@ class ImageHelper extends Helper
      */
     public function picture(
         ?FileStorageEntityInterface $image,
-        ?string $version = null,
+        ?string $variant = null,
         array $options = [],
     ): string {
         $formats = $options['formats'] ?? ['avif', 'webp'];
         unset($options['formats']);
 
         if ($image === null) {
-            return $this->fallbackImage($options, $version);
+            return $this->fallbackImage($options, $variant);
         }
 
         $sources = [];
@@ -172,7 +172,7 @@ class ImageHelper extends Helper
             if (!is_string($format) || $format === '') {
                 continue;
             }
-            $variantName = $version !== null && $version !== '' ? $version . '.' . $format : $format;
+            $variantName = $variant !== null && $variant !== '' ? $variant . '.' . $format : $format;
             try {
                 $url = $this->imageUrl($image, $variantName, $options);
             } catch (VariantDoesNotExistException) {
@@ -192,7 +192,7 @@ class ImageHelper extends Helper
 
         // The fallback img is always emitted, even when alt-format variants
         // exist — `<picture>` semantics require it as the final child.
-        $fallback = $this->display($image, $version, $options);
+        $fallback = $this->display($image, $variant, $options);
 
         if (!$sources) {
             // No alt-format variants found; the bare img is equally good
@@ -217,14 +217,14 @@ class ImageHelper extends Helper
      * Provides a fallback image if the image record is empty
      *
      * @param array<string, mixed> $options
-     * @param string|null $version
+     * @param string|null $variant
      *
      * @return string
      */
-    public function fallbackImage(array $options = [], ?string $version = null): string
+    public function fallbackImage(array $options = [], ?string $variant = null): string
     {
         if (isset($options['fallback'])) {
-            $imageFile = $options['fallback'] === true ? 'placeholder/' . $version . '.jpg' : $options['fallback'];
+            $imageFile = $options['fallback'] === true ? 'placeholder/' . $variant . '.jpg' : $options['fallback'];
             unset($options['fallback']);
 
             return $this->Html->image($imageFile, $options);
