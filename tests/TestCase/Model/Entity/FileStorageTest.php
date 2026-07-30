@@ -35,6 +35,39 @@ class FileStorageTest extends FileStorageTestCase
     }
 
     /**
+     * The column is json, but nothing guarantees the value arrives decoded: with
+     * a text column and no select type map entry the raw JSON string comes
+     * through. Casting that with (array) yields ['{"...}'], not the decoded map,
+     * so the accessors would silently return null.
+     *
+     * @return void
+     */
+    public function testVariantsAccessorsDecodeJsonString(): void
+    {
+        $fileStorage = new FileStorage();
+        $fileStorage->set('variants', '{"t150":{"path":"test\\/path.jpg","url":"http:\\/\\/example.com\\/t150.jpg"}}');
+
+        $this->assertSame(['t150'], array_keys($fileStorage->variants()));
+        $this->assertSame('http://example.com/t150.jpg', $fileStorage->getVariantUrl('t150'));
+        $this->assertSame('test/path.jpg', $fileStorage->getVariantPath('t150'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testVariantsFallsBackToEmptyArray(): void
+    {
+        $fileStorage = new FileStorage();
+        $this->assertSame([], $fileStorage->variants());
+
+        $fileStorage->set('variants', 'not json at all');
+        $this->assertSame([], $fileStorage->variants());
+
+        $fileStorage->set('variants', ['t150' => ['url' => 'x']]);
+        $this->assertSame(['t150' => ['url' => 'x']], $fileStorage->variants());
+    }
+
+    /**
      * @return void
      */
     public function testGetVariantUrl(): void
