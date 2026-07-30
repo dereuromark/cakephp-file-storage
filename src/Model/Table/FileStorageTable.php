@@ -59,6 +59,10 @@ class FileStorageTable extends Table
         $this->setTable('file_storage');
         $this->setPrimaryKey('id');
         $this->setDisplayField('filename');
+        // Set explicitly: applications commonly subclass this table to add their
+        // own validation sets, and Cake would then resolve the entity from the
+        // subclass namespace, find nothing there and fall back to Cake\ORM\Entity.
+        $this->setEntityClass(FileStorage::class);
 
         $this->getSchema()
             ->addColumn('uuid', 'string')

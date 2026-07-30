@@ -97,6 +97,35 @@ app and run `bin/cake migrations migrate` — do **not** run `-p FileStorage`, o
 it will try to apply the plugin's initial migration on top of your table.
 :::
 
+### Expect four `** MISSING **` rows in the migration status
+
+The next major folds the intermediate 4.x migrations into the rewritten initial
+migration, so the plugin now ships two migration files instead of five. Existing
+installations still have the four collapsed ids recorded in their
+`cake_migrations` table, and those rows now point at files that no longer exist:
+
+```text
+| up   | 20141213004653  | InitialMigration                                |
+| up   | 20160302083933  | FixingMimeTypeField** MISSING **                |
+| up   | 20170222133412  | UpdatingLengthOfFileExtensionField** MISSING ** |
+| up   | 20200714095531  | AddingVariantsAndMetadataFields** MISSING **    |
+| up   | 20201110234846  | AddCollectionColumn** MISSING **                |
+| down | 20260703000000  | MigrateFileStorageToIntegerPrimaryKey           |
+```
+
+This is expected and harmless. The schema those four migrations produced is part
+of the rewritten initial migration, they are already applied on your database,
+and `bin/cake migrations migrate -p FileStorage` still runs. Only the status
+output is affected.
+
+Read it as follows when deciding which migration set owns your table: the
+`InitialMigration` row is the one that answers the question above. If it shows
+`up`, the plugin manages your table; the four `MISSING` rows below it do not
+change that. If you prefer a clean status listing, delete those four rows from
+your `cake_migrations` table — but only after confirming your `file_storage`
+table has the `mime_type`, `extension`, `variants`, `metadata` and `collection`
+columns they added.
+
 ### Path B — Full restructure to an integer primary key
 
 Destructive and intentionally irreversible. Use only if your table still has the
