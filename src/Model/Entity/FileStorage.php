@@ -54,13 +54,33 @@ class FileStorage extends Entity implements FileStorageEntityInterface
     }
 
     /**
+     * The decoded variants map.
+     *
+     * The column is json, but the value is not guaranteed to arrive decoded: on
+     * a text column without a matching select type map entry the raw JSON string
+     * comes through. Casting that with (array) would wrap the string instead of
+     * decoding it, so every lookup below would silently miss.
+     *
+     * @return array<string, mixed>
+     */
+    public function variants(): array
+    {
+        $variants = $this->get('variants');
+        if (is_string($variants)) {
+            $variants = json_decode($variants, true);
+        }
+
+        return is_array($variants) ? $variants : [];
+    }
+
+    /**
      * @param string $variant Variant
      *
      * @return string|null
      */
     public function getVariantUrl(string $variant): ?string
     {
-        $variants = (array)$this->get('variants');
+        $variants = $this->variants();
         if (!isset($variants[$variant]['url'])) {
             return null;
         }
@@ -86,7 +106,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
      */
     public function getVariantPath(string $variant): ?string
     {
-        $variants = (array)$this->get('variants');
+        $variants = $this->variants();
         if (!isset($variants[$variant]['path'])) {
             return null;
         }

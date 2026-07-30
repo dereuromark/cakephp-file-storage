@@ -9,6 +9,7 @@ use FileStorage\Model\Entity\FileStorage;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use RuntimeException;
 
 /**
  * Storage-tree cleanup logic, shared between the `file_storage cleanup`
@@ -82,6 +83,8 @@ class CleanupService
      *     row counting (it is incremented as rows flow through); otherwise
      *     omit the parameter.
      *
+     * @throws \RuntimeException When the table yields a foreign entity class.
+     *
      * @return iterable<\FileStorage\Model\Entity\FileStorage>
      */
     protected function streamScoped(array $scopeConditions, int &$checkedCount = 0): iterable
@@ -94,8 +97,19 @@ class CleanupService
         // exactly once.
         $query->disableBufferedResults();
         foreach ($query as $image) {
+            // Not an assert(): assertions are compiled out in production, so the
+            // invariant would only ever fire in development. A misconfigured
+            // entity class is exactly the kind of thing that must not pass here
+            // silently, because everything downstream calls entity methods.
+            if (!$image instanceof FileStorage) {
+                throw new RuntimeException(sprintf(
+                    'Expected %s, got %s. Check the entity class of your file storage table.',
+                    FileStorage::class,
+                    get_debug_type($image),
+                ));
+            }
+
             $checkedCount++;
-            assert($image instanceof FileStorage);
 
             yield $image;
         }
@@ -150,7 +164,7 @@ class CleanupService
         $pathPrefix = (string)Configure::read('FileStorage.pathPrefix');
         foreach ($images as $image) {
             $expected[WWW_ROOT . $pathPrefix . $image->path] = true;
-            foreach ($image->variants as $details) {
+            foreach ($image->variants() as $details) {
                 if (isset($details['path'])) {
                     $expected[WWW_ROOT . $pathPrefix . $details['path']] = true;
                 }
@@ -232,7 +246,7 @@ class CleanupService
             if (!$adapter->fileExists($image->path)) {
                 $missingForImage[] = 'main';
             }
-            foreach ($image->variants as $variant => $details) {
+            foreach ($image->variants() as $variant => $details) {
                 $variantPath = $details['path'] ?? null;
                 if ($variantPath && !$adapter->fileExists($variantPath)) {
                     $missingForImage[] = (string)$variant;
