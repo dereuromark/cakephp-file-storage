@@ -2,8 +2,10 @@
 
 namespace FileStorage\Test\TestCase\Model\Table;
 
+use FileStorage\Model\Entity\FileStorage;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use Laminas\Diactoros\UploadedFile;
+use TestApp\Model\Table\AppFilesTable;
 
 /**
  * File Storage Test
@@ -46,6 +48,26 @@ class FileStorageTableTest extends FileStorageTestCase
 
         $this->assertNotNull($entity);
         $this->assertSame(1, $entity->id);
+    }
+
+    /**
+     * An application subclassing the table must keep the plugin entity.
+     *
+     * Cake resolves the entity class from the table class name, so a subclass in
+     * the application namespace resolves to a non-existent entity there and
+     * silently falls back to Cake\ORM\Entity. Typed return values such as
+     * getByUuid(): ?FileStorage then fail with a TypeError.
+     *
+     * @return void
+     */
+    public function testSubclassKeepsPluginEntityClass(): void
+    {
+        $table = $this->getTableLocator()->get('AppFiles', [
+            'className' => AppFilesTable::class,
+        ]);
+
+        $this->assertSame(FileStorage::class, $table->getEntityClass());
+        $this->assertInstanceOf(FileStorage::class, $table->getByUuid('10000000-0000-4000-8000-000000000001'));
     }
 
     /**
