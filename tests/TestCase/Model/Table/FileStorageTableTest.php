@@ -3,6 +3,7 @@
 namespace FileStorage\Test\TestCase\Model\Table;
 
 use FileStorage\Model\Entity\FileStorage;
+use FileStorage\Test\Fixture\FileStorageFixture;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use Laminas\Diactoros\UploadedFile;
 use TestApp\Model\Table\AppFilesTable;
@@ -68,6 +69,41 @@ class FileStorageTableTest extends FileStorageTestCase
 
         $this->assertSame(FileStorage::class, $table->getEntityClass());
         $this->assertInstanceOf(FileStorage::class, $table->getByUuid('10000000-0000-4000-8000-000000000001'));
+    }
+
+    /**
+     * The fixture must be typed by the plugin table, not by whatever the
+     * application happens to have under the unprefixed `FileStorage` alias.
+     *
+     * Cake takes the insert types of a fixture from the ORM table its alias
+     * resolves to. With the unprefixed alias that is the generic Cake\ORM\Table
+     * fallback, whose reflected `variants` column is plain text, so a record
+     * value is stored unencoded and an array value cannot be stored at all.
+     *
+     * @return void
+     */
+    public function testFixtureSchemaUsesPluginColumnTypes(): void
+    {
+        $schema = (new FileStorageFixture())->getTableSchema();
+
+        $this->assertSame('json', $schema->getColumnType('variants'));
+        $this->assertSame('json', $schema->getColumnType('metadata'));
+    }
+
+    /**
+     * The json columns must come back as arrays.
+     *
+     * They are decoded exactly once on read, so a value that was encoded twice
+     * on write arrives as the raw JSON string and every variant lookup misses.
+     *
+     * @return void
+     */
+    public function testJsonColumnsReadBackAsArrays(): void
+    {
+        $entity = $this->FileStorage->get(1);
+
+        $this->assertIsArray($entity->get('variants'));
+        $this->assertIsArray($entity->get('metadata'));
     }
 
     /**

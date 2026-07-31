@@ -14,14 +14,25 @@ class FileStorageFixture extends TestFixture
     public $name = 'FileStorage';
 
     /**
-     * Table name
+     * Table alias, plugin prefixed on purpose.
+     *
+     * Cake builds the insert types of a fixture from the schema of the ORM table
+     * its alias resolves to, not from $fields. A plain `file_storage` table name
+     * would inflect to the unprefixed alias `FileStorage`, which resolves in the
+     * application namespace: to `App\Model\Table\FileStorageTable` when the
+     * application subclasses this table, and to the generic `Cake\ORM\Table`
+     * fallback otherwise. The two disagree about the json columns below, so the
+     * records would be encoded twice in one case and not at all in the other.
      *
      * @var string
      */
-    public string $table = 'file_storage';
+    public string $tableAlias = 'FileStorage.FileStorage';
 
     /**
-     * Fields definition
+     * Fields definition.
+     *
+     * Only used to create the table, via tests/schema.php - the insert types
+     * come from the ORM table, see $tableAlias above.
      *
      * @var array
      */
@@ -67,8 +78,8 @@ class FileStorageFixture extends TestFixture
             'hash' => 'abc123',
             'path' => 'Item/cake.icon.png',
             'adapter' => 'Local',
-            'variants' => '{}',
-            'metadata' => '{}',
+            'variants' => [],
+            'metadata' => [],
             'created' => '2012-01-01 12:00:00',
             'modified' => '2012-01-01 12:00:00',
         ],
@@ -84,8 +95,8 @@ class FileStorageFixture extends TestFixture
             'hash' => 'def456',
             'path' => 'Item/titus-bienebek-bridle.jpg',
             'adapter' => 'Local',
-            'variants' => '{}',
-            'metadata' => '{}',
+            'variants' => [],
+            'metadata' => [],
             'created' => '2012-01-01 12:00:00',
             'modified' => '2012-01-01 12:00:00',
         ],
@@ -101,8 +112,8 @@ class FileStorageFixture extends TestFixture
             'hash' => 'ghi789',
             'path' => 'Item/titus.jpg',
             'adapter' => 'Local',
-            'variants' => '{}',
-            'metadata' => '{}',
+            'variants' => [],
+            'metadata' => [],
             'created' => '2012-01-01 12:00:00',
             'modified' => '2012-01-01 12:00:00',
         ],
@@ -118,8 +129,8 @@ class FileStorageFixture extends TestFixture
             'hash' => '09d82a31',
             'path' => 'Item/titus-s3.jpg',
             'adapter' => 'S3',
-            'variants' => '{}',
-            'metadata' => '{}',
+            'variants' => [],
+            'metadata' => [],
             'created' => '2012-01-01 12:00:00',
             'modified' => '2012-01-01 12:00:00',
         ],
