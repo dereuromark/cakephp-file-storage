@@ -25,6 +25,25 @@ your application. Each record contains:
 | `variants` | JSON array of image variant information (for images). |
 | `metadata` | JSON array for additional metadata. |
 
+::: warning Always load the table plugin prefixed
+Use `fetchTable('FileStorage.FileStorage')`, never the bare `fetchTable('FileStorage')`.
+
+The unprefixed alias resolves in your application namespace. If you do not have
+an `App\Model\Table\FileStorageTable`, Cake hands you a generic `Cake\ORM\Table`
+that never ran the plugin's `initialize()`, so `variants` and `metadata` are
+typed as plain text: reads return the raw JSON string instead of an array, and
+writing an array fails with `Cannot convert value Array of type array to string`.
+:::
+
+::: warning Assign arrays to `variants` and `metadata`, not JSON strings
+Both columns are typed `json`, so Cake encodes them on write and decodes them on
+read. Passing an already encoded string (`json_encode($variants)`) stores it
+encoded twice, and the single decode on read then returns the JSON string rather
+than the array - `getVariantUrl()` and `getVariantPath()` silently return `null`
+for every variant. This matters for seeders, imports and migrations; the
+`FileStorage` behavior itself always assigns arrays.
+:::
+
 ### Model vs collection
 
 This distinction is important:
