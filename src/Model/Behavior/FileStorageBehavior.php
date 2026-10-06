@@ -307,6 +307,13 @@ class FileStorageBehavior extends Behavior
      */
     protected function setContentHash(EntityInterface $entity): void
     {
+        /** @var \Psr\Http\Message\UploadedFileInterface|array|null $upload */
+        $upload = $entity->get($this->getConfig('fileField'));
+        if ($upload === null) {
+            // Nothing replaces the stored file, so its hash stays valid.
+            return;
+        }
+
         $algorithm = Configure::read('FileStorage.hashAlgorithm', static::DEFAULT_HASH_ALGORITHM);
         if ($algorithm === false) {
             $this->applyContentHash($entity, null);
@@ -326,12 +333,6 @@ class FileStorageBehavior extends Behavior
                 $algorithm,
                 static::HASH_COLUMN_LENGTH,
             ));
-        }
-
-        /** @var \Psr\Http\Message\UploadedFileInterface|array|null $upload */
-        $upload = $entity->get($this->getConfig('fileField'));
-        if ($upload === null) {
-            return;
         }
 
         $this->applyContentHash($entity, $this->hashUpload($upload, $algorithm));
@@ -388,12 +389,21 @@ class FileStorageBehavior extends Behavior
         }
         $stream->rewind();
         $context = hash_init($algorithm);
+        $complete = true;
         while (!$stream->eof()) {
-            hash_update($context, $stream->read(static::HASH_CHUNK_SIZE));
+            $chunk = $stream->read(static::HASH_CHUNK_SIZE);
+            if ($chunk === '') {
+                // A stream may return nothing without being at its end. Stop,
+                // or this loop never ends.
+                $complete = $stream->eof();
+
+                break;
+            }
+            hash_update($context, $chunk);
         }
         $stream->rewind();
 
-        return hash_final($context);
+        return $complete ? hash_final($context) : null;
     }
 
     /**

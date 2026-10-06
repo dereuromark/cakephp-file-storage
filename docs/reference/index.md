@@ -59,9 +59,12 @@ The default options array passed to the FileStorage behavior. See the
 
 ### `hashAlgorithm`
 
-Every upload gets a hash of its content in the `hash` column of its
+An upload gets a hash of its content in the `hash` column of its
 `file_storage` row. Use it to verify a stored file or to find rows with
 identical content.
+
+The column stays `null` when the content cannot be read: a failed upload, or a
+stream that is neither backed by a file nor seekable.
 
 ```php
 'hashAlgorithm' => 'sha256',

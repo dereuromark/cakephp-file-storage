@@ -218,6 +218,57 @@ class FileStorageBehaviorTest extends FileStorageTestCase
     }
 
     /**
+     * A save that brings no file must leave the hash of the stored file alone.
+     *
+     * @return void
+     */
+    public function testBeforeSaveKeepsHashWithoutUploadWhenDisabled(): void
+    {
+        Configure::write('FileStorage.hashAlgorithm', false);
+        $behavior = $this->FileStorage->behaviors()->FileStorage;
+        $behavior->setConfig('ignoreEmptyFile', false);
+
+        $entity = $this->FileStorage->get(1);
+        $entity->set('filename', 'renamed.png');
+        $event = new Event('Model.beforeSave', $this->FileStorage, ['entity' => $entity]);
+
+        $behavior->beforeSave($event, $entity, new ArrayObject([]));
+
+        $this->assertSame('abc123', $entity->hash);
+    }
+
+    /**
+     * A stream that returns nothing without reaching its end must not hang
+     * the save or yield the digest of partial content.
+     *
+     * @return void
+     */
+    public function testBeforeSaveSkipsHashForStalledStream(): void
+    {
+        $stream = new class ('php://memory', 'rw+') extends Stream {
+            /**
+             * @inheritDoc
+             */
+            public function read(int $length): string
+            {
+                return '';
+            }
+
+            /**
+             * @inheritDoc
+             */
+            public function eof(): bool
+            {
+                return false;
+            }
+        };
+
+        $entity = $this->beforeSaveWithUpload(new UploadedFile($stream, 12, UPLOAD_ERR_OK, 'note.txt', 'text/plain'));
+
+        $this->assertNull($entity->hash);
+    }
+
+    /**
      * @return array<string, array{mixed, string}>
      */
     public static function invalidHashAlgorithmProvider(): array
