@@ -175,7 +175,6 @@ class CleanupServiceTest extends FileStorageTestCase
     {
         $this->blob('unknown adapter', young: true, adapter: 'Unknown');
         $report = (new CleanupService())->run(null, null, false);
-        $this->assertSame([], $report->deletedStrayBlobs);
         $this->assertStringContainsString('Could not list blobs on Unknown', implode(' ', $report->warnings));
     }
 

@@ -88,6 +88,8 @@ rows and files together. A failed file deletion keeps the blob row and reports
 a warning. It also scans the blob root for old files with no matching blob row,
 using a database lock before deleting them. Unknown modification times and
 filenames without a 64-character hex hash produce warnings and are skipped.
+That scan covers the default adapter and every adapter named in a file or blob
+row. An adapter that only ever saw failed uploads is not scanned.
 
 The ordinary orphan-file pass leaves the blob root alone. Both blob passes run
 across all models and collections, even during a scoped cleanup and even when

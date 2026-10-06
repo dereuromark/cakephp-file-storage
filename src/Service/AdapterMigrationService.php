@@ -148,13 +148,13 @@ class AdapterMigrationService
      *
      * @throws \RuntimeException
      *
-     * @return array{skipped: string|null, missing: string|null, copied: int, deleted: int}
+     * @return array{skipped: string|null, missing: string|null, copied: int, deleted: int, sourceVariants: array<int, string>}
      */
     protected function migrateBlob(FileStorage $entity, string $sourceName, string $targetName, FilesystemAdapter $source, FilesystemAdapter $target, bool $dryRun, bool $deleteSource, bool $overwrite): array
     {
         $table = $this->fetchTable('FileStorage.FileStorage');
         $operation = function () use ($table, $entity, $sourceName, $targetName, $source, $target, $dryRun, $deleteSource, $overwrite): array {
-            $result = ['skipped' => null, 'missing' => null, 'copied' => 0, 'deleted' => 0];
+            $result = ['skipped' => null, 'missing' => null, 'copied' => 0, 'deleted' => 0, 'sourceVariants' => []];
             $query = $table->find()->where(['id' => $entity->id]);
             $driver = $table->getConnection()->getDriver();
             if (!$dryRun && ($driver instanceof Mysql || $driver instanceof Postgres)) {
@@ -182,7 +182,10 @@ class AdapterMigrationService
                     ->where(['adapter' => $targetName, 'hash' => $fresh->hash])->first();
                 $targetPath = $blob?->get('path');
             }
-            $paths = $targetPath === null ? array_merge([(string)$fresh->path], $variants) : $variants;
+            // A registered target blob whose file is gone is restored from the source.
+            $restore = $targetPath !== null && !$target->fileExists($targetPath);
+            $needsMain = $targetPath === null || $restore;
+            $paths = $needsMain ? array_merge([(string)$fresh->path], $variants) : $variants;
             $missing = $this->missingPaths($source, $paths);
             if ($missing !== []) {
                 $result['missing'] = sprintf('ID %s missing: %s', $entity->id, implode(', ', $missing));
@@ -196,8 +199,11 @@ class AdapterMigrationService
                 return $result;
             }
             if (!$dryRun) {
-                foreach ($paths as $path) {
+                foreach ($variants as $path) {
                     $this->copyPath($source, $target, $path);
+                }
+                if ($needsMain) {
+                    $this->copyPath($source, $target, (string)$fresh->path, $targetPath);
                 }
                 if ($claim === null) {
                     throw new RuntimeException('Missing target blob claim.');
@@ -208,10 +214,7 @@ class AdapterMigrationService
                 }
                 $table->updateAll(['adapter' => $targetName, 'path' => $targetPath, 'blob_id' => $claim->id], ['id' => $fresh->id]);
                 if ($deleteSource) {
-                    foreach ($variants as $path) {
-                        $source->delete($path);
-                        $result['deleted']++;
-                    }
+                    $result['sourceVariants'] = $variants;
                 }
             }
             $result['copied'] = count($paths);
@@ -229,6 +232,15 @@ class AdapterMigrationService
         });
         if ($result === null) {
             throw new RuntimeException('Missing blob migration result.');
+        }
+        // Only after the commit: a rollback could not bring deleted files back.
+        foreach ($result['sourceVariants'] as $path) {
+            try {
+                $source->delete($path);
+                $result['deleted']++;
+            } catch (Throwable) {
+                // The row is migrated; a leftover source variant is only wasted space.
+            }
         }
 
         return $result;
@@ -329,20 +341,25 @@ class AdapterMigrationService
      * @param \League\Flysystem\FilesystemAdapter $source
      * @param \League\Flysystem\FilesystemAdapter $target
      * @param string $path
+     * @param string|null $targetPath Defaults to the source path.
      *
      * @throws \RuntimeException
      *
      * @return void
      */
-    protected function copyPath(FilesystemAdapter $source, FilesystemAdapter $target, string $path): void
-    {
+    protected function copyPath(
+        FilesystemAdapter $source,
+        FilesystemAdapter $target,
+        string $path,
+        ?string $targetPath = null,
+    ): void {
         $stream = $source->readStream($path);
         if (!is_resource($stream)) {
             throw new RuntimeException(sprintf('Could not open source stream for `%s`.', $path));
         }
 
         try {
-            $target->writeStream($path, $stream, new Config());
+            $target->writeStream($targetPath ?? $path, $stream, new Config());
         } finally {
             fclose($stream);
         }

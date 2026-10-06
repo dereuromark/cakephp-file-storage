@@ -271,4 +271,26 @@ class MigrateAdapterCommandTest extends FileStorageTestCase
             new PathBuilder(),
         ));
     }
+
+    /**
+     * @return void
+     */
+    public function testMissingTargetBlobFileIsRestoredFromSource(): void
+    {
+        $path = $this->prepareBlobRows();
+        $targetPath = 'blobs/registered-but-gone.txt';
+        $connection = $this->FileStorage->getConnection();
+        $connection->begin();
+        $registry = new BlobRegistry($this->FileStorage);
+        $claim = $registry->claim('Target', hash('sha256', 'shared contents'), DateTime::now());
+        $registry->recordPath($claim->id, $targetPath);
+        $connection->commit();
+
+        $report = (new AdapterMigrationService())->run('Local', 'Target', ['limit' => 1]);
+
+        $this->assertSame(1, $report->migratedRows);
+        $this->assertSame($targetPath, $this->FileStorage->get(1)->path);
+        $this->assertSame('shared contents', file_get_contents($this->targetPath . $targetPath));
+        $this->assertFileDoesNotExist($this->targetPath . $path);
+    }
 }

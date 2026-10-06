@@ -51,6 +51,11 @@ class CleanupService
     protected const BLOBS_TABLE = 'file_storage_blobs';
 
     /**
+     * @var string
+     */
+    protected const DEFAULT_ADAPTER = 'Local';
+
+    /**
      * @param string|null $model Optional model alias filter.
      * @param string|null $collection Optional collection filter.
      * @param bool $dryRun When true, no rows or files are actually removed.
@@ -306,7 +311,10 @@ class CleanupService
     {
         $files = $this->fetchTable('FileStorage.FileStorage');
         $blobs = $this->fetchTable('FileStorage.FileStorageBlobs');
-        $names = [];
+        // The default adapter is always scanned: a first upload that rolled back
+        // leaves a file there without any row naming the adapter.
+        $default = Configure::read('FileStorage.behaviorConfig.defaultStorageConfig', static::DEFAULT_ADAPTER);
+        $names = is_string($default) && $default !== '' ? [$default => true] : [];
         foreach ([$files, $blobs] as $table) {
             foreach ($table->find()->select(['adapter'])->distinct(['adapter']) as $row) {
                 if ($row->get('adapter') !== null && $row->get('adapter') !== '') {
