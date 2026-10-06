@@ -253,6 +253,10 @@ class BlobRegistry
             if ($this->connection->getDriver() instanceof Postgres && ($info[0] ?? '') === '55P03') {
                 return true;
             }
+            // SQLITE_BUSY and SQLITE_LOCKED: another connection holds the database.
+            if ($this->connection->getDriver() instanceof Sqlite && in_array((int)($info[1] ?? 0), [5, 6], true)) {
+                return true;
+            }
         }
 
         return false;
@@ -269,7 +273,8 @@ class BlobRegistry
             if ($driver instanceof Mysql && in_array((int)($info[1] ?? 0), [1451, 1452], true)) {
                 return true;
             }
-            if ($driver instanceof Postgres && ($info[0] ?? '') === '23503') {
+            // 23001 is what PostgreSQL 18 reports for a RESTRICT foreign key.
+            if ($driver instanceof Postgres && in_array($info[0] ?? '', ['23503', '23001'], true)) {
                 return true;
             }
             if ($driver instanceof Sqlite && (int)($info[1] ?? 0) === 19 && str_contains($error->getMessage(), 'FOREIGN KEY constraint failed')) {

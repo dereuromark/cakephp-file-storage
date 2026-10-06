@@ -41,7 +41,12 @@ class BlobRegistryConcurrencyTest extends TestCase
             $this->markTestSkipped('Concurrency tests require MySQL or PostgreSQL.');
         }
         $this->connectionA = $connection;
-        ConnectionManager::setConfig('blob_registry_second', ConnectionManager::getConfig('test'));
+        // Cake's MySQL and PostgreSQL drivers default to persistent PDO handles,
+        // and two persistent handles with one DSN are the same session.
+        ConnectionManager::setConfig(
+            'blob_registry_second',
+            ['persistent' => false] + (array)ConnectionManager::getConfig('test'),
+        );
         $this->connectionB = ConnectionManager::get('blob_registry_second');
         $this->registryA = new BlobRegistry(new Table(['table' => 'file_storage', 'connection' => $this->connectionA]));
         $this->registryB = new BlobRegistry(new Table(['table' => 'file_storage', 'connection' => $this->connectionB]));
