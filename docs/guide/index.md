@@ -24,7 +24,7 @@ in mind: a file is *always* an entry in the `file_storage` table from the
 application's perspective.
 
 The table is the *reference* to the real place where the file is stored, and it
-keeps some metadata too — mime type, filename, file hash (optional), and size.
+keeps some metadata too — mime type, filename, a hash of the file content, and size.
 
 ::: warning Don't store paths in arbitrary tables
 Storing the path to a file inside an arbitrary table alongside other data is
