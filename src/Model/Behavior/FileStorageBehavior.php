@@ -468,18 +468,15 @@ class FileStorageBehavior extends Behavior
         $table = $this->table();
 
         $results = $table->find()
-            ->select((array)$table->getPrimaryKey())
             ->where($conditions)
-            ->all();
+            ->all()
+            ->toArray();
 
-        if ($results->count() > 0) {
-            /** @var \Cake\Datasource\EntityInterface $result */
-            foreach ($results as $result) {
-                $table->delete($result);
-            }
+        foreach ($results as $result) {
+            $table->delete($result);
         }
 
-        return $results->count();
+        return count($results);
     }
 
     /**

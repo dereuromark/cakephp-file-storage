@@ -68,6 +68,37 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $this->getTableLocator()->clear();
     }
 
+    public function testDeleteAllFilesRemovesStoredFiles(): void
+    {
+        $paths = [];
+        foreach ([1, 2, 3] as $id) {
+            $path = 'bulk/' . $id . '.png';
+            $variantPath = 'bulk/' . $id . '.thumb.png';
+            $paths[$id] = [$this->_createMockFile($path), $this->_createMockFile($variantPath)];
+            $this->FileStorage->updateAll([
+                'path' => $path,
+                'variants' => ['thumbnail' => ['path' => $variantPath]],
+            ], ['id' => $id]);
+        }
+
+        $this->assertSame(2, $this->FileStorage->getBehavior('FileStorage')->deleteAllFiles(['foreign_key' => 1]));
+        $this->assertSame(0, $this->FileStorage->find()->where(['id IN' => [1, 2]])->count());
+        foreach ([1, 2] as $id) {
+            foreach ($paths[$id] as $path) {
+                $this->assertFileDoesNotExist($path);
+            }
+        }
+        $this->assertSame(3, $this->FileStorage->get(3)->id);
+        foreach ($paths[3] as $path) {
+            $this->assertFileExists($path);
+        }
+    }
+
+    public function testDeleteAllFilesWithoutMatches(): void
+    {
+        $this->assertSame(0, $this->FileStorage->getBehavior('FileStorage')->deleteAllFiles(['id' => 999999]));
+    }
+
     /**
      * testAfterDelete
      *
