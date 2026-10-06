@@ -10,6 +10,7 @@ you can copy from.
 | Key | Type | Default | Purpose |
 |-----|------|---------|---------|
 | `pathPrefix` | `string` | `'img/'` | Prefix prepended to generated image paths/URLs. |
+| `hashAlgorithm` | `string\|false` | `'sha256'` | Algorithm for the [content hash](#hashalgorithm) stored with each upload. |
 | `signatureSecret` | `string` | `Security.salt` | HMAC secret for [signed URLs](/serving/signed-urls). |
 | `adminAccess` | `bool\|Closure\|null` | `null` | [Admin backend](#admin) access gate (fail-closed). |
 | `standalone` | `bool` | `false` | Run the admin backend independent of your `AppController`. |
@@ -53,6 +54,25 @@ The default options array passed to the FileStorage behavior. See the
     // 'dataTransformer' => null,    // entity<->file transformer for the queue task
 ],
 ```
+
+## Content hash
+
+### `hashAlgorithm`
+
+Every upload gets a hash of its content in the `hash` column of its
+`file_storage` row. Use it to verify a stored file or to find rows with
+identical content.
+
+```php
+'hashAlgorithm' => 'sha256',
+```
+
+Accepts any name from PHP's `hash_algos()` whose hex digest is at most 64
+characters, the width of the column. An unknown name or a longer digest throws
+a `RuntimeException` on save. Set it to `false` to skip hashing; replacing the
+file on an existing row then clears that row's `hash`.
+
+Existing rows are not hashed retroactively. Their `hash` stays as it was, usually `null`.
 
 ## Signed URLs
 

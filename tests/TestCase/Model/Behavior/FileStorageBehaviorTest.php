@@ -5,12 +5,15 @@ namespace FileStorage\Test\TestCase\Model\Behavior;
 use ArrayObject;
 use Cake\Core\Configure;
 use Cake\Event\Event;
+use FileStorage\Model\Entity\FileStorage as FileStorageEntity;
 use FileStorage\Model\Table\FileStorageTable;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use FilesystemIterator;
+use Laminas\Diactoros\Stream;
 use Laminas\Diactoros\UploadedFile;
 use PhpCollective\Infrastructure\Storage\FileInterface;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
@@ -60,6 +63,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
     public function tearDown(): void
     {
         parent::tearDown();
+        Configure::delete('FileStorage.hashAlgorithm');
         unset($this->FileStorage);
         $this->getTableLocator()->clear();
     }
@@ -122,6 +126,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $this->assertSame($entity->adapter, 'Local');
         $this->assertSame($entity->filesize, 332643);
         $this->assertSame($entity->mime_type, 'image/jpeg');
+        $this->assertSame(hash_file('sha256', $this->fileFixtures . 'titus.jpg'), $entity->hash);
     }
 
     /**
@@ -150,6 +155,124 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $this->assertSame($entity->adapter, 'Local');
         $this->assertSame($entity->filesize, 332643);
         $this->assertSame($entity->mime_type, 'image/jpeg');
+        $this->assertSame(hash_file('sha256', $this->fileFixtures . 'titus.jpg'), $entity->hash);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBeforeSaveHashesUploadWithoutFileOnDisk(): void
+    {
+        $stream = new Stream('php://memory', 'rw+');
+        $stream->write('some content');
+
+        $entity = $this->beforeSaveWithUpload(new UploadedFile($stream, 12, UPLOAD_ERR_OK, 'note.txt', 'text/plain'));
+
+        $this->assertSame(hash('sha256', 'some content'), $entity->hash);
+        $this->assertSame(0, $stream->tell());
+    }
+
+    /**
+     * @return void
+     */
+    public function testBeforeSaveUsesConfiguredHashAlgorithm(): void
+    {
+        Configure::write('FileStorage.hashAlgorithm', 'sha1');
+
+        $entity = $this->beforeSaveWithUpload($this->titusUpload());
+
+        $this->assertSame(hash_file('sha1', $this->fileFixtures . 'titus.jpg'), $entity->hash);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBeforeSaveSkipsHashWhenDisabled(): void
+    {
+        Configure::write('FileStorage.hashAlgorithm', false);
+
+        $entity = $this->beforeSaveWithUpload($this->titusUpload());
+
+        $this->assertNull($entity->hash);
+    }
+
+    /**
+     * @return void
+     */
+    public function testBeforeSaveClearsStaleHashOnReplacementWhenDisabled(): void
+    {
+        Configure::write('FileStorage.hashAlgorithm', false);
+
+        $entity = $this->FileStorage->get(1);
+        $this->assertSame('abc123', $entity->hash);
+        $entity = $this->FileStorage->patchEntity(
+            $entity,
+            ['file' => $this->titusUpload()],
+            ['accessibleFields' => ['*' => true]],
+        );
+        $event = new Event('Model.beforeSave', $this->FileStorage, ['entity' => $entity]);
+
+        $this->FileStorage->behaviors()->FileStorage->beforeSave($event, $entity, new ArrayObject([]));
+
+        $this->assertNull($entity->hash);
+    }
+
+    /**
+     * @return array<string, array{mixed, string}>
+     */
+    public static function invalidHashAlgorithmProvider(): array
+    {
+        return [
+            'unknown' => ['nope', 'Invalid `FileStorage.hashAlgorithm` `nope`'],
+            'not a string' => [true, 'Invalid `FileStorage.hashAlgorithm` `bool`'],
+            'digest too long' => ['sha512', 'does not fit the 64 character `hash` column'],
+        ];
+    }
+
+    /**
+     * @param mixed $algorithm
+     * @param string $message
+     *
+     * @return void
+     */
+    #[DataProvider('invalidHashAlgorithmProvider')]
+    public function testBeforeSaveRejectsInvalidHashAlgorithm(mixed $algorithm, string $message): void
+    {
+        Configure::write('FileStorage.hashAlgorithm', $algorithm);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage($message);
+
+        $this->beforeSaveWithUpload($this->titusUpload());
+    }
+
+    /**
+     * @return \Laminas\Diactoros\UploadedFile
+     */
+    protected function titusUpload(): UploadedFile
+    {
+        return new UploadedFile(
+            $this->fileFixtures . 'titus.jpg',
+            filesize($this->fileFixtures . 'titus.jpg'),
+            UPLOAD_ERR_OK,
+            'titus.png',
+            'image/jpeg',
+        );
+    }
+
+    /**
+     * @param \Laminas\Diactoros\UploadedFile $file
+     *
+     * @return \FileStorage\Model\Entity\FileStorage
+     */
+    protected function beforeSaveWithUpload(UploadedFile $file): FileStorageEntity
+    {
+        $entity = $this->FileStorage->newEntity(['file' => $file], ['accessibleFields' => ['*' => true]]);
+        $event = new Event('Model.beforeSave', $this->FileStorage, ['entity' => $entity]);
+
+        $this->FileStorage->behaviors()->FileStorage->beforeSave($event, $entity, new ArrayObject([]));
+
+        return $entity;
     }
 
     /**

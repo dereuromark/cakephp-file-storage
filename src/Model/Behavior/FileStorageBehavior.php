@@ -16,6 +16,7 @@ use League\Flysystem\FilesystemAdapter;
 use PhpCollective\Infrastructure\Storage\FileInterface;
 use PhpCollective\Infrastructure\Storage\FileStorage;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
+use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 use Throwable;
 
@@ -29,6 +30,23 @@ use Throwable;
 class FileStorageBehavior extends Behavior
 {
     use EventDispatcherTrait;
+
+    /**
+     * @var string
+     */
+    public const DEFAULT_HASH_ALGORITHM = 'sha256';
+
+    /**
+     * Length of the `hash` column, in characters.
+     *
+     * @var int
+     */
+    protected const HASH_COLUMN_LENGTH = 64;
+
+    /**
+     * @var int
+     */
+    protected const HASH_CHUNK_SIZE = 1048576;
 
     protected FileStorage $fileStorage;
 
@@ -144,6 +162,7 @@ class FileStorageBehavior extends Behavior
         }
 
         $this->checkEntityBeforeSave($entity);
+        $this->setContentHash($entity);
 
         $this->dispatchEvent('FileStorage.beforeSave', [
             'entity' => $entity,
@@ -275,6 +294,106 @@ class FileStorageBehavior extends Behavior
 
         $entity->variants = [];
         $entity->metadata = [];
+    }
+
+    /**
+     * Stores the hash of the uploaded content in the `hash` field.
+     *
+     * @param \Cake\Datasource\EntityInterface $entity
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
+    protected function setContentHash(EntityInterface $entity): void
+    {
+        $algorithm = Configure::read('FileStorage.hashAlgorithm', static::DEFAULT_HASH_ALGORITHM);
+        if ($algorithm === false) {
+            $this->applyContentHash($entity, null);
+
+            return;
+        }
+
+        if (!is_string($algorithm) || !in_array($algorithm, hash_algos(), true)) {
+            throw new RuntimeException(sprintf(
+                'Invalid `FileStorage.hashAlgorithm` `%s`. See hash_algos() for valid values.',
+                is_string($algorithm) ? $algorithm : get_debug_type($algorithm),
+            ));
+        }
+        if (strlen(hash($algorithm, '')) > static::HASH_COLUMN_LENGTH) {
+            throw new RuntimeException(sprintf(
+                'The digest of `%s` does not fit the %d character `hash` column.',
+                $algorithm,
+                static::HASH_COLUMN_LENGTH,
+            ));
+        }
+
+        /** @var \Psr\Http\Message\UploadedFileInterface|array|null $upload */
+        $upload = $entity->get($this->getConfig('fileField'));
+        if ($upload === null) {
+            return;
+        }
+
+        $this->applyContentHash($entity, $this->hashUpload($upload, $algorithm));
+    }
+
+    /**
+     * A replaced file must not keep the hash of the content it replaced, so
+     * an existing row is reset even when no new hash is available.
+     *
+     * @param \Cake\Datasource\EntityInterface $entity
+     * @param string|null $hash
+     *
+     * @return void
+     */
+    protected function applyContentHash(EntityInterface $entity, ?string $hash): void
+    {
+        if ($hash === null && $entity->isNew()) {
+            return;
+        }
+
+        $entity->set('hash', $hash);
+    }
+
+    /**
+     * @param \Psr\Http\Message\UploadedFileInterface|array $upload
+     * @param string $algorithm
+     *
+     * @return string|null Null when the upload has no readable content.
+     */
+    protected function hashUpload(UploadedFileInterface|array $upload, string $algorithm): ?string
+    {
+        if (is_array($upload)) {
+            $path = $upload['tmp_name'] ?? null;
+            if (!is_string($path) || !is_file($path)) {
+                return null;
+            }
+
+            return hash_file($algorithm, $path) ?: null;
+        }
+
+        if ($upload->getError() !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $stream = $upload->getStream();
+        $path = $stream->getMetadata('uri');
+        if (is_string($path) && is_file($path)) {
+            return hash_file($algorithm, $path) ?: null;
+        }
+
+        // Not backed by a file on disk (php://temp, php://memory): read it in chunks.
+        if (!$stream->isSeekable()) {
+            return null;
+        }
+        $stream->rewind();
+        $context = hash_init($algorithm);
+        while (!$stream->eof()) {
+            hash_update($context, $stream->read(static::HASH_CHUNK_SIZE));
+        }
+        $stream->rewind();
+
+        return hash_final($context);
     }
 
     /**

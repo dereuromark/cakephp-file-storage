@@ -52,6 +52,11 @@ return [
     'FileStorage' => [
         'pathPrefix' => 'img/thumbs/',
 
+        // Algorithm for the content hash stored in `file_storage.hash` on every
+        // upload. Any hash_algos() name with a hex digest of at most 64
+        // characters. Set to false to skip hashing.
+        'hashAlgorithm' => 'sha256',
+
         // Secret used to sign temporary file-access URLs (SignedUrlGenerator,
         // HMAC-SHA256). Should be a strong, random, app-specific string kept
         // secret — anyone with it can forge valid signed URLs. No default is
