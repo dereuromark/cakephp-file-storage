@@ -2,10 +2,14 @@
 
 namespace FileStorage\Test\TestCase\Queue\Task;
 
+use Cake\Core\Configure;
 use Cake\Datasource\ConnectionManager;
 use FileStorage\Queue\Task\ImageVariantTask;
 use FileStorage\Test\TestCase\FileStorageTestCase;
+use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Queue\Model\QueueException;
+use RuntimeException;
 
 /**
  * @uses \FileStorage\Queue\Task\ImageVariantTask
@@ -111,5 +115,91 @@ class ImageVariantTaskTest extends FileStorageTestCase
 
         // No exception, no assertion needed beyond reaching this point.
         $this->assertTrue(true);
+    }
+
+    /**
+     * @param bool $replace
+     * @param bool $fail
+     *
+     * @return void
+     */
+    #[DataProvider('regenerationProvider')]
+    public function testRegenerationPreservesReplacement(bool $replace, bool $fail): void
+    {
+        $table = $this->getTableLocator()->get('FileStorage.FileStorage');
+        $table->addBehavior('FileStorage.FileStorage', Configure::read('FileStorage.behaviorConfig'));
+        $entity = $table->get(1);
+        $processor = $this->createMock(ProcessorInterface::class);
+        $processor->expects($this->once())->method('process')->willReturnCallback(function ($file) use ($table, $replace, $fail) {
+            if ($fail) {
+                $table->updateAll(['filename' => 'rolled-back.png'], ['id' => 1]);
+
+                throw new RuntimeException('Processor failed');
+            }
+            if (!$replace) {
+                return $file;
+            }
+            $table->updateAll(['path' => 'replacement.png', 'filename' => 'replacement.png', 'filesize' => 42], ['id' => 1]);
+
+            return $file->withPath('processed.png')->withFilename('processed.png');
+        });
+        try {
+            Configure::write('FileStorage.behaviorConfig.fileProcessor', $processor);
+            $task = new ImageVariantTask();
+            $task->run(['id' => 1, 'operations' => ['thumbnail' => ['width' => 50]]], 1);
+            $this->assertFalse($fail);
+        } catch (RuntimeException $exception) {
+            $this->assertTrue($fail);
+            $this->assertSame('Processor failed', $exception->getMessage());
+        }
+        $fresh = $table->get(1);
+        $this->assertSame($replace ? 'replacement.png' : $entity->path, $fresh->path);
+        $this->assertSame($replace ? 'replacement.png' : $entity->filename, $fresh->filename);
+        $this->assertSame($replace ? 42 : $entity->filesize, $fresh->filesize);
+        if (!$replace && !$fail) {
+            $this->assertSame(['thumbnail' => ['width' => 50]], $fresh->variants);
+        }
+        if ($replace || $fail) {
+            $this->assertSame([], $fresh->variants);
+        }
+        $this->assertTrue($table->hasBehavior('FileStorage'));
+    }
+
+    /**
+     * @return void
+     */
+    public function testCustomTableWithoutModified(): void
+    {
+        $connection = ConnectionManager::get('test');
+        $connection->execute('CREATE TABLE variant_files (id INTEGER PRIMARY KEY, path VARCHAR(255), variants TEXT)');
+        try {
+            $table = $this->getTableLocator()->get('VariantFiles', ['connection' => $connection]);
+            $table->getSchema()->setColumnType('variants', 'json');
+            $connection->insert('variant_files', ['id' => 1, 'path' => 'original.png', 'variants' => '[]']);
+            $processor = $this->createMock(ProcessorInterface::class);
+            $processor->expects($this->once())->method('process')->willReturnArgument(0);
+            Configure::write('FileStorage.behaviorConfig.fileProcessor', $processor);
+            $task = new ImageVariantTask();
+            $task->run([
+                'id' => 1,
+                'operations' => ['thumbnail' => ['width' => 50]],
+                'storageTable' => 'VariantFiles',
+            ], 1);
+            $this->assertSame(['thumbnail' => ['width' => 50]], $table->get(1)->get('variants'));
+        } finally {
+            $connection->execute('DROP TABLE variant_files');
+        }
+    }
+
+    /**
+     * @return array<string, array<bool>>
+     */
+    public static function regenerationProvider(): array
+    {
+        return [
+            'replacement' => [true, false],
+            'variants' => [false, false],
+            'exception' => [false, true],
+        ];
     }
 }

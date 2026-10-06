@@ -106,7 +106,7 @@ Image variants must be configured in your application configuration (e.g.
 1. The command reads the `imageVariants` configuration.
 2. It queries the FileStorage table for matching records (by model/collection).
 3. For each image it converts the entity to a `File` object, processes the
-   configured variants, and saves the updated entity with the variant info.
+   configured variants, and updates only the variant info and modification time.
 
 ::: tip Notes
 - Image processing requires an image processor to be configured (e.g.
@@ -115,8 +115,7 @@ Image variants must be configured in your application configuration (e.g.
 - Use `--force` to regenerate existing variants (useful after changing variant
   settings). Without `--force`, new variants are added while keeping existing
   ones.
-- The command removes the FileStorage behavior during save to prevent infinite
-  loops.
+- Regeneration runs in a transaction and keeps the FileStorage behavior attached.
 :::
 
 ## Background regeneration via cakephp-queue

@@ -15,6 +15,7 @@ use Cake\ORM\TableRegistry;
 use Exception;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
+use FileStorage\FileStorage\VariantRegenerator;
 use FileStorage\Model\Entity\FileStorage;
 use PhpCollective\Infrastructure\Storage\FileInterface;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
@@ -441,31 +442,13 @@ class ImageVariantGenerateCommand extends Command
      */
     protected function _processEntity(FileStorage $image, array $operations, array $options = []): void
     {
-        $file = $this->entityToFileObject($image);
-
-        // Use force option to determine if we should merge or replace variants
-        $merge = !($options['force'] ?? false);
-        $file = $this->processImages($file, $image, $operations, $merge);
-
-        $processor = $this->getFileProcessor();
-
-        $this->dispatchEvent('FileStorage.beforeFileProcessing', [
-            'entity' => $image,
-            'file' => $file,
-        ], $this->table());
-
-        $file = $processor->process($file);
-
-        $this->dispatchEvent('FileStorage.afterFileProcessing', [
-            'entity' => $image,
-            'file' => $file,
-        ], $this->table());
-
-        $image = $this->fileObjectToEntity($file, $image);
-
-        $tableConfig = $this->table()->behaviors()->get('FileStorage')->getConfig();
-        $this->table()->removeBehavior('FileStorage');
-        $this->table()->saveOrFail($image);
-        $this->table()->addBehavior('FileStorage.FileStorage', $tableConfig);
+        $regenerator = new VariantRegenerator(
+            $this->table(),
+            $this->getTransformer(),
+            $this->getFileProcessor(),
+        );
+        // Listeners registered on this object must keep receiving the processing events.
+        $regenerator->setEventManager($this->getEventManager());
+        $regenerator->regenerate($image, $operations, !($options['force'] ?? false));
     }
 }

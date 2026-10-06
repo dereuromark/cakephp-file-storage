@@ -10,6 +10,7 @@ use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
+use FileStorage\FileStorage\VariantRegenerator;
 use PhpCollective\Infrastructure\Storage\FileInterface;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
 use Queue\Model\QueueException;
@@ -116,43 +117,14 @@ class ImageVariantTask extends Task
      */
     protected function processEntity(EntityInterface $entity, array $operations, bool $merge = true): void
     {
-        $file = $this->entityToFileObject($entity);
-        $file = $file->withVariants($operations, $merge);
-
-        $processor = $this->getFileProcessor();
-
-        $this->dispatchEvent('FileStorage.beforeFileProcessing', [
-            'entity' => $entity,
-            'file' => $file,
-        ], $this->storageTable);
-
-        $file = $processor->process($file);
-
-        $this->dispatchEvent('FileStorage.afterFileProcessing', [
-            'entity' => $entity,
-            'file' => $file,
-        ], $this->storageTable);
-
-        $entity = $this->fileObjectToEntity($file, $entity);
-
-        // Same recursion-guard pattern as ImageVariantGenerateCommand and the
-        // FileStorageBehavior — strip the behavior for the metadata save so
-        // the afterSave processor pipeline doesn't re-fire here. Tracking
-        // presence separately from config lets us restore the behavior even
-        // when it was attached with an empty options array.
-        $behaviors = $this->storageTable->behaviors();
-        $hadBehavior = $behaviors->has('FileStorage');
-        $tableConfig = $hadBehavior ? $behaviors->get('FileStorage')->getConfig() : [];
-        if ($hadBehavior) {
-            $this->storageTable->removeBehavior('FileStorage');
-        }
-        try {
-            $this->storageTable->saveOrFail($entity);
-        } finally {
-            if ($hadBehavior) {
-                $this->storageTable->addBehavior('FileStorage.FileStorage', $tableConfig);
-            }
-        }
+        $regenerator = new VariantRegenerator(
+            $this->storageTable,
+            $this->getTransformer(),
+            $this->getFileProcessor(),
+        );
+        // Listeners registered on this object must keep receiving the processing events.
+        $regenerator->setEventManager($this->getEventManager());
+        $regenerator->regenerate($entity, $operations, $merge);
     }
 
     /**
