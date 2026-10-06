@@ -63,6 +63,14 @@ class FileStorageBehaviorDeduplicationTest extends FileStorageTestCase
         return (int)$this->FileStorage->getConnection()->execute('SELECT COUNT(*) FROM file_storage_blobs')->fetchColumn(0);
     }
 
+    public function testSaveWithoutUploadStillStops(): void
+    {
+        $count = $this->FileStorage->find()->count();
+        $entity = $this->FileStorage->newEntity(['model' => 'Items', 'collection' => 'Photos', 'filename' => 'no-upload.jpg']);
+        $this->assertFalse($this->FileStorage->save($entity));
+        $this->assertSame($count, $this->FileStorage->find()->count());
+    }
+
     public function testReuseAndRestoreAtFirstExtensionPath(): void
     {
         $events = [];

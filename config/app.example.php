@@ -66,6 +66,11 @@ return [
             'gracePeriod' => 3600,
             // Must match the static prefix of hashPathTemplate.
             'root' => 'blobs',
+            // Attaching by hash is denied unless this closure returns exactly true.
+            // 'attachAuthorizer' => static function (string $hash, array $data, array $context): bool {
+            //     $userId = $context['userId'] ?? null;
+            //     return $userId !== null && (new \FileStorage\Service\BlobAttacher())->userOwnsHash($userId, $hash);
+            // },
         ],
 
         // Secret used to sign temporary file-access URLs (SignedUrlGenerator,
