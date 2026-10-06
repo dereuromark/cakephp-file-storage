@@ -21,6 +21,7 @@ bin/cake file_storage cleanup [model] [collection] [options]
 | Option | Description |
 |--------|-------------|
 | `--dryRun`, `-d` | Preview only — report what would change without deleting anything. |
+| `--blobsOnly`, `-b` | Only remove unreferenced [deduplicated](/guide/deduplication) blobs and stray blob files. Orphan rows and orphan files are left alone; `model` and `collection` are ignored. |
 
 ### What it reports
 

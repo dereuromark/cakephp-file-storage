@@ -206,4 +206,21 @@ class CleanupServiceTest extends FileStorageTestCase
             $this->testPath = $originalPath;
         }
     }
+
+    /**
+     * @return void
+     */
+    public function testRunBlobsLeavesOrphanRowsAlone(): void
+    {
+        $path = $this->blob('blobs only');
+        $this->FileStorage->updateAll(['foreign_key' => null], ['id' => 1]);
+        $orphans = $this->FileStorage->find()->where(['foreign_key IS' => null])->count();
+        $this->assertSame(1, $orphans);
+
+        $report = (new CleanupService())->runBlobs(false);
+
+        $this->assertSame([$path], $report->deletedBlobs);
+        $this->assertSame(0, $report->deletedRows);
+        $this->assertSame($orphans, $this->FileStorage->find()->where(['foreign_key IS' => null])->count());
+    }
 }

@@ -22,10 +22,14 @@ class CleanupCommand extends Command
         $collection = $args->getArgument('collection');
         $dryRun = (bool)$args->getOption('dryRun');
 
-        $report = (new CleanupService())->run($model, $collection, $dryRun);
+        $blobsOnly = (bool)$args->getOption('blobsOnly');
+        $service = new CleanupService();
+        $report = $blobsOnly ? $service->runBlobs($dryRun) : $service->run($model, $collection, $dryRun);
 
-        $io->out(sprintf('Checking %d file storage rows...', $report->checkedCount));
-        $io->info(sprintf('%d orphan row(s) %s.', $report->deletedRows, $dryRun ? 'would be deleted' : 'deleted'));
+        if (!$blobsOnly) {
+            $io->out(sprintf('Checking %d file storage rows...', $report->checkedCount));
+            $io->info(sprintf('%d orphan row(s) %s.', $report->deletedRows, $dryRun ? 'would be deleted' : 'deleted'));
+        }
 
         $io->info(sprintf('%d blob(s) %s.', count($report->deletedBlobs), $dryRun ? 'would be deleted' : 'deleted'));
         $io->info(sprintf('%d stray blob file(s) %s.', count($report->deletedStrayBlobs), $dryRun ? 'would be deleted' : 'deleted'));
@@ -61,6 +65,14 @@ class CleanupCommand extends Command
         $parser->addOption('dryRun', [
             'short' => 'd',
             'help' => __d('file_storage', 'Dry-Run only.'),
+            'boolean' => true,
+        ]);
+        $parser->addOption('blobsOnly', [
+            'short' => 'b',
+            'help' => __d(
+                'file_storage',
+                'Only remove unreferenced deduplicated blobs and stray blob files. Orphan rows and files are left alone, model and collection are ignored.',
+            ),
             'boolean' => true,
         ]);
 

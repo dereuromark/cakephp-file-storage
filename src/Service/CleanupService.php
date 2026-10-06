@@ -248,6 +248,33 @@ class CleanupService
     }
 
     /**
+     * Only the blob passes. The full run also deletes rows without a
+     * `foreign_key`, which an application that keeps standalone file rows
+     * cannot use to free blob storage.
+     *
+     * @param bool $dryRun When true, no rows or files are actually removed.
+     *
+     * @return \FileStorage\Service\CleanupReport
+     */
+    public function runBlobs(bool $dryRun): CleanupReport
+    {
+        $warnings = [];
+        $blobs = $this->cleanBlobs($dryRun, $warnings);
+
+        return new CleanupReport(
+            dryRun: $dryRun,
+            checkedCount: 0,
+            deletedFiles: [],
+            deletedRows: 0,
+            missingFiles: [],
+            warnings: $warnings,
+            deletedBlobs: $blobs['deleted'],
+            deletedStrayBlobs: $blobs['strays'],
+            skippedBlobs: $blobs['skipped'],
+        );
+    }
+
+    /**
      * Blob sweep and stray blob files. Not scoped by model or collection,
      * because blobs are shared between them.
      *

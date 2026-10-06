@@ -83,6 +83,13 @@ Deleting a deduplicated row removes its variants but leaves the shared blob.
 Run `bin/cake file_storage cleanup` on a schedule to reclaim storage.
 :::
 
+::: warning Rows without a `foreign_key`
+A full cleanup run also deletes every `file_storage` row whose `foreign_key` is
+empty. If your application keeps such rows on purpose, schedule
+`bin/cake file_storage cleanup --blobsOnly` instead. It runs only the two blob
+passes described below. In PHP the same is `CleanupService::runBlobs()`.
+:::
+
 Cleanup removes unreferenced blobs older than the grace period, deleting their
 rows and files together. A failed file deletion keeps the blob row and reports
 a warning. It also scans the blob root for old files with no matching blob row,
