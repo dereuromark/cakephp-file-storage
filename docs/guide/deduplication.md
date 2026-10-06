@@ -47,9 +47,34 @@ It does not contain the original filename.
 
 Keys match the persisted `file_storage.model` and `file_storage.collection`
 values. A row with no collection matches only the model-level `true` form.
-`gracePeriod` is the minimum age in seconds since the last claim before an
-unreferenced blob can be removed. `root` must match the static prefix of
-`hashPathTemplate`. Deduplication requires `hashAlgorithm` to be `sha256`.
+`root` must match the static prefix of `hashPathTemplate`. Deduplication
+requires `hashAlgorithm` to be `sha256`.
+
+### `gracePeriod`
+
+How long, in seconds, a stored file is kept after nothing uses it any more.
+The default is `3600`, one hour.
+
+Deleting a row never deletes its blob. The blob stays until
+[cleanup](#scheduled-cleanup) runs, and cleanup only removes a blob when both
+are true: no row references it, and its last use by an upload is at least
+`gracePeriod` seconds ago. "Last use" is the moment an upload stored or reused
+that content.
+
+The delay exists for two reasons:
+
+- **Uploads in progress.** A first upload writes the file before its database
+  transaction commits. For that moment the file exists and no committed row
+  points at it. On MySQL and PostgreSQL a row lock keeps cleanup away from it,
+  and the grace period is a second safety margin. SQLite has no row locks, so
+  there the grace period carries most of that protection and must be longer
+  than your slowest upload including variant processing.
+- **Content that comes back.** A file that is deleted and uploaded again
+  shortly after, or replaced back and forth, reuses the stored blob instead of
+  being deleted and written again.
+
+A larger value keeps unused files on storage longer. A smaller value frees
+storage sooner. Do not set it below the duration of your slowest upload.
 
 ## Transactions and databases
 

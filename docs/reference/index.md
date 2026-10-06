@@ -80,10 +80,12 @@ Existing rows are not hashed retroactively. Their `hash` stays as it was, usuall
 
 ## Deduplication
 
-`deduplicate` controls collection selection, the cleanup grace period, and the
-blob root. Its `attachAuthorizer` closure controls attachment by hash and must
-return exactly `true`; attachment is denied when it is unset. It requires SHA-256
-hashes, atomic saves, and the blob migration.
+`deduplicate` controls collection selection, the cleanup
+[grace period](/guide/deduplication#graceperiod) (how long an unused stored file
+is kept before cleanup removes it), and the blob root. Its `attachAuthorizer`
+closure controls attachment by hash and must return exactly `true`; attachment
+is denied when it is unset. It requires SHA-256 hashes, atomic saves, and the
+blob migration.
 See [Deduplication](/guide/deduplication) for configuration forms, database
 support, and scheduled cleanup.
 

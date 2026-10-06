@@ -62,7 +62,9 @@ return [
             // ['Documents' => ['Attachments' => true]]: only that collection.
             // Rows without a collection match only model-level true or global true.
             'collections' => false,
-            // Minimum seconds since the last claim before unreferenced blob cleanup.
+            // Seconds a stored file is kept after its last use by an upload before
+            // cleanup may remove it, provided no row references it. Keep it above
+            // the duration of your slowest upload, including variant processing.
             'gracePeriod' => 3600,
             // Must match the static prefix of hashPathTemplate.
             'root' => 'blobs',
