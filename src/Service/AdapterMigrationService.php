@@ -3,12 +3,16 @@
 namespace FileStorage\Service;
 
 use Cake\Core\Configure;
+use Cake\Database\Driver\Mysql;
+use Cake\Database\Driver\Postgres;
+use Cake\I18n\DateTime;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Exception;
 use FileStorage\Model\Entity\FileStorage;
 use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
 use RuntimeException;
+use Throwable;
 
 class AdapterMigrationService
 {
@@ -51,6 +55,25 @@ class AdapterMigrationService
 
         foreach ($this->streamRows($sourceAdapter, $options) as $entity) {
             $checkedRows++;
+
+            if ($entity->blob_id !== null) {
+                try {
+                    $result = $this->migrateBlob($entity, $sourceAdapter, $targetAdapter, $source, $target, $dryRun, $deleteSource, $overwrite);
+                    if ($result['skipped'] !== null) {
+                        $skippedRows[] = $result['skipped'];
+                    } elseif ($result['missing'] !== null) {
+                        $missingFiles[] = $result['missing'];
+                    } else {
+                        $migratedRows++;
+                        $copiedFiles += $result['copied'];
+                        $deletedSourceFiles += $result['deleted'];
+                    }
+                } catch (Throwable $exception) {
+                    $failures[] = sprintf('ID %s failed: %s', $entity->id, $exception->getMessage());
+                }
+
+                continue;
+            }
 
             $paths = $this->pathsFor($entity);
             if (!$paths) {
@@ -114,6 +137,104 @@ class AdapterMigrationService
     }
 
     /**
+     * @param \FileStorage\Model\Entity\FileStorage $entity
+     * @param string $sourceName
+     * @param string $targetName
+     * @param \League\Flysystem\FilesystemAdapter $source
+     * @param \League\Flysystem\FilesystemAdapter $target
+     * @param bool $dryRun
+     * @param bool $deleteSource
+     * @param bool $overwrite
+     *
+     * @throws \RuntimeException
+     *
+     * @return array{skipped: string|null, missing: string|null, copied: int, deleted: int}
+     */
+    protected function migrateBlob(FileStorage $entity, string $sourceName, string $targetName, FilesystemAdapter $source, FilesystemAdapter $target, bool $dryRun, bool $deleteSource, bool $overwrite): array
+    {
+        $table = $this->fetchTable('FileStorage.FileStorage');
+        $operation = function () use ($table, $entity, $sourceName, $targetName, $source, $target, $dryRun, $deleteSource, $overwrite): array {
+            $result = ['skipped' => null, 'missing' => null, 'copied' => 0, 'deleted' => 0];
+            $query = $table->find()->where(['id' => $entity->id]);
+            $driver = $table->getConnection()->getDriver();
+            if (!$dryRun && ($driver instanceof Mysql || $driver instanceof Postgres)) {
+                $query->epilog('FOR UPDATE');
+            }
+            $fresh = $query->first();
+            if (!$fresh instanceof FileStorage || $fresh->adapter !== $sourceName || $fresh->blob_id === null) {
+                $result['skipped'] = sprintf('ID %s source adapter or blob reference changed.', $entity->id);
+
+                return $result;
+            }
+            $variants = [];
+            foreach ((array)$fresh->variants as $variant) {
+                $path = $variant['path'] ?? null;
+                if (is_string($path) && $path !== '' && $path !== $fresh->path) {
+                    $variants[] = $path;
+                }
+            }
+            $variants = array_values(array_unique($variants));
+            $registry = new BlobRegistry($table);
+            $claim = $dryRun ? null : $registry->claim($targetName, (string)$fresh->hash, DateTime::now());
+            $targetPath = $claim?->path;
+            if ($dryRun) {
+                $blob = $this->fetchTable('FileStorage.FileStorageBlobs')->find()
+                    ->where(['adapter' => $targetName, 'hash' => $fresh->hash])->first();
+                $targetPath = $blob?->get('path');
+            }
+            $paths = $targetPath === null ? array_merge([(string)$fresh->path], $variants) : $variants;
+            $missing = $this->missingPaths($source, $paths);
+            if ($missing !== []) {
+                $result['missing'] = sprintf('ID %s missing: %s', $entity->id, implode(', ', $missing));
+
+                return $result;
+            }
+            $existing = $overwrite ? [] : $this->existingPaths($target, $variants);
+            if ($existing !== []) {
+                $result['skipped'] = sprintf('ID %s target exists: %s', $entity->id, implode(', ', $existing));
+
+                return $result;
+            }
+            if (!$dryRun) {
+                foreach ($paths as $path) {
+                    $this->copyPath($source, $target, $path);
+                }
+                if ($claim === null) {
+                    throw new RuntimeException('Missing target blob claim.');
+                }
+                if ($targetPath === null) {
+                    $targetPath = (string)$fresh->path;
+                    $registry->recordPath($claim->id, $targetPath);
+                }
+                $table->updateAll(['adapter' => $targetName, 'path' => $targetPath, 'blob_id' => $claim->id], ['id' => $fresh->id]);
+                if ($deleteSource) {
+                    foreach ($variants as $path) {
+                        $source->delete($path);
+                        $result['deleted']++;
+                    }
+                }
+            }
+            $result['copied'] = count($paths);
+
+            return $result;
+        };
+        if ($dryRun) {
+            return $operation();
+        }
+        $result = null;
+        $table->getConnection()->transactional(function () use ($operation, &$result): bool {
+            $result = $operation();
+
+            return $result['skipped'] === null && $result['missing'] === null;
+        });
+        if ($result === null) {
+            throw new RuntimeException('Missing blob migration result.');
+        }
+
+        return $result;
+    }
+
+    /**
      * @param string $sourceAdapter
      * @param array{model?: string|null, collection?: string|null, limit?: int|null} $options
      *
@@ -129,9 +250,11 @@ class AdapterMigrationService
             $conditions['collection'] = $options['collection'];
         }
 
+        // Ordered, so a limited run picks the same rows on every database.
         $query = $this->fetchTable('FileStorage.FileStorage')
             ->find()
-            ->where($conditions);
+            ->where($conditions)
+            ->orderBy(['id' => 'ASC']);
         if (($options['limit'] ?? null) !== null) {
             $query->limit((int)$options['limit']);
         }

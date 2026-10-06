@@ -31,7 +31,16 @@ The command delegates to `FileStorage\Service\CleanupService` and reports:
   be deleted with `--dryRun`);
 - **orphan files** — files on disk with no matching row (deleted, or would be);
 - **missing files** — rows whose backing file has disappeared from the adapter;
+- **blobs**: unreferenced blob rows and their files older than the grace period;
+- **stray blob files**: old files under the blob root without a matching blob row;
+- **skipped blobs**: candidates kept because of references, locks, or unsafe file metadata;
 - any additional warnings.
+
+The blob passes always cover all models and collections, even when arguments
+scope the ordinary passes or deduplication is disabled. The orphan-file pass
+excludes the blob root. Files with unknown modification times or non-hash names
+are skipped with warnings. Dry runs show the would-be deletion counts. Schedule
+cleanup to free storage left after deduplicated rows are deleted.
 
 The same logic backs the admin
 [Cleanup UI](/admin/#cleanup). Use the CLI for cron-driven runs:
@@ -79,3 +88,11 @@ bin/cake file_storage migrate_adapter <source> <target> [options]
 
 Always run `--dryRun` first. Missing source files and existing target files skip
 the affected row, unless `--overwrite` allows replacing target files.
+
+
+For rows with `blob_id`, each row moves in one transaction. The command reuses
+an existing target blob and its path, or copies the main file and records a new
+blob. Target-exists and overwrite rules apply only to variants for these rows.
+`--deleteSource` removes their source variants but leaves source blob files and
+rows for cleanup. Dry runs make no claims or writes. See
+[Deduplication](/guide/deduplication).

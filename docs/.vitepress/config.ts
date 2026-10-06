@@ -12,6 +12,7 @@ function guideSidebar() {
         { text: 'Usage', link: '/guide/usage' },
         { text: 'Validation', link: '/guide/validation' },
         { text: 'Paths and URLs', link: '/guide/paths-and-urls' },
+        { text: 'Deduplication', link: '/guide/deduplication' },
       ],
     },
     {

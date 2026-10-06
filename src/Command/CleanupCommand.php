@@ -27,6 +27,10 @@ class CleanupCommand extends Command
         $io->out(sprintf('Checking %d file storage rows...', $report->checkedCount));
         $io->info(sprintf('%d orphan row(s) %s.', $report->deletedRows, $dryRun ? 'would be deleted' : 'deleted'));
 
+        $io->info(sprintf('%d blob(s) %s.', count($report->deletedBlobs), $dryRun ? 'would be deleted' : 'deleted'));
+        $io->info(sprintf('%d stray blob file(s) %s.', count($report->deletedStrayBlobs), $dryRun ? 'would be deleted' : 'deleted'));
+        $io->info(sprintf('%d blob(s) skipped.', $report->skippedBlobs));
+
         foreach ($report->deletedFiles as $path) {
             $io->warning(sprintf('%s orphan file: %s', $dryRun ? 'Would delete' : 'Deleted', $path));
         }
@@ -50,7 +54,7 @@ class CleanupCommand extends Command
     public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
         $parser->setDescription(
-            'Cleanup',
+            'Cleanup. Blob sweep and stray blob removal always run across all models and collections, even when scoped.',
         );
         $parser->addArgument('model');
         $parser->addArgument('collection');

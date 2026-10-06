@@ -18,6 +18,9 @@ class CleanupReport
      * @param int $deletedRows Number of orphan rows (foreign_key IS NULL) (would-be) deleted.
      * @param array<int, array{id: string|int, missing: array<int, string>}> $missingFiles
      *   Rows whose backing files (main and/or variants) are missing on the storage adapter.
+     * @param array<int, string> $deletedBlobs Blob paths (would-be) removed.
+     * @param array<int, string> $deletedStrayBlobs Stray blob paths (would-be) removed.
+     * @param int $skippedBlobs Blob candidates skipped.
      * @param array<int, string> $warnings Non-fatal messages (e.g. fileStorage adapter not configured).
      */
     public function __construct(
@@ -27,6 +30,9 @@ class CleanupReport
         public readonly int $deletedRows,
         public readonly array $missingFiles,
         public readonly array $warnings,
+        public readonly array $deletedBlobs,
+        public readonly array $deletedStrayBlobs,
+        public readonly int $skippedBlobs,
     ) {
     }
 }

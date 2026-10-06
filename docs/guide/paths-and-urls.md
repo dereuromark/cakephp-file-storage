@@ -115,3 +115,10 @@ $url = $this->Storage->url($yourEntity);
 // Careful: this changes the path builder instance in the helper!
 $this->Storage->pathBuilder('SomePathBuilder', ['options' => 'here']);
 ```
+
+
+## Deduplicated paths
+
+[Deduplicated uploads](./deduplication) live under `blobs/`, with the content
+hash as the filename and the first uploader's extension. Rows sharing a blob
+share that path and direct URL; variants keep their per-row paths.

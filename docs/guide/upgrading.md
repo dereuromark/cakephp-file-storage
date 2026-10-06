@@ -2,6 +2,22 @@
 
 This page covers the next major upgrade path for existing applications.
 
+## Blob registry migration
+
+Run `CreateFileStorageBlobs` (`20261006000000`) in the migration set that owns
+`file_storage`. For plugin-managed tables:
+
+```bash
+bin/cake migrations migrate -p FileStorage
+```
+
+The migration adds the `file_storage_blobs` table with a unique `(adapter, hash)`
+index, the nullable `file_storage.blob_id` column with an index and an
+`ON DELETE RESTRICT` foreign key, and an index on `file_storage.hash`.
+The table exists even when deduplication is disabled. Existing rows remain
+private; this migration does not merge files. Enable sharing only after meeting
+the [deduplication requirements](./deduplication).
+
 ## Database identity change
 
 Older releases used `file_storage.id` as a `CHAR(36)` UUID primary key. The next
@@ -100,7 +116,7 @@ it will try to apply the plugin's initial migration on top of your table.
 ### Expect four `** MISSING **` rows in the migration status
 
 The next major folds the intermediate 4.x migrations into the rewritten initial
-migration, so the plugin now ships two migration files instead of five. Existing
+migration, so the plugin now ships three migration files instead of five. Existing
 installations still have the four collapsed ids recorded in their
 `cake_migrations` table, and those rows now point at files that no longer exist:
 
