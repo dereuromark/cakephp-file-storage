@@ -213,7 +213,10 @@ class CleanupServiceTest extends FileStorageTestCase
     public function testRunBlobsLeavesOrphanRowsAlone(): void
     {
         $path = $this->blob('blobs only');
-        $this->FileStorage->updateAll(['foreign_key' => null], ['id' => 1]);
+        $this->FileStorage->getConnection()->execute(
+            'INSERT INTO file_storage (uuid, filename, adapter, path, model) VALUES (:uuid, :filename, :adapter, :path, :model)',
+            ['uuid' => 'standalone', 'filename' => 'file.txt', 'adapter' => 'Local', 'path' => 'Items/file.txt', 'model' => 'Items'],
+        );
         $orphans = $this->FileStorage->find()->where(['foreign_key IS' => null])->count();
         $this->assertSame(1, $orphans);
 
