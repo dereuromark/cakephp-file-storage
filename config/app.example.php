@@ -56,6 +56,17 @@ return [
         // upload. Any hash_algos() name with a hex digest of at most 64
         // characters. Set to false to skip hashing.
         'hashAlgorithm' => 'sha256',
+        'deduplicate' => [
+            // false or []: off. true: every model and collection.
+            // ['Documents' => true]: every collection of that persisted model.
+            // ['Documents' => ['Attachments' => true]]: only that collection.
+            // Rows without a collection match only model-level true or global true.
+            'collections' => false,
+            // Minimum seconds since the last claim before unreferenced blob cleanup.
+            'gracePeriod' => 3600,
+            // Must match the static prefix of hashPathTemplate.
+            'root' => 'blobs',
+        ],
 
         // Secret used to sign temporary file-access URLs (SignedUrlGenerator,
         // HMAC-SHA256). Should be a strong, random, app-specific string kept

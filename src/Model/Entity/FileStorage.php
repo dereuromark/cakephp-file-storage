@@ -14,6 +14,7 @@ use Cake\ORM\Entity;
  *
  * @property array $variants
  * @property array $metadata
+ * @property int|null $blob_id
  * @property int $id
  * @property string $uuid
  * @property int|null $user_id
@@ -42,6 +43,14 @@ class FileStorage extends Entity implements FileStorageEntityInterface
         'id' => false,
         'uuid' => false,
     ];
+
+    /**
+     * @return bool
+     */
+    public function isDeduplicated(): bool
+    {
+        return $this->get('blob_id') !== null;
+    }
 
     /**
      * Public/storage identity for URLs and adapter-facing references.
