@@ -12,8 +12,13 @@ use FileStorage\Model\Behavior\FileStorageBehavior;
 use FileStorage\Model\Entity\FileStorage;
 use FileStorage\Test\TestCase\FileStorageTestCase;
 use Laminas\Diactoros\UploadedFile;
+use PhpCollective\Infrastructure\Storage\Factories\LocalFactory;
 use PhpCollective\Infrastructure\Storage\FileInterface;
+use PhpCollective\Infrastructure\Storage\FileStorage as LibraryFileStorage;
+use PhpCollective\Infrastructure\Storage\PathBuilder\PathBuilder;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
+use PhpCollective\Infrastructure\Storage\StorageAdapterFactory;
+use PhpCollective\Infrastructure\Storage\StorageService;
 use PHPUnit\Framework\Attributes\DataProvider;
 use ReflectionMethod;
 use RuntimeException;
@@ -343,6 +348,36 @@ class FileStorageBehaviorDeduplicationTest extends FileStorageTestCase
             $this->FileStorage->getEventManager()->off('Model.beforeSave', $listener);
         }
         $this->assertSame($count, $this->FileStorage->find()->count());
+    }
+
+    /**
+     * @return void
+     */
+    public function testPathNotNamedByHash(): void
+    {
+        $config = Configure::read('FileStorage.behaviorConfig');
+        $storageService = new StorageService(new StorageAdapterFactory());
+        $storageService->setAdapterConfigFromArray([
+            'Local' => ['class' => LocalFactory::class, 'options' => ['root' => $this->testPath, true]],
+        ]);
+        $config['fileStorage'] = new LibraryFileStorage(
+            $storageService,
+            new PathBuilder(['hashPathTemplate' => 'blobs{ds}{hash}{ds}file.{extension}']),
+        );
+        $this->FileStorage->removeBehavior('FileStorage');
+        $this->FileStorage->addBehavior('FileStorage.FileStorage', $config);
+        $count = $this->FileStorage->find()->count();
+
+        try {
+            $this->FileStorage->save($this->upload());
+            $this->fail('Expected path failure');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('not named by its hash', $exception->getMessage());
+        }
+
+        $this->assertSame($count, $this->FileStorage->find()->count());
+        $this->assertSame(0, $this->blobCount());
+        $this->assertDirectoryDoesNotExist($this->testPath . 'blobs');
     }
 
     public function testPathOutsideRoot(): void
