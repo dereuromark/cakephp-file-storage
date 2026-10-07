@@ -10,7 +10,7 @@ namespace FileStorage\Service;
  */
 final class BlobClaim
 {
-    public function __construct(public readonly int $id, public readonly ?string $path)
+    public function __construct(public readonly int $id, public readonly ?string $path, public readonly ?string $hash = null)
     {
     }
 }

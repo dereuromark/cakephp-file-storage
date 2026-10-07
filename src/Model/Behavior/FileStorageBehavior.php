@@ -13,6 +13,7 @@ use Cake\Utility\Text;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Validation\UploadValidatorInterface;
+use FileStorage\Service\BlobPath;
 use FileStorage\Service\BlobRegistry;
 use FileStorage\Service\DeduplicationConfig;
 use League\Flysystem\Config;
@@ -545,16 +546,9 @@ class FileStorageBehavior extends Behavior
     protected function assertBlobPath(string $path, string $hash): void
     {
         $root = trim(str_replace('\\', '/', Configure::read('FileStorage.deduplicate.root', static::DEFAULT_BLOB_ROOT)), '/');
-        $path = str_replace('\\', '/', $path);
-        if ($root === '' || !str_starts_with($path, $root . '/') || in_array('..', explode('/', $path), true)) {
-            throw new RuntimeException('Stored blob path is outside FileStorage.deduplicate.root.');
-        }
-        if (pathinfo($path, PATHINFO_FILENAME) !== $hash) {
-            throw new RuntimeException('Stored blob path is not named by its hash. Check hashPathTemplate.');
-        }
-        // Reserved for files in flight; cleanup removes what it finds there.
-        if (str_starts_with($path, $root . '/' . static::BLOB_TEMPORARY_DIRECTORY . '/')) {
-            throw new RuntimeException('Stored blob path lies in the temporary directory of the blob root. Check hashPathTemplate.');
+        $error = BlobPath::check($path, $root, $hash);
+        if ($error !== null) {
+            throw new RuntimeException($error);
         }
     }
 

@@ -87,7 +87,9 @@ closure controls attachment by hash and must return exactly `true`; attachment
 is denied when it is unset. It requires SHA-256 hashes, atomic saves, and the
 blob migration.
 See [Deduplication](/guide/deduplication) for configuration forms, database
-support, and scheduled cleanup.
+support, and scheduled cleanup. Use [`BlobAttacher`](/guide/deduplication#attaching-without-an-upload)
+to attach existing blobs and [`BlobImporter`](/guide/deduplication#registering-a-stored-file)
+to register files already on an adapter.
 
 ## Signed URLs
 

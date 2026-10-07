@@ -571,24 +571,7 @@ class ExistingFileDeduplicator
 
     protected function hashStored(FilesystemAdapter $adapter, string $path): string
     {
-        $stream = $adapter->readStream($path);
-        if (!is_resource($stream)) {
-            throw new RuntimeException('Could not open blob stream.');
-        }
-        try {
-            $context = hash_init('sha256');
-            while (!feof($stream)) {
-                $chunk = fread($stream, self::CHUNK_SIZE);
-                if ($chunk === false || ($chunk === '' && !feof($stream))) {
-                    throw new RuntimeException('Blob read failed.');
-                }
-                hash_update($context, $chunk);
-            }
-
-            return hash_final($context);
-        } finally {
-            fclose($stream);
-        }
+        return BlobStream::hash($adapter, $path);
     }
 
     protected function underRoot(string $path): bool
@@ -598,10 +581,7 @@ class ExistingFileDeduplicator
 
     protected function validDestination(string $path, string $hash): bool
     {
-        return $this->underRoot($path)
-            && !str_starts_with(str_replace('\\', '/', $path), $this->root . '/.tmp/')
-            && !preg_match('#(^|[/\\\\])\.\.?([/\\\\]|$)#', $path)
-            && pathinfo($path, PATHINFO_FILENAME) === $hash;
+        return BlobPath::check($path, $this->root, $hash, true) === null;
     }
 
     protected function increment(string $name, int $amount = 1): void
