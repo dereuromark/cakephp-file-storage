@@ -126,6 +126,13 @@ processing. A request that saves several files can deadlock with another one
 saving the same files in a different order; the database aborts one of them.
 Retry the request. See [Limits](/guide/deduplication#limits).
 
+### "Stored blob path is not named by its hash"
+
+The file name of a blob has to be its hash, as in the default
+`blobs{ds}{hashPath}{ds}{hash}.{extension}`. Cleanup finds the lock for a blob
+file through that name. Put `{hash}` into directories as you like, but keep it
+as the file name too.
+
 ## FAQ
 
 **Can I serve files without going through a controller?**
