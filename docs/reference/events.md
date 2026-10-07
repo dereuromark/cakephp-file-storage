@@ -44,6 +44,12 @@ not run for an upload that reuses stored content. Listen on
 `FileStorage.blobReused` as well if it has to see every upload.
 :::
 
+## Attaching by hash
+
+| Event | Data | When |
+|-------|------|------|
+| `FileStorage.blobAttached` | `entity` | After [`BlobAttacher::attach()`](/guide/deduplication#attaching-without-an-upload) created a row for stored content. None of the saving events fire for such a row. |
+
 ## Deleting
 
 | Event | Data | When |

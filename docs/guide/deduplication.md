@@ -176,6 +176,81 @@ across all models and collections, even during a scoped cleanup and even when
 `collections` is `false`. Preview with `--dryRun` to report candidates without
 removing rows or files.
 
+## Attaching without an upload
+
+A client can compute a file's SHA-256 hash and ask the application to attach
+stored content before uploading bytes. `BlobAttacher::attach()` creates a new
+file row with its own UUID and filename, referencing the existing blob on the
+selected adapter. The model and collection must enable deduplication.
+
+Attaching is denied by default. Configure a `Closure` that returns exactly
+`true` to authorize each request. For example, allow only content the authenticated
+user already owns:
+
+```php
+use Cake\Core\Configure;
+use FileStorage\Service\BlobAttacher;
+
+Configure::write('FileStorage.deduplicate.attachAuthorizer',
+    static function (string $hash, array $data, array $context): bool {
+        $userId = $context['userId'] ?? null;
+
+        return $userId !== null && (new BlobAttacher())->userOwnsHash($userId, $hash);
+    },
+);
+```
+
+A controller action can receive the hash and filename, using the authenticated
+identity for the owner and authorization context:
+
+```php
+use FileStorage\Exception\BlobNotAvailableException;
+use FileStorage\Service\BlobAttacher;
+
+public function attach()
+{
+    $this->request->allowMethod(['post']);
+    $userId = $this->request->getAttribute('identity')->getIdentifier();
+    try {
+        $file = (new BlobAttacher())->attach(
+            (string)$this->request->getData('hash'),
+            [
+                'model' => 'Documents',
+                'collection' => 'Attachments',
+                'filename' => (string)$this->request->getData('filename'),
+                'user_id' => $userId,
+            ],
+            ['userId' => $userId],
+        );
+    } catch (BlobNotAvailableException) {
+        // The client can send the bytes to the normal upload action.
+        return $this->response->withStatus(409)->withStringBody('Upload required');
+    }
+
+    return $this->response->withType('application/json')
+        ->withStringBody(json_encode(['uuid' => $file->uuid], JSON_THROW_ON_ERROR));
+}
+```
+
+`BlobAttachDeniedException` signals a disabled collection or denied authorization.
+The application must handle it through its access-denied response. Missing blob
+content raises `BlobNotAvailableException`; attaching cannot restore missing bytes.
+
+::: danger Content access and existence disclosure
+Anyone allowed to attach a hash can download that content. `has()` reveals whether
+content exists and performs no authorization. The difference between "attached"
+and "not available" also reveals whether content exists. A safe rule is to allow
+only hashes the same user already owns. Take the user identity from authentication,
+never from client-supplied owner or context values.
+:::
+
+No variants are generated. Applications that need variants can queue
+`ImageVariantTask` for the new row. `FileStorage.blobAttached` is dispatched with
+the saved `entity`. `userOwnsHash()` checks ownership in file rows;
+`has()` checks for a blob row with a path on the selected adapter without reading
+storage. The adapter defaults to `FileStorage.behaviorConfig.defaultStorageConfig`,
+falling back to `Local`.
+
 ## Moving blobs between adapters
 
 `bin/cake file_storage migrate_adapter Local S3` claims each row's content on
@@ -190,8 +265,9 @@ until cleanup can remove them. `--dryRun` makes no claims or writes.
 
 ## Limits
 
-Deduplication does not skip the upload, merge existing duplicates, deduplicate
-variants, or isolate blobs by tenant. Rows sharing a blob share its direct URL.
+Deduplicated uploads still send bytes. Attaching by hash skips that upload.
+Deduplication does not merge existing duplicates, deduplicate variants, or isolate
+blobs by tenant. Rows sharing a blob share its direct URL.
 Duplicate uploads finish faster, which can reveal that content already exists.
 
 Variant paths depend on the UUID, filename, and variant name. Replacing a file
