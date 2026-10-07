@@ -5,6 +5,31 @@ own `file_storage` row, UUID, filename, owner, and variants. Replacing one row's
 file claims a new blob without changing the files served by other rows.
 Variants remain separate for each row.
 
+> [!TIP] Added in 5.2
+> Deduplication is off by default. Upgrading does not change how files are
+> stored until you opt a collection in. It needs the migration described under
+> [Upgrading](./upgrading#blob-registry-migration).
+
+## How it works
+
+1. The upload is hashed with SHA-256. The hash goes into `file_storage.hash`.
+2. The plugin looks up the blob for that hash on the row's adapter, in the
+   table `file_storage_blobs`, and locks it for the duration of the save.
+3. No blob yet: the file is written below `blobs/`, named by its hash and
+   extension, and registered. A blob exists: nothing is written.
+4. The row gets the blob's `path` and its id in `blob_id`.
+
+Two uploads of the same bytes therefore end up as two rows with different
+uuids and filenames and the same `path`. Everything that reads a file through
+its row, the serving controller, signed URLs and the image helper included,
+works as before.
+
+Deleting a row removes its variants and leaves the blob. A blob that no row
+references any more is removed later by [cleanup](#scheduled-cleanup).
+
+A "blob" in this guide is one stored file that rows can share. "Claiming" a
+blob means locking its registry row for an upload.
+
 ## Requirements
 
 Run the `CreateFileStorageBlobs` migration before enabling deduplication. It adds

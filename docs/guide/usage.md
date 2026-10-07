@@ -331,6 +331,13 @@ $this->fetchTable('FileStorage.FileStorage')->deleteAll(['model' => 'Posts']);
 $this->Posts->behaviors()->FileStorage->deleteAllFiles(['model' => 'Posts']);
 ```
 
+### Deduplicated files
+
+A row in a [deduplicated](./deduplication) collection shares its stored file
+with other rows. Deleting it removes the row and its variants. The shared file
+stays, also when this was the last row using it, until
+`bin/cake file_storage cleanup` removes it after the grace period.
+
 ## Custom storage adapters
 
 You can use storage backends beyond the local filesystem.
@@ -363,4 +370,6 @@ $post->cover_image->adapter = 'S3'; // hasOne — singular property
 - [Validation](./validation) — validate uploads server-side.
 - [Image variants and versioning](/images/) — automatic thumbnails and crops.
 - [Paths and URLs](./paths-and-urls) — build file paths and URLs anywhere.
+- [Deduplication](./deduplication) - store identical uploads once.
+- [Events](/reference/events) - hook into storing, processing and deleting.
 - [Troubleshooting](/reference/troubleshooting) — common pitfalls and fixes.

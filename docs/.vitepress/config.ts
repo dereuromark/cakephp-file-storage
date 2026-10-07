@@ -81,6 +81,7 @@ export default defineConfig({
             { text: 'Configuration', link: '/reference/' },
             { text: 'Behavior Options', link: '/reference/behavior' },
             { text: 'Console Commands', link: '/reference/commands' },
+            { text: 'Events', link: '/reference/events' },
             { text: 'Troubleshooting', link: '/reference/troubleshooting' },
           ],
         },
