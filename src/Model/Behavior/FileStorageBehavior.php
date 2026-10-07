@@ -500,7 +500,8 @@ class FileStorageBehavior extends Behavior
         ], $this->table());
 
         $file = $this->entityToFileObject($entity);
-        if ($entity->isDeduplicated()) {
+        // Read from the column: an application may use its own entity class.
+        if ($entity->get('blob_id') !== null) {
             $this->removeVariants($file);
 
             return;

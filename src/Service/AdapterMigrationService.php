@@ -222,20 +222,43 @@ class AdapterMigrationService
                 return $result;
             }
             if (!$dryRun) {
-                foreach ($variants as $path) {
-                    $this->copyPath($source, $target, $path);
+                // The rollback cannot undo writes to the adapter. Files this attempt
+                // created are removed again, or a retry would report "target exists".
+                $created = [];
+                try {
+                    foreach ($variants as $path) {
+                        $existed = $target->fileExists($path);
+                        $this->copyPath($source, $target, $path);
+                        if (!$existed) {
+                            $created[] = $path;
+                        }
+                    }
+                    if ($needsMain) {
+                        $this->copyPath($source, $target, (string)$fresh->path, $targetPath);
+                        // A restored registered blob stays: it is the right content for its row.
+                        if ($targetPath === null) {
+                            $created[] = (string)$fresh->path;
+                        }
+                    }
+                    if ($claim === null) {
+                        throw new RuntimeException('Missing target blob claim.');
+                    }
+                    if ($targetPath === null) {
+                        $targetPath = (string)$fresh->path;
+                        $registry->recordPath($claim->id, $targetPath);
+                    }
+                    $table->updateAll(['adapter' => $targetName, 'path' => $targetPath, 'blob_id' => $claim->id], ['id' => $fresh->id]);
+                } catch (Throwable $exception) {
+                    foreach ($created as $path) {
+                        try {
+                            $target->delete($path);
+                        } catch (Throwable) {
+                            // Best effort; the original failure is what gets reported.
+                        }
+                    }
+
+                    throw $exception;
                 }
-                if ($needsMain) {
-                    $this->copyPath($source, $target, (string)$fresh->path, $targetPath);
-                }
-                if ($claim === null) {
-                    throw new RuntimeException('Missing target blob claim.');
-                }
-                if ($targetPath === null) {
-                    $targetPath = (string)$fresh->path;
-                    $registry->recordPath($claim->id, $targetPath);
-                }
-                $table->updateAll(['adapter' => $targetName, 'path' => $targetPath, 'blob_id' => $claim->id], ['id' => $fresh->id]);
                 if ($deleteSource) {
                     $result['sourceVariants'] = $variants;
                 }
