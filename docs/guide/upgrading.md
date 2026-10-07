@@ -4,6 +4,10 @@ This page covers the next major upgrade path for existing applications.
 
 ## Blob registry migration
 
+> [!TIP] Added in 5.2
+> Needed by every install, whether or not [deduplication](./deduplication) is
+> used. Nothing changes for stored files until a collection is opted in.
+
 Run `CreateFileStorageBlobs` (`20261006000000`) in the migration set that owns
 `file_storage`. For plugin-managed tables:
 

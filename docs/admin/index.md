@@ -121,6 +121,11 @@ The admin's **Cleanup** action runs the same logic as the
 rows, orphan files on disk, missing backing files), then confirm to run. Use the
 CLI for cron-driven runs.
 
+With [deduplication](/guide/deduplication) the page also lists removed blobs,
+removed stray blob files and skipped blobs. A run from this page is always a
+full cleanup, so it deletes rows without a `foreign_key` too. The blob-only
+mode is available on the command line: `bin/cake file_storage cleanup --blobsOnly`.
+
 ## Variant regeneration (optional, requires Queue)
 
 The file listing has a per-row "regenerate variants" button. It's enabled when
