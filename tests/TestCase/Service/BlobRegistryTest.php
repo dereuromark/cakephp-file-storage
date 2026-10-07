@@ -288,4 +288,15 @@ class BlobRegistryTest extends TestCase
         $this->assertSame('file_storage_blobs', $table->getTable());
         $this->assertSame([], $table->behaviors()->loaded());
     }
+
+    public function testClaimTreatsHashSpellingsAsOneBlob(): void
+    {
+        $this->connection->begin();
+        $lower = $this->registry->claim('Local', 'abcdef', new DateTime('2020-01-01'));
+        $upper = $this->registry->claim('Local', 'ABCDEF', new DateTime('2020-01-02'));
+        $this->connection->commit();
+
+        $this->assertSame($lower->id, $upper->id);
+        $this->assertSame(1, $this->countBlobs());
+    }
 }
