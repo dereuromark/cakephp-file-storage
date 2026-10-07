@@ -3,6 +3,8 @@
 namespace FileStorage\Test\TestCase\Service;
 
 use Cake\Core\Configure;
+use Cake\Database\Driver\Mysql;
+use Cake\Database\Driver\Postgres;
 use Cake\Database\Exception\QueryException;
 use Cake\Event\EventInterface;
 use Cake\Utility\Text;
@@ -240,7 +242,18 @@ class BlobImporterTest extends FileStorageTestCase
     public function testRecordPathFailureCleansUpWhileLocked(): void
     {
         $connection = $this->FileStorage->getConnection();
-        $connection->execute("CREATE TRIGGER reject_blob_path BEFORE UPDATE OF path ON file_storage_blobs BEGIN SELECT RAISE(ABORT, 'path rejected'); END");
+        $driver = $connection->getDriver();
+        if ($driver instanceof Mysql) {
+            $connection->execute("CREATE TRIGGER reject_blob_path BEFORE UPDATE ON file_storage_blobs FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'path rejected'");
+            $drop = ['DROP TRIGGER reject_blob_path'];
+        } elseif ($driver instanceof Postgres) {
+            $connection->execute("CREATE FUNCTION reject_blob_path() RETURNS trigger AS $$ BEGIN RAISE EXCEPTION 'path rejected'; END $$ LANGUAGE plpgsql");
+            $connection->execute('CREATE TRIGGER reject_blob_path BEFORE UPDATE OF path ON file_storage_blobs FOR EACH ROW EXECUTE FUNCTION reject_blob_path()');
+            $drop = ['DROP TRIGGER reject_blob_path ON file_storage_blobs', 'DROP FUNCTION reject_blob_path()'];
+        } else {
+            $connection->execute("CREATE TRIGGER reject_blob_path BEFORE UPDATE OF path ON file_storage_blobs BEGIN SELECT RAISE(ABORT, 'path rejected'); END");
+            $drop = ['DROP TRIGGER reject_blob_path'];
+        }
         $adapter = $this->createMock(FilesystemAdapter::class);
         $adapter->method('fileExists')->willReturnCallback(fn ($path) => $this->adapter->fileExists($path));
         $adapter->method('readStream')->willReturnCallback(fn ($path) => $this->adapter->readStream($path));
@@ -258,7 +271,9 @@ class BlobImporterTest extends FileStorageTestCase
             $this->assertSame(0, $this->blobCount());
             $this->assertTrue($this->adapter->fileExists('temporary/source'));
         } finally {
-            $connection->execute('DROP TRIGGER reject_blob_path');
+            foreach ($drop as $sql) {
+                $connection->execute($sql);
+            }
         }
     }
 
