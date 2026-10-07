@@ -7,12 +7,16 @@ use Cake\Core\Configure;
 use Cake\Datasource\EntityInterface;
 use Cake\Event\EventDispatcherTrait;
 use Cake\Event\EventInterface;
+use Cake\I18n\DateTime;
 use Cake\ORM\Behavior;
 use Cake\Utility\Text;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Validation\UploadValidatorInterface;
+use FileStorage\Service\BlobRegistry;
+use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
+use PhpCollective\Infrastructure\Storage\ContentHashInterface;
 use PhpCollective\Infrastructure\Storage\FileInterface;
 use PhpCollective\Infrastructure\Storage\FileStorage;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
@@ -47,6 +51,11 @@ class FileStorageBehavior extends Behavior
      * @var int
      */
     protected const HASH_CHUNK_SIZE = 1048576;
+
+    /**
+     * @var string
+     */
+    protected const DEFAULT_BLOB_ROOT = 'blobs';
 
     protected FileStorage $fileStorage;
 
@@ -150,6 +159,8 @@ class FileStorageBehavior extends Behavior
      * @param \FileStorage\Model\Entity\FileStorage $entity
      * @param \ArrayObject $options
      *
+     * @throws \RuntimeException
+     *
      * @return void
      */
     public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
@@ -162,7 +173,21 @@ class FileStorageBehavior extends Behavior
         }
 
         $this->checkEntityBeforeSave($entity);
+        $deduplicated = $this->isDeduplicated($entity->get('model'), $entity->get('collection'));
+        if ($deduplicated) {
+            if (($options['atomic'] ?? false) !== true || !$this->table()->getConnection()->inTransaction()) {
+                throw new RuntimeException('Deduplicated uploads require an atomic save inside a transaction.');
+            }
+            // Its constructor rejects an unsupported database driver.
+            new BlobRegistry($this->table());
+            if (Configure::read('FileStorage.hashAlgorithm', static::DEFAULT_HASH_ALGORITHM) !== static::DEFAULT_HASH_ALGORITHM) {
+                throw new RuntimeException('Deduplicated uploads require hashAlgorithm sha256.');
+            }
+        }
         $this->setContentHash($entity);
+        if ($deduplicated && !$entity->get('hash')) {
+            throw new RuntimeException('Deduplicated uploads require a content hash.');
+        }
 
         $this->dispatchEvent('FileStorage.beforeSave', [
             'entity' => $entity,
@@ -188,6 +213,8 @@ class FileStorageBehavior extends Behavior
         }
 
         if ($entity->isDirty()) {
+            $deduplicated = $this->isDeduplicated($entity->get('model'), $entity->get('collection'));
+            $wasNew = $entity->isNew();
             // Track the file as it moves through store → processImages → process so
             // the rollback in catch{} can delete whatever made it to disk. Without
             // this the previous behavior deleted the DB row but left the file
@@ -195,19 +222,59 @@ class FileStorageBehavior extends Behavior
             $storedFile = null;
             try {
                 $file = $this->entityToFileObject($entity);
+                if ($deduplicated && !$file instanceof ContentHashInterface) {
+                    throw new RuntimeException('Deduplicated uploads require a file implementing ContentHashInterface.');
+                }
 
-                $this->dispatchEvent('FileStorage.beforeStoringFile', [
-                    'entity' => $entity,
-                    'file' => $file,
-                ], $this->table());
-
-                $file = $this->fileStorage->store($file);
-                $storedFile = $file;
-
-                $this->dispatchEvent('FileStorage.afterStoringFile', [
-                    'entity' => $entity,
-                    'file' => $file,
-                ], $this->table());
+                if ($deduplicated) {
+                    $registry = new BlobRegistry($this->table());
+                    $claim = $registry->claim($entity->get('adapter'), $entity->get('hash'), DateTime::now());
+                }
+                if ($deduplicated && $claim->path !== null) {
+                    $file = $file->withPath($claim->path);
+                    $adapter = $this->getStorageAdapter($entity->get('adapter'));
+                    if (!$adapter->fileExists($claim->path)) {
+                        $resource = $file->resource();
+                        if ($resource === null) {
+                            throw new RuntimeException('No upload resource available to restore the blob.');
+                        }
+                        $adapter->writeStream($claim->path, $resource, new Config());
+                    }
+                    $storedFile = $file;
+                    $this->dispatchEvent('FileStorage.blobReused', [
+                        'entity' => $entity,
+                        'file' => $file,
+                    ], $this->table());
+                } else {
+                    $this->dispatchEvent('FileStorage.beforeStoringFile', [
+                        'entity' => $entity,
+                        'file' => $file,
+                    ], $this->table());
+                    if ($deduplicated) {
+                        $file = $file->withHash($entity->get('hash'));
+                        // Checked before anything is written; a wrong path would
+                        // otherwise leave a file behind that nothing cleans up.
+                        $this->assertBlobPath($this->fileStorage->buildPath($file)->path(), $entity->get('hash'));
+                    }
+                    $file = $this->fileStorage->store($file);
+                    $storedFile = $file;
+                    $this->dispatchEvent('FileStorage.afterStoringFile', [
+                        'entity' => $entity,
+                        'file' => $file,
+                    ], $this->table());
+                    if ($deduplicated) {
+                        // Again after storing: a library callback can change the path.
+                        $this->assertBlobPath($file->path(), $entity->get('hash'));
+                        $registry->recordPath($claim->id, $file->path());
+                    }
+                }
+                if ($deduplicated) {
+                    $entity->set('blob_id', $claim->id);
+                } elseif ($entity->get('blob_id') !== null) {
+                    // Opted out since the last upload: the new file is private again.
+                    $entity->set('blob_id', null);
+                }
+                $entity->set('path', $file->path());
 
                 $file = $this->processImages($file, $entity);
                 // Move the cleanup handle forward BEFORE process() runs: the
@@ -251,13 +318,23 @@ class FileStorageBehavior extends Behavior
                     $this->table()->addBehavior('FileStorage', $tableConfig);
                 }
             } catch (Throwable $exception) {
-                $this->table()->delete($entity);
+                // A deduplicated save runs in a transaction; its rollback restores
+                // the row. Deleting it here would take a replaced row with it.
+                if (!$deduplicated) {
+                    $this->table()->delete($entity);
+                }
                 if ($storedFile !== null) {
                     // Best-effort cleanup; if the storage adapter is itself the
                     // source of the failure (e.g. the bucket went away), we
                     // don't want to mask the original exception.
                     try {
-                        $this->fileStorage->remove($storedFile);
+                        if (!$deduplicated) {
+                            $this->fileStorage->remove($storedFile);
+                        } elseif ($wasNew) {
+                            // Never the blob: another upload may already share it.
+                            // On a replacement the variant paths are the old ones.
+                            $this->removeVariants($storedFile);
+                        }
                     } catch (Throwable) {
                         // Swallow: the original $exception is the real story.
                     }
@@ -422,7 +499,75 @@ class FileStorageBehavior extends Behavior
         ], $this->table());
 
         $file = $this->entityToFileObject($entity);
+        // Read from the column: an application may use its own entity class.
+        if ($entity->get('blob_id') !== null) {
+            $this->removeVariants($file);
+
+            return;
+        }
         $this->fileStorage->remove($file);
+    }
+
+    /**
+     * A blob has to lie under the blob root and be named by its hash. Cleanup
+     * derives the lock for a blob file from its name.
+     *
+     * @param string $path
+     * @param string $hash
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
+    protected function assertBlobPath(string $path, string $hash): void
+    {
+        $root = trim(str_replace('\\', '/', Configure::read('FileStorage.deduplicate.root', static::DEFAULT_BLOB_ROOT)), '/');
+        $path = str_replace('\\', '/', $path);
+        if ($root === '' || !str_starts_with($path, $root . '/') || in_array('..', explode('/', $path), true)) {
+            throw new RuntimeException('Stored blob path is outside FileStorage.deduplicate.root.');
+        }
+        if (pathinfo($path, PATHINFO_FILENAME) !== $hash) {
+            throw new RuntimeException('Stored blob path is not named by its hash. Check hashPathTemplate.');
+        }
+    }
+
+    /**
+     * @param string|null $model
+     * @param string|null $collection
+     *
+     * @return bool
+     */
+    protected function isDeduplicated(?string $model, ?string $collection): bool
+    {
+        $collections = Configure::read('FileStorage.deduplicate.collections', false);
+        if ($collections === true) {
+            return true;
+        }
+        if (!is_array($collections) || $model === null) {
+            return false;
+        }
+        $configured = $collections[$model] ?? false;
+        if ($configured === true) {
+            return true;
+        }
+
+        return is_array($configured) && $collection !== null && ($configured[$collection] ?? false) === true;
+    }
+
+    /**
+     * @param \PhpCollective\Infrastructure\Storage\FileInterface $file
+     *
+     * @return void
+     */
+    protected function removeVariants(FileInterface $file): void
+    {
+        $adapter = $this->getStorageAdapter($file->storage());
+        foreach ($file->variants() as $variant) {
+            $path = $variant['path'] ?? null;
+            if (is_string($path) && $path !== '' && $adapter->fileExists($path)) {
+                $adapter->delete($path);
+            }
+        }
     }
 
     /**

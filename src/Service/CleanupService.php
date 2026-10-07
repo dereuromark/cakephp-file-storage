@@ -3,13 +3,19 @@
 namespace FileStorage\Service;
 
 use Cake\Core\Configure;
+use Cake\Database\Driver\Mysql;
+use Cake\Database\Driver\Postgres;
+use Cake\Database\Driver\Sqlite;
+use Cake\I18n\DateTime;
 use Cake\ORM\Locator\LocatorAwareTrait;
+use Closure;
 use Exception;
 use FileStorage\Model\Entity\FileStorage;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
+use Throwable;
 
 /**
  * Storage-tree cleanup logic, shared between the `file_storage cleanup`
@@ -30,6 +36,26 @@ class CleanupService
     use LocatorAwareTrait;
 
     /**
+     * @var string
+     */
+    protected const DEFAULT_BLOB_ROOT = 'blobs';
+
+    /**
+     * @var int
+     */
+    protected const DEFAULT_GRACE_PERIOD = 3600;
+
+    /**
+     * @var string
+     */
+    protected const BLOBS_TABLE = 'file_storage_blobs';
+
+    /**
+     * @var string
+     */
+    protected const DEFAULT_ADAPTER = 'Local';
+
+    /**
      * @param string|null $model Optional model alias filter.
      * @param string|null $collection Optional collection filter.
      * @param bool $dryRun When true, no rows or files are actually removed.
@@ -39,8 +65,6 @@ class CleanupService
     public function run(?string $model, ?string $collection, bool $dryRun): CleanupReport
     {
         $warnings = [];
-        $table = $this->fetchTable('FileStorage.FileStorage');
-
         $scopeConditions = [];
         if ($model !== null && $model !== '') {
             $scopeConditions['model'] = $model;
@@ -65,6 +89,8 @@ class CleanupService
         );
         $missingFiles = $this->collectMissingFiles($this->streamScoped($scopeConditions), $warnings);
 
+        $blobs = $this->cleanBlobs($dryRun, $warnings);
+
         return new CleanupReport(
             dryRun: $dryRun,
             checkedCount: $checkedCount,
@@ -72,6 +98,9 @@ class CleanupService
             deletedRows: $deletedRows,
             missingFiles: $missingFiles,
             warnings: $warnings,
+            deletedBlobs: $blobs['deleted'],
+            deletedStrayBlobs: $blobs['strays'],
+            skippedBlobs: $blobs['skipped'],
         );
     }
 
@@ -197,16 +226,192 @@ class CleanupService
             RecursiveIteratorIterator::SELF_FIRST,
         );
 
+        $blobRoot = str_replace('\\', '/', WWW_ROOT . $pathPrefix)
+            . trim((string)Configure::read('FileStorage.deduplicate.root', static::DEFAULT_BLOB_ROOT), '/\\') . '/';
         $deleted = [];
         foreach ($iter as $file) {
             $filePath = (string)$file;
-            if (!is_file($filePath) || isset($expected[$filePath])) {
+            if (
+                str_starts_with(str_replace('\\', '/', $filePath), $blobRoot)
+                || !is_file($filePath) || array_key_exists($filePath, $expected)
+            ) {
                 continue;
             }
 
             $deleted[] = $filePath;
             if (!$dryRun) {
                 @unlink($filePath);
+            }
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * Only the blob passes. The full run also deletes rows without a
+     * `foreign_key`, which an application that keeps standalone file rows
+     * cannot use to free blob storage.
+     *
+     * @param bool $dryRun When true, no rows or files are actually removed.
+     *
+     * @return \FileStorage\Service\CleanupReport
+     */
+    public function runBlobs(bool $dryRun): CleanupReport
+    {
+        $warnings = [];
+        $blobs = $this->cleanBlobs($dryRun, $warnings);
+
+        return new CleanupReport(
+            dryRun: $dryRun,
+            checkedCount: 0,
+            deletedFiles: [],
+            deletedRows: 0,
+            missingFiles: [],
+            warnings: $warnings,
+            deletedBlobs: $blobs['deleted'],
+            deletedStrayBlobs: $blobs['strays'],
+            skippedBlobs: $blobs['skipped'],
+        );
+    }
+
+    /**
+     * Blob sweep and stray blob files. Not scoped by model or collection,
+     * because blobs are shared between them.
+     *
+     * @param bool $dryRun
+     * @param array<int, string> $warnings Out param.
+     *
+     * @return array{deleted: array<int, string>, strays: array<int, string>, skipped: int}
+     */
+    protected function cleanBlobs(bool $dryRun, array &$warnings): array
+    {
+        $result = ['deleted' => [], 'strays' => [], 'skipped' => 0];
+        $files = $this->fetchTable('FileStorage.FileStorage');
+        $connection = $files->getConnection();
+        $driver = $connection->getDriver();
+        if (!$driver instanceof Mysql && !$driver instanceof Postgres && !$driver instanceof Sqlite) {
+            // Deduplication cannot be in use on this database.
+            return $result;
+        }
+        if (!in_array(static::BLOBS_TABLE, $connection->getSchemaCollection()->listTables(), true)) {
+            $warnings[] = 'Table `file_storage_blobs` is missing, skipping blob cleanup. Run the plugin migrations.';
+
+            return $result;
+        }
+
+        $adapterNames = $this->blobAdapterNames();
+        $registry = new BlobRegistry($files);
+        $olderThan = DateTime::now()->subSeconds(
+            (int)Configure::read('FileStorage.deduplicate.gracePeriod', static::DEFAULT_GRACE_PERIOD),
+        );
+        $deleteFile = static function (string $name, string $path): void {
+            $storage = Configure::read('FileStorage.behaviorConfig.fileStorage');
+            if ($storage === null) {
+                throw new RuntimeException('FileStorage adapter not configured.');
+            }
+            $adapter = $storage->getStorage($name);
+            if ($adapter->fileExists($path)) {
+                $adapter->delete($path);
+            }
+        };
+        $sweep = $registry->sweep($olderThan, $deleteFile, $dryRun);
+        $warnings = array_merge($warnings, $sweep['warnings']);
+        $result['deleted'] = $sweep['deleted'];
+        $result['skipped'] = $sweep['skipped'];
+        $result['strays'] = $this->removeStrayBlobs(
+            $adapterNames,
+            $registry,
+            $olderThan,
+            $deleteFile,
+            $dryRun,
+            $warnings,
+            $result['skipped'],
+        );
+
+        return $result;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function blobAdapterNames(): array
+    {
+        $files = $this->fetchTable('FileStorage.FileStorage');
+        $blobs = $this->fetchTable('FileStorage.FileStorageBlobs');
+        // The default adapter is always scanned: a first upload that rolled back
+        // leaves a file there without any row naming the adapter.
+        $default = Configure::read('FileStorage.behaviorConfig.defaultStorageConfig', static::DEFAULT_ADAPTER);
+        $names = is_string($default) && $default !== '' ? [$default => true] : [];
+        foreach ([$files, $blobs] as $table) {
+            foreach ($table->find()->select(['adapter'])->distinct(['adapter']) as $row) {
+                if ($row->get('adapter') !== null && $row->get('adapter') !== '') {
+                    $names[(string)$row->get('adapter')] = true;
+                }
+            }
+        }
+
+        return array_keys($names);
+    }
+
+    /**
+     * @param array<int, string> $adapterNames
+     * @param \FileStorage\Service\BlobRegistry $registry
+     * @param \Cake\I18n\DateTime $olderThan
+     * @param \Closure(string, string): void $deleteFile
+     * @param bool $dryRun
+     * @param array<int, string> $warnings
+     * @param int $skipped
+     *
+     * @return array<int, string>
+     */
+    protected function removeStrayBlobs(array $adapterNames, BlobRegistry $registry, DateTime $olderThan, Closure $deleteFile, bool $dryRun, array &$warnings, int &$skipped): array
+    {
+        $blobs = $this->fetchTable('FileStorage.FileStorageBlobs');
+        $deleted = [];
+        foreach ($adapterNames as $name) {
+            try {
+                $storage = Configure::read('FileStorage.behaviorConfig.fileStorage');
+                if ($storage === null) {
+                    throw new RuntimeException('FileStorage adapter not configured.');
+                }
+                $adapter = $storage->getStorage($name);
+                $root = (string)Configure::read('FileStorage.deduplicate.root', static::DEFAULT_BLOB_ROOT);
+                foreach ($adapter->listContents($root, true) as $file) {
+                    if (!$file->isFile()) {
+                        continue;
+                    }
+                    $path = $file->path();
+                    if ($file->lastModified() === null) {
+                        $warnings[] = sprintf('Unknown modification time for blob file %s on %s.', $path, $name);
+                        $skipped++;
+
+                        continue;
+                    }
+                    if ($file->lastModified() >= $olderThan->getTimestamp()) {
+                        continue;
+                    }
+                    if ($blobs->exists(['adapter' => $name, 'path' => $path])) {
+                        continue;
+                    }
+                    $hash = pathinfo($path, PATHINFO_FILENAME);
+                    if (!preg_match('/^[a-f0-9]{64}$/iD', $hash)) {
+                        $warnings[] = sprintf('Invalid hash in blob file %s on %s.', $path, $name);
+                        $skipped++;
+
+                        continue;
+                    }
+                    try {
+                        if ($dryRun || $registry->removeStray($name, $hash, $path, $deleteFile)) {
+                            $deleted[] = $path;
+                        } else {
+                            $skipped++;
+                        }
+                    } catch (Throwable $exception) {
+                        $warnings[] = sprintf('Could not delete stray blob %s on %s: %s', $path, $name, $exception->getMessage());
+                    }
+                }
+            } catch (Throwable $exception) {
+                $warnings[] = sprintf('Could not list blobs on %s: %s', $name, $exception->getMessage());
             }
         }
 

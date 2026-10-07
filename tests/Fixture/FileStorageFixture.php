@@ -38,6 +38,7 @@ class FileStorageFixture extends TestFixture
      */
     public $fields = [
         'id' => ['type' => 'integer', 'autoIncrement' => true],
+        'blob_id' => ['type' => 'integer', 'null' => true, 'default' => null],
         'uuid' => ['type' => 'string', 'null' => false, 'length' => 36],
         'user_id' => ['type' => 'integer', 'null' => true, 'default' => null],
         'foreign_key' => ['type' => 'integer', 'null' => true, 'default' => null],
@@ -54,9 +55,20 @@ class FileStorageFixture extends TestFixture
         'metadata' => ['type' => 'json', 'null' => true, 'default' => null],
         'created' => ['type' => 'datetime', 'null' => true, 'default' => null],
         'modified' => ['type' => 'datetime', 'null' => true, 'default' => null],
+        '_indexes' => [
+            'blob_id' => ['type' => 'index', 'columns' => ['blob_id']],
+            'hash' => ['type' => 'index', 'columns' => ['hash']],
+        ],
         '_constraints' => [
             'primary' => ['type' => 'primary', 'columns' => ['id']],
             'uuid' => ['type' => 'unique', 'columns' => ['uuid']],
+            'blob_id_fk' => [
+                'type' => 'foreign',
+                'columns' => ['blob_id'],
+                'references' => ['file_storage_blobs', 'id'],
+                'delete' => 'restrict',
+                'update' => 'noAction',
+            ],
         ],
     ];
 
@@ -67,6 +79,7 @@ class FileStorageFixture extends TestFixture
      */
     public array $records = [
         [
+            'blob_id' => null,
             'uuid' => '10000000-0000-4000-8000-000000000001',
             'user_id' => 1,
             'foreign_key' => 1,
@@ -84,6 +97,7 @@ class FileStorageFixture extends TestFixture
             'modified' => '2012-01-01 12:00:00',
         ],
         [
+            'blob_id' => null,
             'uuid' => '10000000-0000-4000-8000-000000000002',
             'user_id' => 1,
             'foreign_key' => 1,
@@ -101,6 +115,7 @@ class FileStorageFixture extends TestFixture
             'modified' => '2012-01-01 12:00:00',
         ],
         [
+            'blob_id' => null,
             'uuid' => '10000000-0000-4000-8000-000000000003',
             'user_id' => 1,
             'foreign_key' => 2,
@@ -118,6 +133,7 @@ class FileStorageFixture extends TestFixture
             'modified' => '2012-01-01 12:00:00',
         ],
         [
+            'blob_id' => null,
             'uuid' => '10000000-0000-4000-8000-000000000004',
             'user_id' => 1,
             'foreign_key' => 4,

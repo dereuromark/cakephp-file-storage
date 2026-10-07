@@ -11,6 +11,7 @@ you can copy from.
 |-----|------|---------|---------|
 | `pathPrefix` | `string` | `'img/'` | Prefix prepended to generated image paths/URLs. |
 | `hashAlgorithm` | `string\|false` | `'sha256'` | Algorithm for the [content hash](#hashalgorithm) stored with each upload. |
+| `deduplicate` | `array` | `['collections' => false, 'gracePeriod' => 3600, 'root' => 'blobs']` | Share identical uploads per adapter. |
 | `signatureSecret` | `string` | `Security.salt` | HMAC secret for [signed URLs](/serving/signed-urls). |
 | `adminAccess` | `bool\|Closure\|null` | `null` | [Admin backend](#admin) access gate (fail-closed). |
 | `standalone` | `bool` | `false` | Run the admin backend independent of your `AppController`. |
@@ -76,6 +77,14 @@ a `RuntimeException` on save. Set it to `false` to skip hashing; replacing the
 file on an existing row then clears that row's `hash`.
 
 Existing rows are not hashed retroactively. Their `hash` stays as it was, usually `null`.
+
+## Deduplication
+
+`deduplicate` controls collection selection, the cleanup
+[grace period](/guide/deduplication#graceperiod) (how long an unused stored file
+is kept before cleanup removes it), and the blob root. It requires SHA-256 hashes, atomic saves, and the blob migration.
+See [Deduplication](/guide/deduplication) for configuration forms, database
+support, and scheduled cleanup.
 
 ## Signed URLs
 

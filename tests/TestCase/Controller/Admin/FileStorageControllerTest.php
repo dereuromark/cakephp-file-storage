@@ -246,6 +246,9 @@ class FileStorageControllerTest extends TestCase
         $report = $this->viewVariable('report');
         $this->assertInstanceOf(CleanupReport::class, $report);
         $this->assertTrue($report->dryRun);
+        $this->assertResponseContains('Blobs (would delete)');
+        $this->assertResponseContains('Stray blob files (would delete)');
+        $this->assertResponseContains('Blobs skipped');
     }
 
     /**

@@ -76,6 +76,63 @@ $isValid = SignedUrlGenerator::verify($fileStorage, $signature, [
 Log::debug('Signature valid: ' . ($isValid ? 'yes' : 'no'));
 ```
 
+## Deduplication
+
+### "Deduplicated uploads require an atomic save inside a transaction"
+
+The row is saved with `'atomic' => false`, or through code that bypasses
+`Table::save()`'s transaction. A deduplicated upload holds a database lock until
+the save commits, so it needs one. Save with the default options.
+
+### "Deduplicated uploads require hashAlgorithm sha256"
+
+`FileStorage.hashAlgorithm` is set to another algorithm or to `false`. Set it
+back to `'sha256'`, or take the collection out of `deduplicate.collections`.
+
+### "Deduplicated uploads require a content hash"
+
+The upload could not be read to hash it: a failed upload, or a stream that is
+neither backed by a file nor seekable.
+
+### "Stored blob path is outside FileStorage.deduplicate.root"
+
+The path builder put the file somewhere else than the configured blob
+directory. Make `hashPathTemplate` start with the value of `deduplicate.root`
+(both default to `blobs`). With a `ConditionalPathBuilder`, every builder that
+can be picked for an opted-in collection needs such a template.
+
+### Uploads of the same file are not shared
+
+- The collection is not opted in. Keys in `deduplicate.collections` are the
+  values stored in `file_storage.model` and `file_storage.collection`.
+- The first copy was stored before deduplication was switched on. See
+  [Existing files](/guide/deduplication#existing-files).
+- The files are on different adapters. Blobs are shared per adapter.
+
+### Storage does not shrink after deleting files
+
+Blobs are removed by `bin/cake file_storage cleanup`, and only after the
+[grace period](/guide/deduplication#graceperiod). Schedule it, and use
+`--blobsOnly` if you keep rows without a `foreign_key`.
+
+### Cleanup warns that `file_storage_blobs` is missing
+
+Run the plugin migrations: `bin/cake migrations migrate -p FileStorage`.
+
+### Lock wait timeouts or deadlocks during uploads
+
+Two uploads of the same content wait for each other, and the wait covers variant
+processing. A request that saves several files can deadlock with another one
+saving the same files in a different order; the database aborts one of them.
+Retry the request. See [Limits](/guide/deduplication#limits).
+
+### "Stored blob path is not named by its hash"
+
+The file name of a blob has to be its hash, as in the default
+`blobs{ds}{hashPath}{ds}{hash}.{extension}`. Cleanup finds the lock for a blob
+file through that name. Put `{hash}` into directories as you like, but keep it
+as the file name too.
+
 ## FAQ
 
 **Can I serve files without going through a controller?**

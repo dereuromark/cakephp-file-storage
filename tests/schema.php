@@ -43,4 +43,8 @@ foreach ($iterator as $file) {
     $tables[$tableName] = $table;
 }
 
-return $tables;
+// Referenced tables must exist before PostgreSQL creates foreign keys.
+$blobs = $tables['file_storage_blobs'];
+unset($tables['file_storage_blobs']);
+
+return ['file_storage_blobs' => $blobs] + $tables;

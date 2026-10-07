@@ -22,7 +22,7 @@ $this->assign('title', __d('file_storage', 'Cleanup'));
             <?= $this->Form->control('model', [
                 'type' => 'select',
                 'options' => array_combine($models, $models),
-                'empty' => __d('file_storage', '— all —'),
+                'empty' => __d('file_storage', 'All'),
                 'value' => $previewModel,
                 'label' => false,
                 'class' => 'form-select',
@@ -47,7 +47,7 @@ $this->assign('title', __d('file_storage', 'Cleanup'));
     </div>
 </div>
 
-<?php if ($report instanceof CleanupReport): ?>
+<?php if ($report instanceof CleanupReport) { ?>
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="fas fa-clipboard-list me-2"></i><?= __d('file_storage', 'Dry-run report') ?></span>
@@ -67,46 +67,58 @@ $this->assign('title', __d('file_storage', 'Cleanup'));
                     <span><i class="fas fa-question-circle me-2 text-info"></i><?= __d('file_storage', 'Rows with missing backing files') ?></span>
                     <span class="badge bg-info text-dark"><?= number_format(count($report->missingFiles)) ?></span>
                 </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><?= __d('file_storage', 'Blobs (would delete)') ?></span>
+                    <span class="badge bg-warning text-dark"><?= number_format(count($report->deletedBlobs)) ?></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><?= __d('file_storage', 'Stray blob files (would delete)') ?></span>
+                    <span class="badge bg-warning text-dark"><?= number_format(count($report->deletedStrayBlobs)) ?></span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span><?= __d('file_storage', 'Blobs skipped') ?></span>
+                    <span class="badge bg-warning text-dark"><?= number_format($report->skippedBlobs) ?></span>
+                </li>
             </ul>
 
-            <?php if ($report->warnings): ?>
+            <?php if ($report->warnings) { ?>
                 <div class="alert alert-warning">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     <ul class="mb-0">
-                        <?php foreach ($report->warnings as $warning): ?>
+                        <?php foreach ($report->warnings as $warning) { ?>
                             <li><?= h($warning) ?></li>
-                        <?php endforeach; ?>
+                        <?php } ?>
                     </ul>
                 </div>
-            <?php endif; ?>
+            <?php } ?>
 
-            <?php if ($report->deletedFiles): ?>
+            <?php if ($report->deletedFiles) { ?>
                 <details class="mb-3">
                     <summary><?= __d('file_storage', 'Show {0} orphan file paths', count($report->deletedFiles)) ?></summary>
                     <pre class="small mb-0"><?php foreach ($report->deletedFiles as $path) {
                         echo h($path) . "\n";
                     } ?></pre>
                 </details>
-            <?php endif; ?>
+            <?php } ?>
 
-            <?php if ($report->missingFiles): ?>
+            <?php if ($report->missingFiles) { ?>
                 <details class="mb-3">
                     <summary><?= __d('file_storage', 'Show {0} rows with missing files', count($report->missingFiles)) ?></summary>
                     <table class="table table-sm">
                         <thead><tr><th><?= __d('file_storage', 'Row id') ?></th><th><?= __d('file_storage', 'Missing variants') ?></th></tr></thead>
                         <tbody>
-                            <?php foreach ($report->missingFiles as $row): ?>
+                            <?php foreach ($report->missingFiles as $row) { ?>
                                 <tr>
                                     <td><?= h($row['id']) ?></td>
                                     <td><?= h(implode(', ', $row['missing'])) ?></td>
                                 </tr>
-                            <?php endforeach; ?>
+                            <?php } ?>
                         </tbody>
                     </table>
                 </details>
-            <?php endif; ?>
+            <?php } ?>
 
-            <?php if ($report->deletedRows > 0 || $report->deletedFiles): ?>
+            <?php if ($report->deletedRows > 0 || $report->deletedFiles || $report->deletedBlobs || $report->deletedStrayBlobs) { ?>
                 <?= $this->Form->postButton(
                     '<i class="fas fa-trash me-1"></i>' . __d('file_storage', 'Run cleanup now'),
                     ['action' => 'cleanup'],
@@ -119,11 +131,11 @@ $this->assign('title', __d('file_storage', 'Cleanup'));
                         ],
                     ],
                 ) ?>
-            <?php else: ?>
+            <?php } else { ?>
                 <div class="alert alert-success mb-0">
-                    <i class="fas fa-check-circle me-2"></i><?= __d('file_storage', 'Nothing to clean up — storage is in sync.') ?>
+                    <i class="fas fa-check-circle me-2"></i><?= __d('file_storage', 'Nothing to clean up. Storage is in sync.') ?>
                 </div>
-            <?php endif; ?>
+            <?php } ?>
         </div>
     </div>
-<?php endif; ?>
+<?php } ?>

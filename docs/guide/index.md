@@ -58,4 +58,5 @@ using a path builder class.
 - [Upgrading](./upgrading) — migrate existing apps to the next major schema.
 - [Quick Start](./quick-start) — add an avatar upload end to end.
 - [Usage](./usage) — the core concepts, associations, and upload flow.
+- [Deduplication](./deduplication) - store identical uploads once.
 - [Serving files](/serving/) — generate URLs and serve files with authorization.

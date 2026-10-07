@@ -12,6 +12,7 @@ function guideSidebar() {
         { text: 'Usage', link: '/guide/usage' },
         { text: 'Validation', link: '/guide/validation' },
         { text: 'Paths and URLs', link: '/guide/paths-and-urls' },
+        { text: 'Deduplication', link: '/guide/deduplication' },
       ],
     },
     {
@@ -80,6 +81,7 @@ export default defineConfig({
             { text: 'Configuration', link: '/reference/' },
             { text: 'Behavior Options', link: '/reference/behavior' },
             { text: 'Console Commands', link: '/reference/commands' },
+            { text: 'Events', link: '/reference/events' },
             { text: 'Troubleshooting', link: '/reference/troubleshooting' },
           ],
         },
