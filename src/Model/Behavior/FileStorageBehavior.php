@@ -14,6 +14,7 @@ use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
 use FileStorage\Model\Validation\UploadValidatorInterface;
 use FileStorage\Service\BlobRegistry;
+use FileStorage\Service\DeduplicationConfig;
 use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
 use PhpCollective\Infrastructure\Storage\ContentHashInterface;
@@ -515,19 +516,7 @@ class FileStorageBehavior extends Behavior
      */
     protected function isDeduplicated(?string $model, ?string $collection): bool
     {
-        $collections = Configure::read('FileStorage.deduplicate.collections', false);
-        if ($collections === true) {
-            return true;
-        }
-        if (!is_array($collections) || $model === null) {
-            return false;
-        }
-        $configured = $collections[$model] ?? false;
-        if ($configured === true) {
-            return true;
-        }
-
-        return is_array($configured) && $collection !== null && ($configured[$collection] ?? false) === true;
+        return DeduplicationConfig::isEnabled($model, $collection);
     }
 
     /**
