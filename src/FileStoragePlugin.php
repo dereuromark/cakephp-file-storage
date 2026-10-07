@@ -6,6 +6,7 @@ use Cake\Console\CommandCollection;
 use Cake\Core\BasePlugin;
 use Cake\Routing\RouteBuilder;
 use FileStorage\Command\CleanupCommand;
+use FileStorage\Command\DeduplicateCommand;
 use FileStorage\Command\ImageVariantGenerateCommand;
 use FileStorage\Command\MigrateAdapterCommand;
 
@@ -72,6 +73,7 @@ class FileStoragePlugin extends BasePlugin
     public function console(CommandCollection $commands): CommandCollection
     {
         $commands->add('file_storage cleanup', CleanupCommand::class);
+        $commands->add('file_storage deduplicate', DeduplicateCommand::class);
         $commands->add('file_storage generate_image_variant', ImageVariantGenerateCommand::class);
         $commands->add('file_storage migrate_adapter', MigrateAdapterCommand::class);
 

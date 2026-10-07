@@ -49,3 +49,19 @@ not run for an upload that reuses stored content. Listen on
 | Event | Data | When |
 |-------|------|------|
 | `FileStorage.afterDelete` | `entity` | After the row was deleted, before its files are removed. |
+
+## Existing-file conversion
+
+`FileStorage.blobConverted` fires once per committed conversion by
+`file_storage deduplicate`. Its subject is the file storage table. Data:
+
+| Key | Value |
+|-----|-------|
+| `id` | Converted row id. |
+| `oldPath` | Previous path, whose file is kept. |
+| `path` | Verified blob path now stored on the row. |
+| `adapter` | Row's storage adapter name. |
+| `hash` | SHA-256 computed from source bytes. |
+
+The event fires after the database commit. Listener exceptions are reported
+as warnings; the row stays converted. Hash-only and dry runs do not fire it.

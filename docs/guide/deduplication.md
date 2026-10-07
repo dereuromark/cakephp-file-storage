@@ -116,9 +116,64 @@ already stored stay exactly where they are.
 - Replacing the file on an old row in an opted-in collection moves that row to
   a blob. Its previous file is not removed by that save.
 
-There is no command yet that hashes existing rows or merges existing
-duplicates into blobs. Until there is, deduplication saves storage for content
-uploaded after you switch it on.
+Use `bin/cake file_storage deduplicate` to convert old rows in opted-in
+collections. It hashes each source from its bytes, verifies a blob copy, and
+updates the row in a transaction. Variants and `modified` stay unchanged.
+The source files are kept. An occupied destination with different bytes fails
+that row without overwriting anything. There is no undo.
+
+Start with a scoped preview, then choose hashing alone or conversion:
+
+```bash
+bin/cake file_storage deduplicate Items Photos --dryRun
+# Only if you want hashes without conversion:
+bin/cake file_storage deduplicate Items Photos --hashOnly
+bin/cake file_storage deduplicate Items Photos --limit 100 --manifest /var/log/file-conversions.tsv
+bin/cake file_storage deduplicate Items Photos --manifest /var/log/file-conversions.tsv
+# On the local adapter, after conversion has finished:
+bin/cake file_storage cleanup --dryRun
+bin/cake file_storage cleanup
+```
+
+`--hashOnly` fills empty hashes for any collection using the configured valid
+`hashAlgorithm`. Conversion requires SHA-256 and the blob registry migration.
+Dry runs read row metadata only; their duplicate count is an estimate from
+stored hashes. A limit counts attempted rows, including skipped and failed rows.
+Each run stops at the highest row id it saw at startup; rerun it for new
+rows or rows that became eligible after its cursor passed them.
+
+`--manifest` appends a tab separated line for each committed conversion:
+row id, adapter, old path, new path, hash. It opens the local file before
+processing rows and flushes each line. Keep this manifest: on adapters other
+than the local one, later removal of old files has to work from it. Dry runs
+do not create or append a manifest.
+
+A source is downloaded once. A new blob is uploaded once, then read back at
+both its temporary and final paths. Existing destinations are also read and
+hashed before reuse. Each row holds its database locks throughout this work.
+SQLite requires exclusive database use while the command runs.
+
+Serving-controller URLs keep working. Signed URLs issued before conversion
+stop working for converted rows because the signature includes the path.
+Direct URLs to the old path work while the old file is kept.
+
+::: warning Storage and reserved paths
+Storage grows by the size of distinct converted content until old files are
+removed. The command never deletes old files. Full cleanup removes
+unreferenced old files on the local adapter; there is no automatic removal
+on other adapters yet. Keep the manifest for later removal there.
+No `pathTemplate` or `variantPathTemplate` may place files under the blob root.
+That directory is reserved for blobs. Legacy rows there are skipped.
+The `hashPathTemplate` must name each blob by its hash under the blob root,
+outside its `.tmp/` directory.
+:::
+
+::: warning Cleanup during conversion
+Do not run `file_storage cleanup` while conversion is running. Run cleanup
+when traffic is low. A request that loaded a row just before conversion can
+fail once if cleanup removes its old file immediately afterward. Full cleanup
+also removes rows without a `foreign_key`; preview its effects first.
+:::
 
 Switching it off again is safe. Rows that point at a blob keep working, new
 uploads get their own file again, and cleanup still removes blobs once nothing
@@ -168,6 +223,8 @@ rows and files together. A failed file deletion keeps the blob row and reports
 a warning. It also scans the blob root for old files with no matching blob row,
 using a database lock before deleting them. Unknown modification times and
 filenames without a 64-character hex hash produce warnings and are skipped.
+Files under `.tmp/` are skipped while young; old `.part` files there are
+removed as crash leftovers without claiming a blob lock.
 That scan covers the default adapter and every adapter named in a file or blob
 row. An adapter that only ever saw failed uploads is not scanned.
 
@@ -190,8 +247,8 @@ until cleanup can remove them. `--dryRun` makes no claims or writes.
 
 ## Limits
 
-Deduplication does not skip the upload, merge existing duplicates, deduplicate
-variants, or isolate blobs by tenant. Rows sharing a blob share its direct URL.
+Deduplication does not skip the upload, deduplicate variants, or isolate blobs
+by tenant. Existing duplicates are merged only by the conversion command. Rows sharing a blob share its direct URL.
 Duplicate uploads finish faster, which can reveal that content already exists.
 
 Variant paths depend on the UUID, filename, and variant name. Replacing a file

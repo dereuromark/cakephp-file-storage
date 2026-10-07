@@ -54,6 +54,81 @@ bin/cake file_storage cleanup --dryRun
 bin/cake file_storage cleanup Posts Cover
 ```
 
+## `file_storage deduplicate`
+
+Converts existing rows in opted-in collections to shared blobs, keeping every
+old source file. It never deletes old files or changes variants.
+
+```bash
+bin/cake file_storage deduplicate [model] [collection] [options]
+```
+
+### Arguments and options
+
+`model` and `collection` optionally filter the persisted row values.
+
+| Option | Description |
+|--------|-------------|
+| `--dryRun`, `-d` | Read metadata only. Report candidate rows, bytes, empty hashes, and estimated duplicates from stored hashes. |
+| `--hashOnly` | Fill empty hashes without conversion, for any collection and any valid configured hash algorithm whose digest fits the column. |
+| `--limit N` | Attempt at most N rows, including skips and failures. N must be positive. |
+| `--manifest <file>` | Append row id, adapter, old path, new path, and hash to a local tab separated file for each committed conversion. Flush each line. Dry runs do not write it. |
+
+### Conversion steps
+
+1. Check storage configuration, SHA-256, a supported database, and the blob
+   registry migration. Read the highest row id and use batches of 100,
+   ordered by id. Rows above that id wait for the next run.
+2. Skip collections that are not opted in and paths under the reserved blob root.
+   Lock each candidate row and recheck its path, adapter, and blob reference.
+3. Download the source to a local temporary copy while hashing its bytes.
+   Check the adapter's size against bytes read; warn if the row's size differs.
+4. Claim the hash on that adapter under the blob lock. Resolve its registered
+   path, or build one using `hashPathTemplate`. Require a filename equal to the
+   hash under the blob root, outside `.tmp/`.
+5. Hash an existing destination before reuse. Different bytes fail the row
+   without changing that file. For a missing destination, upload under
+   `<root>/.tmp/`, read back and hash, move to the final path, and read back and
+   hash again.
+6. Register the blob path, update `path`, `blob_id`, and `hash` conditionally,
+   read the row back, and commit. Keep `modified` and variants unchanged.
+7. Append to the manifest if requested and dispatch `FileStorage.blobConverted`
+   after commit. A listener failure is a warning, not a failed conversion.
+
+`--hashOnly` only updates an empty hash while the row still has the same source
+path and adapter. It writes nothing to storage. Conversion recomputes the hash
+even when a stored value already exists. Row failures are reported and the run
+continues. Preconditions and configuration errors return an error exit code;
+ordinary row failures do not. Detail samples are capped at 50 per category,
+with totals reported separately.
+
+### Costs and URLs
+
+Each candidate is downloaded once. A new blob is uploaded once and read back
+twice, at its temporary and final paths. Existing destinations are read once
+for verification. Database locks stay held during a row's storage operations.
+There is no undo. SQLite requires exclusive database use during the run.
+
+Serving-controller URLs keep working. Signed URLs issued before conversion
+stop working for converted rows because their signature includes the old path.
+Direct URLs to the old path work while the old file is kept.
+
+::: warning Storage and reserved paths
+Storage grows until old files are removed. This command never removes them.
+Full `file_storage cleanup` removes unreferenced old files on the local adapter.
+On other adapters there is no automatic removal yet; keep the manifest as the
+record of old paths that later removal must work from.
+No `pathTemplate` or `variantPathTemplate` may place files under the blob root.
+The directory is reserved for blobs; legacy rows there are skipped.
+:::
+
+::: warning Cleanup during conversion
+Do not run `file_storage cleanup` while conversion is running. Run cleanup
+when traffic is low. A request that loaded a row just before conversion can
+fail once if cleanup removes the old file immediately afterward. Preview full
+cleanup first: it also deletes rows without a `foreign_key`.
+:::
+
 ## `file_storage generate_image_variant`
 
 Generates, regenerates, and manages image variants for stored files. This command

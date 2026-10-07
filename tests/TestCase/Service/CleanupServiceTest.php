@@ -91,6 +91,30 @@ class CleanupServiceTest extends FileStorageTestCase
         $this->assertSame($dryRun ? 3 : 2, $this->fetchTable('FileStorage.FileStorageBlobs')->find()->count());
     }
 
+    #[DataProvider('temporaryModes')]
+    public function testTemporaryCrashLeftovers(bool $dryRun): void
+    {
+        $old = 'blobs/.tmp/' . hash('sha256', 'old') . '.0123456789abcdef.part';
+        $young = 'blobs/.tmp/' . hash('sha256', 'young') . '.0123456789abcdef.part';
+        $other = 'blobs/.tmp/other.txt';
+        touch($this->_createMockFile($old), time() - 7200);
+        touch($this->_createMockFile($young));
+        touch($this->_createMockFile($other), time() - 7200);
+        $report = (new CleanupService())->runBlobs($dryRun);
+        $this->assertSame([$old], $report->deletedStrayBlobs);
+        $this->assertSame([], $report->warnings);
+        $this->assertSame(0, $report->skippedBlobs);
+        $this->assertSame($dryRun, is_file($this->testPath . $old));
+        $this->assertFileExists($this->testPath . $young);
+        $this->assertFileExists($this->testPath . $other);
+        $this->assertSame(0, $this->fetchTable('FileStorage.FileStorageBlobs')->find()->count());
+    }
+
+    public static function temporaryModes(): array
+    {
+        return [[false], [true]];
+    }
+
     public function testDeleteFailureKeepsBlobRow(): void
     {
         $path = $this->blob('failed');
