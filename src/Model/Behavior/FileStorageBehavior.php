@@ -253,6 +253,9 @@ class FileStorageBehavior extends Behavior
                     ], $this->table());
                     if ($deduplicated) {
                         $file = $file->withHash($entity->get('hash'));
+                        // Checked before anything is written; a wrong path would
+                        // otherwise leave a file behind that nothing cleans up.
+                        $this->assertBlobPath($this->fileStorage->buildPath($file)->path(), $entity->get('hash'));
                     }
                     $file = $this->fileStorage->store($file);
                     $storedFile = $file;
@@ -261,11 +264,8 @@ class FileStorageBehavior extends Behavior
                         'file' => $file,
                     ], $this->table());
                     if ($deduplicated) {
-                        $root = trim(str_replace('\\', '/', Configure::read('FileStorage.deduplicate.root', static::DEFAULT_BLOB_ROOT)), '/');
-                        $path = str_replace('\\', '/', $file->path());
-                        if ($root === '' || !str_starts_with($path, $root . '/') || in_array('..', explode('/', $path), true)) {
-                            throw new RuntimeException('Stored blob path is outside FileStorage.deduplicate.root.');
-                        }
+                        // Again after storing: a library callback can change the path.
+                        $this->assertBlobPath($file->path(), $entity->get('hash'));
                         $registry->recordPath($claim->id, $file->path());
                     }
                 }
@@ -506,6 +506,29 @@ class FileStorageBehavior extends Behavior
             return;
         }
         $this->fileStorage->remove($file);
+    }
+
+    /**
+     * A blob has to lie under the blob root and be named by its hash. Cleanup
+     * derives the lock for a blob file from its name.
+     *
+     * @param string $path
+     * @param string $hash
+     *
+     * @throws \RuntimeException
+     *
+     * @return void
+     */
+    protected function assertBlobPath(string $path, string $hash): void
+    {
+        $root = trim(str_replace('\\', '/', Configure::read('FileStorage.deduplicate.root', static::DEFAULT_BLOB_ROOT)), '/');
+        $path = str_replace('\\', '/', $path);
+        if ($root === '' || !str_starts_with($path, $root . '/') || in_array('..', explode('/', $path), true)) {
+            throw new RuntimeException('Stored blob path is outside FileStorage.deduplicate.root.');
+        }
+        if (pathinfo($path, PATHINFO_FILENAME) !== $hash) {
+            throw new RuntimeException('Stored blob path is not named by its hash. Check hashPathTemplate.');
+        }
     }
 
     /**
