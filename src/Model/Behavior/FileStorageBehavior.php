@@ -63,6 +63,11 @@ class FileStorageBehavior extends Behavior
      */
     protected const BLOB_TEMPORARY_DIRECTORY = '.tmp';
 
+    /**
+     * @var string
+     */
+    public const OPTION_ATTACH = 'fileStorageAttach';
+
     protected FileStorage $fileStorage;
 
     protected ?DataTransformerInterface $transformer = null;
@@ -149,6 +154,10 @@ class FileStorageBehavior extends Behavior
      */
     public function beforeMarshal(EventInterface $event, ArrayObject $data, ArrayObject $options): void
     {
+        if (($options[static::OPTION_ATTACH] ?? false) === true) {
+            return;
+        }
+
         if ($this->getConfig('fileValidator')) {
             $this->configureValidator();
         }
@@ -171,6 +180,10 @@ class FileStorageBehavior extends Behavior
      */
     public function beforeSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
     {
+        if (($options[static::OPTION_ATTACH] ?? false) === true) {
+            return;
+        }
+
         if (!$this->isFileUploadPresent($entity)) {
             $event->stopPropagation();
             $event->setResult(false);
@@ -214,6 +227,10 @@ class FileStorageBehavior extends Behavior
      */
     public function afterSave(EventInterface $event, EntityInterface $entity, ArrayObject $options): void
     {
+        if (($options[static::OPTION_ATTACH] ?? false) === true) {
+            return;
+        }
+
         if (!$this->isFileUploadPresent($entity)) {
             return;
         }
