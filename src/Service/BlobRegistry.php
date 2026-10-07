@@ -53,6 +53,7 @@ class BlobRegistry
     public function claim(string $adapter, string $hash, DateTime $now): BlobClaim
     {
         $this->requireTransaction();
+        $hash = $this->normalizeHash($hash);
         $sql = 'INSERT INTO file_storage_blobs (adapter, hash, touched, created) VALUES (:adapter, :hash, :touched, :created)';
         $params = ['adapter' => $adapter, 'hash' => $hash, 'touched' => $now, 'created' => $now];
         $types = ['touched' => 'datetime', 'created' => 'datetime'];
@@ -171,6 +172,7 @@ class BlobRegistry
     public function removeStray(string $adapter, string $hash, string $path, Closure $deleteFile): bool
     {
         $this->requireNoTransaction();
+        $hash = $this->normalizeHash($hash);
         $this->connection->begin();
         try {
             $row = $this->withLockWaitLimit(function () use ($adapter, $hash) {
@@ -308,6 +310,19 @@ class BlobRegistry
     protected function deleteRow(int $id): void
     {
         $this->connection->execute('DELETE FROM file_storage_blobs WHERE id = :id', ['id' => $id], ['id' => 'integer']);
+    }
+
+    /**
+     * The path builder lowercases the hash. Two spellings of one digest would
+     * otherwise be two registry rows for a single file.
+     *
+     * @param string $hash
+     *
+     * @return string
+     */
+    protected function normalizeHash(string $hash): string
+    {
+        return strtolower($hash);
     }
 
     protected function requireTransaction(): void
