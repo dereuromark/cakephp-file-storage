@@ -390,6 +390,25 @@ class CleanupService
                     if ($file->lastModified() >= $olderThan->getTimestamp()) {
                         continue;
                     }
+                    $temporaryRoot = trim(str_replace('\\', '/', $root), '/') . '/.tmp/';
+                    if (str_starts_with(str_replace('\\', '/', $path), $temporaryRoot)) {
+                        // A path a blob row points at is never a leftover, whatever its name.
+                        if ($blobs->exists(['adapter' => $name, 'path' => $path])) {
+                            continue;
+                        }
+                        if (pathinfo($path, PATHINFO_EXTENSION) === 'part') {
+                            try {
+                                if (!$dryRun) {
+                                    $deleteFile($name, $path);
+                                }
+                                $deleted[] = $path;
+                            } catch (Throwable $exception) {
+                                $warnings[] = sprintf('Could not delete temporary blob %s on %s: %s', $path, $name, $exception->getMessage());
+                            }
+                        }
+
+                        continue;
+                    }
                     if ($blobs->exists(['adapter' => $name, 'path' => $path])) {
                         continue;
                     }

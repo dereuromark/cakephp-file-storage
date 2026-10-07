@@ -7,7 +7,6 @@ use Cake\Database\Driver\Mysql;
 use Cake\Database\Driver\Postgres;
 use Cake\I18n\DateTime;
 use Cake\ORM\Locator\LocatorAwareTrait;
-use Exception;
 use FileStorage\Model\Entity\FileStorage;
 use League\Flysystem\Config;
 use League\Flysystem\FilesystemAdapter;
@@ -75,30 +74,44 @@ class AdapterMigrationService
                 continue;
             }
 
-            $paths = $this->pathsFor($entity);
-            if (!$paths) {
-                $skippedRows[] = sprintf('ID %s has no path data.', $entity->id);
-
-                continue;
-            }
-
-            $missing = $this->missingPaths($source, $paths);
-            if ($missing) {
-                $missingFiles[] = sprintf('ID %s missing: %s', $entity->id, implode(', ', $missing));
-
-                continue;
-            }
-
-            if (!$overwrite) {
-                $existing = $this->existingPaths($target, $paths);
-                if ($existing) {
-                    $skippedRows[] = sprintf('ID %s target exists: %s', $entity->id, implode(', ', $existing));
-
-                    continue;
+            $table = $this->fetchTable('FileStorage.FileStorage');
+            $migratedPaths = null;
+            $operation = function () use ($table, $entity, $source, $target, $targetAdapter, $dryRun, $overwrite, &$skippedRows, &$missingFiles, &$migratedPaths): void {
+                $query = $table->find()->where(['id' => $entity->id]);
+                $driver = $table->getConnection()->getDriver();
+                if (!$dryRun && ($driver instanceof Mysql || $driver instanceof Postgres)) {
+                    $query->epilog('FOR UPDATE');
                 }
-            }
+                $fresh = $query->first();
+                if (!$fresh instanceof FileStorage || $fresh->path !== $entity->path || $fresh->adapter !== $entity->adapter || $fresh->blob_id !== $entity->blob_id) {
+                    $skippedRows[] = sprintf('ID %s path, adapter or blob reference changed.', $entity->id);
 
-            try {
+                    return;
+                }
+                $entity = $fresh;
+                $paths = $this->pathsFor($entity);
+                if (!$paths) {
+                    $skippedRows[] = sprintf('ID %s has no path data.', $entity->id);
+
+                    return;
+                }
+
+                $missing = $this->missingPaths($source, $paths);
+                if ($missing) {
+                    $missingFiles[] = sprintf('ID %s missing: %s', $entity->id, implode(', ', $missing));
+
+                    return;
+                }
+
+                if (!$overwrite) {
+                    $existing = $this->existingPaths($target, $paths);
+                    if ($existing) {
+                        $skippedRows[] = sprintf('ID %s target exists: %s', $entity->id, implode(', ', $existing));
+
+                        return;
+                    }
+                }
+
                 if (!$dryRun) {
                     foreach ($paths as $path) {
                         $this->copyPath($source, $target, $path);
@@ -108,19 +121,29 @@ class AdapterMigrationService
                         ['adapter' => $targetAdapter],
                         ['id' => $entity->id],
                     );
-
-                    if ($deleteSource) {
-                        foreach ($paths as $path) {
-                            $source->delete($path);
-                            $deletedSourceFiles++;
-                        }
-                    }
                 }
 
-                $copiedFiles += count($paths);
+                $migratedPaths = $paths;
+            };
+            try {
+                if ($dryRun) {
+                    $operation();
+                } else {
+                    $table->getConnection()->transactional($operation);
+                }
+                if ($migratedPaths === null) {
+                    continue;
+                }
+                if (!$dryRun && $deleteSource) {
+                    foreach ($migratedPaths as $path) {
+                        $source->delete($path);
+                        $deletedSourceFiles++;
+                    }
+                }
+                $copiedFiles += count($migratedPaths);
                 $migratedRows++;
-            } catch (Exception $e) {
-                $failures[] = sprintf('ID %s failed: %s', $entity->id, $e->getMessage());
+            } catch (Throwable $exception) {
+                $failures[] = sprintf('ID %s failed: %s', $entity->id, $exception->getMessage());
             }
         }
 
