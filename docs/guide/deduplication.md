@@ -76,6 +76,29 @@ The delay exists for two reasons:
 A larger value keeps unused files on storage longer. A smaller value frees
 storage sooner. Do not set it below the duration of your slowest upload.
 
+## Existing files
+
+Enabling deduplication changes how new uploads are stored. Files that are
+already stored stay exactly where they are.
+
+- Rows uploaded before keep their path and have no `blob_id`. They are served,
+  replaced and deleted as before.
+- They are not matched against new uploads. Uploading a copy of an old file
+  stores that content once more, as a blob, and only later uploads of the same
+  bytes share it.
+- Rows from before 5.1 also have no `hash`, because the plugin did not write
+  one then.
+- Replacing the file on an old row in an opted-in collection moves that row to
+  a blob. Its previous file is not removed by that save.
+
+There is no command yet that hashes existing rows or merges existing
+duplicates into blobs. Until there is, deduplication saves storage for content
+uploaded after you switch it on.
+
+Switching it off again is safe. Rows that point at a blob keep working, new
+uploads get their own file again, and cleanup still removes blobs once nothing
+references them.
+
 ## Transactions and databases
 
 ::: warning Atomic saves required
