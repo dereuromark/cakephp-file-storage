@@ -221,6 +221,44 @@ class MigrateAdapterCommandTest extends FileStorageTestCase
         $this->assertFalse($this->FileStorage->getConnection()->inTransaction());
     }
 
+    /**
+     * @return void
+     */
+    public function testFailedAttemptRemovesTheFilesItCreated(): void
+    {
+        $this->prepareBlobRows();
+        $variant = 'variants/one.txt';
+        $this->_createMockFile($variant);
+        $this->FileStorage->updateAll(['variants' => ['thumbnail' => ['path' => $variant]]], ['id' => 1]);
+        $configured = Configure::read('FileStorage.behaviorConfig.fileStorage');
+        $source = $configured->getStorage('Local');
+        $localTarget = $configured->getStorage('Target');
+        $calls = 0;
+        $target = $this->createStub(FilesystemAdapter::class);
+        $target->method('fileExists')->willReturnCallback(fn (string $path): bool => $localTarget->fileExists($path));
+        $target->method('delete')->willReturnCallback(function (string $path) use ($localTarget): void {
+            $localTarget->delete($path);
+        });
+        $target->method('writeStream')->willReturnCallback(function (string $path, $stream, Config $config) use (&$calls, $localTarget): void {
+            // The variant is copied first, the blob second.
+            if ($calls++ === 1) {
+                throw new RuntimeException('Copy failed');
+            }
+            $localTarget->writeStream($path, $stream, $config);
+        });
+        $storage = $this->createStub(FileStorage::class);
+        $storage->method('getStorage')->willReturnMap([['Local', $source], ['Target', $target]]);
+        Configure::write('FileStorage.behaviorConfig.fileStorage', $storage);
+
+        $report = (new AdapterMigrationService())->run('Local', 'Target', ['limit' => 1]);
+
+        $this->assertSame(0, $report->migratedRows);
+        $this->assertCount(1, $report->failures);
+        $this->assertSame('Local', $this->FileStorage->get(1)->adapter);
+        $this->assertFileDoesNotExist($this->targetPath . $variant);
+        $this->assertFileExists($this->testPath . $variant);
+    }
+
     public function testChangedSourceRowIsSkipped(): void
     {
         $this->prepareBlobRows();
