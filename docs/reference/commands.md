@@ -40,7 +40,7 @@ The command delegates to `FileStorage\Service\CleanupService` and reports:
 The blob passes always cover all models and collections, even when arguments
 scope the ordinary passes or deduplication is disabled. The orphan-file pass
 excludes the blob root. Files with unknown modification times or non-hash names
-are skipped with warnings. Dry runs show the would-be deletion counts. Schedule
+are skipped with warnings. Dry runs show the would-be deletion counts; for stray blob files that count is an upper bound, because a real run skips a file whose blob is locked by an upload at that moment. Schedule
 cleanup to free storage left after deduplicated rows are deleted.
 
 The same logic backs the admin
