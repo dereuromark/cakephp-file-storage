@@ -186,7 +186,16 @@ class BlobRegistry
                     ['adapter' => $adapter, 'hash' => $hash],
                 )->fetch('assoc');
             });
-            if (!$row || $row['path'] !== null || $this->hasReference((int)$row['id'])) {
+            if (!$row || $row['path'] === $path) {
+                $this->connection->rollback();
+
+                return false;
+            }
+            // The content is registered under another path, for example with a
+            // different extension. Holding the key lock, nothing can be writing
+            // to this one, so only the file goes and the row stays.
+            $registeredElsewhere = $row['path'] !== null;
+            if (!$registeredElsewhere && $this->hasReference((int)$row['id'])) {
                 $this->connection->rollback();
 
                 return false;
@@ -201,7 +210,9 @@ class BlobRegistry
         }
         try {
             $deleteFile($adapter, $path);
-            $this->deleteRow((int)$row['id']);
+            if (!$registeredElsewhere) {
+                $this->deleteRow((int)$row['id']);
+            }
             $this->connection->commit();
         } catch (Throwable $exception) {
             $this->connection->rollback();

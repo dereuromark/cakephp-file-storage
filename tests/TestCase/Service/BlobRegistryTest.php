@@ -191,13 +191,25 @@ class BlobRegistryTest extends TestCase
         $this->assertSame(0, $this->countBlobs());
     }
 
-    public function testRemoveStrayPreservesStoredRow(): void
+    public function testRemoveStrayKeepsRegisteredPath(): void
     {
         $this->blob('hash');
         $before = $this->connection->execute('SELECT * FROM file_storage_blobs')->fetchAll('assoc');
-        $this->assertSame(false, $this->registry->removeStray('Local', 'hash', 'stray', function (): void {
+        $this->assertSame(false, $this->registry->removeStray('Local', 'hash', (string)$before[0]['path'], function (): void {
             $this->fail('Stored blob was deleted');
         }));
+        $this->assertSame($before, $this->connection->execute('SELECT * FROM file_storage_blobs')->fetchAll('assoc'));
+    }
+
+    public function testRemoveStrayRemovesFileWhenHashIsRegisteredElsewhere(): void
+    {
+        $this->blob('hash');
+        $before = $this->connection->execute('SELECT * FROM file_storage_blobs')->fetchAll('assoc');
+        $calls = [];
+        $this->assertSame(true, $this->registry->removeStray('Local', 'hash', 'stray', static function ($adapter, $path) use (&$calls): void {
+            $calls[] = [$adapter, $path];
+        }));
+        $this->assertSame([['Local', 'stray']], $calls);
         $this->assertSame($before, $this->connection->execute('SELECT * FROM file_storage_blobs')->fetchAll('assoc'));
     }
 
