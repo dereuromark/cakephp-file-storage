@@ -73,7 +73,7 @@ class BlobRegistry
             throw new RuntimeException('Claimed blob could not be read.');
         }
 
-        return new BlobClaim((int)$row['id'], $row['path']);
+        return new BlobClaim((int)$row['id'], $row['path'], $hash);
     }
 
     public function recordPath(int $blobId, string $path): void

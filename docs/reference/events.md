@@ -71,3 +71,19 @@ not run for an upload that reuses stored content. Listen on
 
 The event fires after the database commit. Listener exceptions are reported
 as warnings; the row stays converted. Hash-only and dry runs do not fire it.
+
+## Stored-file registration
+
+`FileStorage.blobImported` fires once per committed call to
+`BlobImporter::import()`. Its subject is the file storage table. Data:
+
+| Key | Value |
+|-----|-------|
+| `adapter` | Source and blob storage adapter name. |
+| `hash` | Computed or trusted SHA-256 hash. |
+| `path` | Committed blob path. |
+| `sourcePath` | Original source object path. |
+| `reused` | `true` when existing destination content was reused; `false` when copied. |
+
+The event fires after commit and optional source deletion. Listener exceptions
+are logged as warnings; the blob stays registered.

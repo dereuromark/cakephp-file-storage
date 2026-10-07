@@ -308,6 +308,59 @@ the saved `entity`. `userOwnsHash()` checks ownership in file rows;
 storage. The adapter defaults to `FileStorage.behaviorConfig.defaultStorageConfig`,
 falling back to `Local`.
 
+## Registering a stored file
+
+`BlobImporter::import()` registers a file already on a storage adapter as a
+deduplicated blob. Source and blob must be on the same adapter. The importer
+copies through the adapter, so S3 can copy the object on the server.
+
+For a direct-to-bucket upload, your application creates a presigned upload URL
+for a temporary key outside the blob root. Presigning and upload authorization
+are outside the plugin. After the browser finishes uploading, your server imports
+the object and attaches the hash:
+
+```php
+use FileStorage\Service\BlobAttacher;
+use FileStorage\Service\BlobImporter;
+
+// Your application verifies that this user may import the temporary object.
+$hash = $verifiedUploadHash; // Lowercase SHA-256 hex digest.
+$claim = (new BlobImporter())->import(
+    'S3',
+    $temporaryKey,
+    'photo.jpg',
+    $hash,
+    ['deleteSource' => true],
+);
+$file = (new BlobAttacher())->attach($hash, [
+    'adapter' => 'S3',
+    'model' => 'Items',
+    'collection' => 'Photos',
+    'filename' => 'photo.jpg',
+    'user_id' => $userId,
+], ['userId' => $userId]);
+```
+
+The existing attachment authorizer still applies. The filename passed to
+`import()` supplies only the extension for the hash path, which is lowercased.
+The returned `BlobClaim` contains the blob id, committed path and hash.
+
+`verify` defaults to `true`: the importer streams the source through SHA-256,
+compares any expected hash, and verifies destination content. A source or
+read-back mismatch raises `BlobHashMismatchException`. Without an expected hash the
+importer uses the computed one; read it from the returned claim's `hash`.
+
+Set `['verify' => false]` only when storage has verified the supplied hash, for
+example S3 `ChecksumSHA256` on a single PUT. This option requires an expected hash
+and trusts it without reading source or destination bytes. A client-supplied hash
+alone is not sufficient.
+
+`deleteSource` defaults to `false`. When enabled, deletion happens after commit;
+a failed deletion logs a warning and leaves the registered blob available.
+`FileStorage.blobImported` also fires after commit. Listener exceptions log a
+warning without failing the import. Call the importer outside an existing
+transaction so these actions follow a completed commit.
+
 ## Moving blobs between adapters
 
 `bin/cake file_storage migrate_adapter Local S3` claims each row's content on
