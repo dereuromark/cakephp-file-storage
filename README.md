@@ -54,6 +54,8 @@ A few good entry points:
 
 The Markdown sources live in the [docs](docs/) directory of this repository.
 
+See also the blog post [CakePHP File Management Solution](https://www.dereuromark.de/2025/11/27/cakephp-file-management-solution/).
+
 ## Support
 
 For bugs and feature requests, please use the [issues](https://github.com/dereuromark/cakephp-file-storage/issues) section of this repository.
