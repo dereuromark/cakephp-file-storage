@@ -250,4 +250,23 @@ class CleanupServiceTest extends FileStorageTestCase
         $this->assertSame(0, $report->deletedRows);
         $this->assertSame($orphans, $this->FileStorage->find()->where(['foreign_key IS' => null])->count());
     }
+
+    /**
+     * @return void
+     */
+    public function testRegisteredBlobInTemporaryDirectoryIsKept(): void
+    {
+        $path = 'blobs/.tmp/' . hash('sha256', 'registered in tmp') . '.part';
+        touch($this->_createMockFile($path), time() - 7200);
+        $connection = $this->FileStorage->getConnection();
+        $connection->begin();
+        $claim = $this->registry->claim('Local', hash('sha256', 'registered in tmp'), DateTime::now());
+        $this->registry->recordPath($claim->id, $path);
+        $connection->commit();
+
+        $report = (new CleanupService())->runBlobs(false);
+
+        $this->assertSame([], $report->deletedStrayBlobs);
+        $this->assertFileExists($this->testPath . $path);
+    }
 }

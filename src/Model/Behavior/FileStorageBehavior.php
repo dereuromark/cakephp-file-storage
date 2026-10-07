@@ -58,6 +58,11 @@ class FileStorageBehavior extends Behavior
      */
     protected const DEFAULT_BLOB_ROOT = 'blobs';
 
+    /**
+     * @var string
+     */
+    protected const BLOB_TEMPORARY_DIRECTORY = '.tmp';
+
     protected FileStorage $fileStorage;
 
     protected ?DataTransformerInterface $transformer = null;
@@ -529,6 +534,10 @@ class FileStorageBehavior extends Behavior
         }
         if (pathinfo($path, PATHINFO_FILENAME) !== $hash) {
             throw new RuntimeException('Stored blob path is not named by its hash. Check hashPathTemplate.');
+        }
+        // Reserved for files in flight; cleanup removes what it finds there.
+        if (str_starts_with($path, $root . '/' . static::BLOB_TEMPORARY_DIRECTORY . '/')) {
+            throw new RuntimeException('Stored blob path lies in the temporary directory of the blob root. Check hashPathTemplate.');
         }
     }
 

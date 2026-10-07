@@ -392,6 +392,10 @@ class CleanupService
                     }
                     $temporaryRoot = trim(str_replace('\\', '/', $root), '/') . '/.tmp/';
                     if (str_starts_with(str_replace('\\', '/', $path), $temporaryRoot)) {
+                        // A path a blob row points at is never a leftover, whatever its name.
+                        if ($blobs->exists(['adapter' => $name, 'path' => $path])) {
+                            continue;
+                        }
                         if (pathinfo($path, PATHINFO_EXTENSION) === 'part') {
                             try {
                                 if (!$dryRun) {
