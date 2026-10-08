@@ -12,6 +12,7 @@ use Cake\ORM\Behavior;
 use Cake\Utility\Text;
 use FileStorage\FileStorage\DataTransformer;
 use FileStorage\FileStorage\DataTransformerInterface;
+use FileStorage\Http\CompletedUpload;
 use FileStorage\Model\Validation\UploadValidatorInterface;
 use FileStorage\Service\BlobPath;
 use FileStorage\Service\BlobRegistry;
@@ -436,7 +437,9 @@ class FileStorageBehavior extends Behavior
             ));
         }
 
-        $this->applyContentHash($entity, $this->hashUpload($upload, $algorithm));
+        $this->applyContentHash($entity, $upload instanceof CompletedUpload && $algorithm === 'sha256'
+            ? $upload->digest
+            : $this->hashUpload($upload, $algorithm));
     }
 
     /**

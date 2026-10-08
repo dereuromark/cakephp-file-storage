@@ -64,6 +64,8 @@ class CleanupService
      */
     public function run(?string $model, ?string $collection, bool $dryRun): CleanupReport
     {
+        $uploads = new ResumableUploads($this->fetchTable('FileStorage.FileStorage'));
+        $uploadsResult = $uploads->cleanup($dryRun);
         $warnings = [];
         $scopeConditions = [];
         if ($model !== null && $model !== '') {
@@ -101,7 +103,17 @@ class CleanupService
             deletedBlobs: $blobs['deleted'],
             deletedStrayBlobs: $blobs['strays'],
             skippedBlobs: $blobs['skipped'],
+            deletedUploads: $uploadsResult['deletedUploads'],
+            deletedUploadParts: $uploadsResult['deletedUploadParts'],
+            skippedUploads: $uploadsResult['skippedUploads'],
         );
+    }
+
+    public function runUploads(bool $dryRun): CleanupReport
+    {
+        $result = (new ResumableUploads($this->fetchTable('FileStorage.FileStorage')))->cleanup($dryRun);
+
+        return new CleanupReport($dryRun, 0, [], 0, [], [], [], [], 0, $result['deletedUploads'], $result['deletedUploadParts'], $result['skippedUploads']);
     }
 
     /**

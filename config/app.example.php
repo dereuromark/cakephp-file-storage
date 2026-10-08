@@ -136,6 +136,17 @@ return [
             //     'GalleryImages' => $galleryVariants->toArray(),
             // ],
         ],
+        'resumable' => [
+            'authorizer' => null, // Deny until an application supplies a closure.
+            'path' => TMP . 'file_storage_uploads', // Local private staging directory.
+            'maxSize' => 5 * 1024 ** 3, // Maximum declared file size.
+            'maxBytesPerOwner' => 10 * 1024 ** 3, // Unconsumed reservations per owner.
+            'maxSessions' => 10, // Unconsumed sessions per owner.
+            'maxReservedBytes' => 50 * 1024 ** 3, // Reservations with a part file.
+            'minFreeBytes' => 1024 ** 3, // Free-space floor after reservations.
+            'expires' => 86400, // Uploading lifetime after each chunk, in seconds.
+            'completedExpires' => 86400, // Lifetime after completion or consumption.
+        ],
         'behaviorConfig' => [
             'fileStorage' => $fileStorage,
             'fileProcessor' => null,

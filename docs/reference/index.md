@@ -91,6 +91,14 @@ support, and scheduled cleanup. Use [`BlobAttacher`](/guide/deduplication#attach
 to attach existing blobs and [`BlobImporter`](/guide/deduplication#registering-a-stored-file)
 to register files already on an adapter.
 
+## Resumable upload classes
+
+- `FileStorage\Service\ResumableUploads`: create, inspect offsets, append streamed chunks, terminate, consume, and clean up sessions.
+- `FileStorage\Http\TusServer`: map PSR-7 requests to tus 1.0.0 responses.
+- `FileStorage\Controller\UploadsController`: application-routed collection and resource actions.
+
+`FileStorage\Http\CompletedUpload` is internal. Applications use `consume()` instead. See [resumable uploads](../guide/resumable-uploads.md) for configuration and examples.
+
 ## Signed URLs
 
 ### `signatureSecret`
