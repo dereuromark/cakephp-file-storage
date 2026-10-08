@@ -53,6 +53,11 @@ class CleanupService
     /**
      * @var string
      */
+    protected const UPLOADS_TABLE = 'file_storage_uploads';
+
+    /**
+     * @var string
+     */
     protected const DEFAULT_ADAPTER = 'Local';
 
     /**
@@ -65,6 +70,7 @@ class CleanupService
     public function run(?string $model, ?string $collection, bool $dryRun): CleanupReport
     {
         $warnings = [];
+        $uploadsResult = $this->cleanUploads($dryRun, $warnings);
         $scopeConditions = [];
         if ($model !== null && $model !== '') {
             $scopeConditions['model'] = $model;
@@ -101,7 +107,56 @@ class CleanupService
             deletedBlobs: $blobs['deleted'],
             deletedStrayBlobs: $blobs['strays'],
             skippedBlobs: $blobs['skipped'],
+            deletedUploads: $uploadsResult['deletedUploads'],
+            deletedUploadParts: $uploadsResult['deletedUploadParts'],
+            skippedUploads: $uploadsResult['skippedUploads'],
         );
+    }
+
+    public function runUploads(bool $dryRun): CleanupReport
+    {
+        $warnings = [];
+        $result = $this->cleanUploads($dryRun, $warnings);
+
+        return new CleanupReport(
+            dryRun: $dryRun,
+            checkedCount: 0,
+            deletedFiles: [],
+            deletedRows: 0,
+            missingFiles: [],
+            warnings: $warnings,
+            deletedBlobs: [],
+            deletedStrayBlobs: [],
+            skippedBlobs: 0,
+            deletedUploads: $result['deletedUploads'],
+            deletedUploadParts: $result['deletedUploadParts'],
+            skippedUploads: $result['skippedUploads'],
+        );
+    }
+
+    /**
+     * @param bool $dryRun
+     * @param array<int, string> $warnings
+     *
+     * @return array{deletedUploads: int, deletedUploadParts: int, skippedUploads: int}
+     */
+    protected function cleanUploads(bool $dryRun, array &$warnings): array
+    {
+        $result = ['deletedUploads' => 0, 'deletedUploadParts' => 0, 'skippedUploads' => 0];
+        $files = $this->fetchTable('FileStorage.FileStorage');
+        $connection = $files->getConnection();
+        $driver = $connection->getDriver();
+        if (!$driver instanceof Mysql && !$driver instanceof Postgres && !$driver instanceof Sqlite) {
+            // Resumable uploads cannot be in use on this database.
+            return $result;
+        }
+        if (!in_array(static::UPLOADS_TABLE, $connection->getSchemaCollection()->listTables(), true)) {
+            $warnings[] = 'Table `file_storage_uploads` is missing, skipping upload cleanup. Run the plugin migrations.';
+
+            return $result;
+        }
+
+        return (new ResumableUploads($files))->cleanup($dryRun);
     }
 
     /**

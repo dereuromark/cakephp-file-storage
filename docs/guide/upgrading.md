@@ -2,6 +2,23 @@
 
 This page covers the next major upgrade path for existing applications.
 
+## Upload session migration
+
+> [!TIP] Added in 5.3
+> Needed by every install, whether or not [resumable uploads](./resumable-uploads)
+> are used. Until it runs, the `cleanup` command skips its upload pass with a
+> warning.
+
+Run `CreateFileStorageUploads` (`20261008000000`) in the migration set that owns
+`file_storage`. For plugin-managed tables:
+
+```bash
+bin/cake migrations migrate -p FileStorage
+```
+
+The migration adds the `file_storage_uploads` table. It stays empty until an
+application routes the upload endpoint.
+
 ## Blob registry migration
 
 > [!TIP] Added in 5.2

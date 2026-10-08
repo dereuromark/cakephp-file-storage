@@ -87,3 +87,7 @@ as warnings; the row stays converted. Hash-only and dry runs do not fire it.
 
 The event fires after commit and optional source deletion. Listener exceptions
 are logged as warnings; the blob stays registered.
+
+## FileStorage.uploadCompleted
+
+Dispatched after a resumable session becomes complete, including a zero-length POST. Event data contains the session array under `upload`, with its ID, model, collection, size, and server-computed SHA-256 hash. Delivery is at most once with no retry. Save the application entity and call `ResumableUploads::consume()` to create the file row. See [resumable uploads](../guide/resumable-uploads.md).

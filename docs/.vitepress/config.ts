@@ -13,6 +13,7 @@ function guideSidebar() {
         { text: 'Validation', link: '/guide/validation' },
         { text: 'Paths and URLs', link: '/guide/paths-and-urls' },
         { text: 'Deduplication', link: '/guide/deduplication' },
+        { text: 'Resumable Uploads', link: '/guide/resumable-uploads' },
       ],
     },
     {

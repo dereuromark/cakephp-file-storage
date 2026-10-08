@@ -172,3 +172,7 @@ blob. Target-exists and overwrite rules apply only to variants for these rows.
 `--deleteSource` removes their source variants but leaves source blob files and
 rows for cleanup. Dry runs make no claims or writes. See
 [Deduplication](/guide/deduplication).
+
+### Expired uploads
+
+`bin/cake file_storage cleanup --uploadsOnly` removes expired resumable sessions and abandoned part files. Add `--dryRun` to preview. Busy locks are skipped; failed part removal keeps the session reservation. The full cleanup command includes this pass across all models and collections. Reports include `deletedUploads`, `deletedUploadParts`, and `skippedUploads`.

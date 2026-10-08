@@ -24,9 +24,11 @@ class CleanupCommand extends Command
 
         $blobsOnly = (bool)$args->getOption('blobsOnly');
         $service = new CleanupService();
-        $report = $blobsOnly ? $service->runBlobs($dryRun) : $service->run($model, $collection, $dryRun);
+        $uploadsOnly = (bool)$args->getOption('uploadsOnly');
+        $report = $uploadsOnly ? $service->runUploads($dryRun)
+            : ($blobsOnly ? $service->runBlobs($dryRun) : $service->run($model, $collection, $dryRun));
 
-        if (!$blobsOnly) {
+        if (!$blobsOnly && !$uploadsOnly) {
             $io->out(sprintf('Checking %d file storage rows...', $report->checkedCount));
             $io->info(sprintf('%d orphan row(s) %s.', $report->deletedRows, $dryRun ? 'would be deleted' : 'deleted'));
         }
@@ -34,6 +36,8 @@ class CleanupCommand extends Command
         $io->info(sprintf('%d blob(s) %s.', count($report->deletedBlobs), $dryRun ? 'would be deleted' : 'deleted'));
         $io->info(sprintf('%d stray blob file(s) %s.', count($report->deletedStrayBlobs), $dryRun ? 'would be deleted' : 'deleted'));
         $io->info(sprintf('%d blob(s) skipped.', $report->skippedBlobs));
+
+        $io->info(sprintf('%d upload(s), %d part file(s) %s; %d skipped.', $report->deletedUploads, $report->deletedUploadParts, $dryRun ? 'would be deleted' : 'deleted', $report->skippedUploads));
 
         foreach ($report->deletedFiles as $path) {
             $io->warning(sprintf('%s orphan file: %s', $dryRun ? 'Would delete' : 'Deleted', $path));
@@ -58,7 +62,7 @@ class CleanupCommand extends Command
     public function buildOptionParser(ConsoleOptionParser $parser): ConsoleOptionParser
     {
         $parser->setDescription(
-            'Cleanup. Blob sweep and stray blob removal always run across all models and collections, even when scoped.',
+            'Cleanup. Full runs sweep blobs and uploads across all models and collections, even when scoped.',
         );
         $parser->addArgument('model');
         $parser->addArgument('collection');
@@ -73,6 +77,11 @@ class CleanupCommand extends Command
                 'file_storage',
                 'Only remove unreferenced deduplicated blobs and stray blob files. Orphan rows and files are left alone, model and collection are ignored.',
             ),
+            'boolean' => true,
+        ]);
+
+        $parser->addOption('uploadsOnly', [
+            'help' => 'Only remove expired upload sessions and abandoned part files.',
             'boolean' => true,
         ]);
 

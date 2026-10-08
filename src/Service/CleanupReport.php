@@ -22,6 +22,9 @@ class CleanupReport
      * @param array<int, string> $deletedStrayBlobs Stray blob paths (would-be) removed.
      * @param int $skippedBlobs Blob candidates skipped.
      * @param array<int, string> $warnings Non-fatal messages (e.g. fileStorage adapter not configured).
+     * @param int $deletedUploads Upload sessions removed.
+     * @param int $deletedUploadParts Upload part files removed.
+     * @param int $skippedUploads Upload candidates skipped.
      */
     public function __construct(
         public readonly bool $dryRun,
@@ -33,6 +36,9 @@ class CleanupReport
         public readonly array $deletedBlobs,
         public readonly array $deletedStrayBlobs,
         public readonly int $skippedBlobs,
+        public readonly int $deletedUploads = 0,
+        public readonly int $deletedUploadParts = 0,
+        public readonly int $skippedUploads = 0,
     ) {
     }
 }
