@@ -51,6 +51,7 @@ A few good entry points:
 * [Quick Start tutorial](https://dereuromark.github.io/cakephp-file-storage/guide/quick-start)
 * [Serving files and authorization](https://dereuromark.github.io/cakephp-file-storage/serving/)
 * [Deduplication of identical uploads](https://dereuromark.github.io/cakephp-file-storage/guide/deduplication)
+* [Resumable uploads for large files](https://dereuromark.github.io/cakephp-file-storage/guide/resumable-uploads)
 * [Configuration reference](https://dereuromark.github.io/cakephp-file-storage/reference/)
 
 The Markdown sources live in the [docs](docs/) directory of this repository.

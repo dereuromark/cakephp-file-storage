@@ -59,4 +59,5 @@ using a path builder class.
 - [Quick Start](./quick-start) — add an avatar upload end to end.
 - [Usage](./usage) — the core concepts, associations, and upload flow.
 - [Deduplication](./deduplication) - store identical uploads once.
+- [Resumable uploads](./resumable-uploads) - upload large files in chunks and continue after a dropped connection.
 - [Serving files](/serving/) — generate URLs and serve files with authorization.

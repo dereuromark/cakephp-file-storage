@@ -33,11 +33,15 @@ class CleanupCommand extends Command
             $io->info(sprintf('%d orphan row(s) %s.', $report->deletedRows, $dryRun ? 'would be deleted' : 'deleted'));
         }
 
-        $io->info(sprintf('%d blob(s) %s.', count($report->deletedBlobs), $dryRun ? 'would be deleted' : 'deleted'));
-        $io->info(sprintf('%d stray blob file(s) %s.', count($report->deletedStrayBlobs), $dryRun ? 'would be deleted' : 'deleted'));
-        $io->info(sprintf('%d blob(s) skipped.', $report->skippedBlobs));
+        if (!$uploadsOnly) {
+            $io->info(sprintf('%d blob(s) %s.', count($report->deletedBlobs), $dryRun ? 'would be deleted' : 'deleted'));
+            $io->info(sprintf('%d stray blob file(s) %s.', count($report->deletedStrayBlobs), $dryRun ? 'would be deleted' : 'deleted'));
+            $io->info(sprintf('%d blob(s) skipped.', $report->skippedBlobs));
+        }
 
-        $io->info(sprintf('%d upload(s), %d part file(s) %s; %d skipped.', $report->deletedUploads, $report->deletedUploadParts, $dryRun ? 'would be deleted' : 'deleted', $report->skippedUploads));
+        if (!$blobsOnly) {
+            $io->info(sprintf('%d upload(s), %d part file(s) %s; %d skipped.', $report->deletedUploads, $report->deletedUploadParts, $dryRun ? 'would be deleted' : 'deleted', $report->skippedUploads));
+        }
 
         foreach ($report->deletedFiles as $path) {
             $io->warning(sprintf('%s orphan file: %s', $dryRun ? 'Would delete' : 'Deleted', $path));
