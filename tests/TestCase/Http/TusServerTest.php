@@ -4,6 +4,7 @@ namespace FileStorage\Test\TestCase\Http;
 
 use Cake\Core\Configure;
 use Cake\Http\ServerRequest;
+use Cake\Log\Log;
 use FileStorage\Http\TusServer;
 use FileStorage\Service\ResumableUploads;
 use FileStorage\Test\TestCase\ResumableUploadTestCase;
@@ -183,8 +184,15 @@ class TusServerTest extends ResumableUploadTestCase
         $target = $this->uploadPath . '/target';
         file_put_contents($target, 'secret');
         symlink($target, $this->part($row));
-        $response = $this->request('HEAD', $row['id']);
+        Log::setConfig('tus_test', ['className' => 'Array', 'levels' => ['error']]);
+        try {
+            $response = $this->request('HEAD', $row['id']);
+            $logged = implode("\n", Log::engine('tus_test')->read());
+        } finally {
+            Log::drop('tus_test');
+        }
         $this->assertSame(500, $response->getStatusCode());
+        $this->assertStringContainsString('Resumable upload failed', $logged);
         $this->assertNotSame('', $response->getHeaderLine('Upload-Expires'));
         $this->assertSame('secret', file_get_contents($target));
     }

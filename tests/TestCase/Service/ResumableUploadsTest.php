@@ -4,7 +4,9 @@ namespace FileStorage\Test\TestCase\Service;
 
 use Cake\Core\Configure;
 use Cake\Database\Connection;
+use Cake\Database\Driver;
 use Cake\Database\Driver\Sqlite;
+use Cake\Database\Schema\CollectionInterface;
 use Cake\Event\EventInterface;
 use Cake\ORM\Table;
 use FileStorage\Exception\UploadInTransactionException;
@@ -470,5 +472,30 @@ class ResumableUploadsTest extends ResumableUploadTestCase
         $this->assertSame(1, $report->deletedUploadParts);
         $this->assertSame(0, $report->skippedUploads);
         $this->assertFileDoesNotExist($this->part($row));
+    }
+
+    #[DataProvider('cleanupPreconditionProvider')]
+    public function testCleanupSkipsUploadsWithoutSupport(bool $unsupported): void
+    {
+        $table = $this->getTableLocator()->get('FileStorage.FileStorage');
+        $original = $table->getConnection();
+        $connection = $this->createStub(Connection::class);
+        $connection->method('getDriver')->willReturn($this->createStub($unsupported ? Driver::class : Sqlite::class));
+        $schema = $this->createStub(CollectionInterface::class);
+        $schema->method('listTables')->willReturn([]);
+        $connection->method('getSchemaCollection')->willReturn($schema);
+        $table->setConnection($connection);
+        try {
+            $report = (new CleanupService())->runUploads(true);
+        } finally {
+            $table->setConnection($original);
+        }
+        $this->assertSame(0, $report->deletedUploads);
+        $this->assertSame($unsupported ? [] : ['Table `file_storage_uploads` is missing, skipping upload cleanup. Run the plugin migrations.'], $report->warnings);
+    }
+
+    public static function cleanupPreconditionProvider(): array
+    {
+        return [[true], [false]];
     }
 }

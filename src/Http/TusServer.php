@@ -3,6 +3,7 @@
 namespace FileStorage\Http;
 
 use Cake\Http\Response;
+use Cake\Log\Log;
 use FileStorage\Exception\UploadException;
 use FileStorage\Exception\UploadInvalidException;
 use FileStorage\Service\ResumableUploads;
@@ -78,9 +79,13 @@ class TusServer
                 $response = $response->withStatus(405)->withHeader('Allow', $id === null ? 'OPTIONS, POST' : 'OPTIONS, HEAD, PATCH, DELETE');
             }
         } catch (UploadException $error) {
+            if ($error->status >= 500) {
+                Log::error('Resumable upload failed: ' . $error->getMessage());
+            }
             $response = $response->withStatus($error->status);
             $row = $error->upload ?? $row;
-        } catch (Throwable) {
+        } catch (Throwable $error) {
+            Log::error('Resumable upload failed: ' . $error::class . ': ' . $error->getMessage());
             $response = $response->withStatus(500);
         }
         if ($row !== null) {
