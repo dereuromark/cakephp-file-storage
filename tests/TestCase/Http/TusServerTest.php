@@ -196,4 +196,20 @@ class TusServerTest extends ResumableUploadTestCase
         $this->assertNotSame('', $response->getHeaderLine('Upload-Expires'));
         $this->assertSame('secret', file_get_contents($target));
     }
+
+    public function testLocationKeepsBasePath(): void
+    {
+        $request = (new ServerRequest([
+            'url' => '/uploads',
+            'base' => '/app',
+            'environment' => ['REQUEST_METHOD' => 'POST'],
+        ]))->withHeader('Tus-Resumable', '1.0.0')
+            ->withHeader('Upload-Length', '3')
+            ->withHeader('Upload-Metadata', $this->metadata());
+
+        $response = (new TusServer($this->uploads))->handle($request);
+
+        $this->assertSame(201, $response->getStatusCode());
+        $this->assertMatchesRegularExpression('#^/app/uploads/[0-9a-f-]{36}$#', $response->getHeaderLine('Location'));
+    }
 }

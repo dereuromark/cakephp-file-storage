@@ -5,8 +5,10 @@ namespace FileStorage\Test\TestCase\Controller;
 use Cake\Core\Configure;
 use Cake\Http\Exception\InvalidCsrfTokenException;
 use Cake\Http\Response;
+use Cake\Http\ServerRequest;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\Utility\Security;
+use FileStorage\Controller\UploadsController;
 use FileStorage\Test\TestCase\ResumableUploadTestCase;
 use TestApp\UploadsApplication;
 use Throwable;
@@ -85,5 +87,24 @@ class UploadsControllerTest extends ResumableUploadTestCase
         } finally {
             Configure::delete('Test.uploadCsrf');
         }
+    }
+
+    public function testSkipsAuthorizationPluginCheck(): void
+    {
+        $service = new class {
+            public bool $skipped = false;
+
+            public function skipAuthorization(): void
+            {
+                $this->skipped = true;
+            }
+        };
+        $request = (new ServerRequest(['url' => '/file-storage/uploads', 'environment' => ['REQUEST_METHOD' => 'OPTIONS']]))
+            ->withAttribute('authorization', $service);
+
+        $response = (new UploadsController($request))->collection();
+
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertTrue($service->skipped);
     }
 }

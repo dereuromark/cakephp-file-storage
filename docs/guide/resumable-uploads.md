@@ -35,7 +35,7 @@ Configure `FileStorage.resumable.authorizer`. It receives an action, upload deta
 
 Actions are `create`, `read`, `write`, `delete`, and `consume`. Upload details include size, model, collection, and filename. Existing sessions also include `id` and `owner`; consume includes the attachment fields under `data`. HTTP context contains the PSR-7 request. Consume receives the context you pass to it.
 
-The controller inherits your application's `AppController`. Keep CSRF protection enabled. Configure FormProtection for these bodyless and binary actions in the application as appropriate; tus requests do not carry CakePHP form field tokens. Cross-origin access and CORS headers are also application responsibilities.
+The controller inherits your application's `AppController`. With the Authorization plugin it marks each request as authorized, because the resumable authorizer is the access check for these actions; put any policy you need into that closure. Keep CSRF protection enabled. Configure FormProtection for these bodyless and binary actions in the application as appropriate; tus requests do not carry CakePHP form field tokens. Cross-origin access and CORS headers are also application responsibilities.
 
 ## Send chunks
 

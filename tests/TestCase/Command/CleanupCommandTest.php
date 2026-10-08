@@ -25,6 +25,7 @@ class CleanupCommandTest extends TestCase
         $this->assertOutputContains('0 blob(s) would be deleted.');
         $this->assertOutputContains('0 stray blob file(s) would be deleted.');
         $this->assertOutputContains('0 blob(s) skipped.');
+        $this->assertOutputContains('0 upload(s), 0 part file(s) would be deleted; 0 skipped.');
     }
 
     /**
@@ -38,5 +39,19 @@ class CleanupCommandTest extends TestCase
         $this->assertOutputNotContains('orphan row(s)');
         $this->assertOutputContains('0 blob(s) would be deleted.');
         $this->assertOutputContains('0 stray blob file(s) would be deleted.');
+        $this->assertOutputNotContains('upload(s)');
+    }
+
+    /**
+     * @return void
+     */
+    public function testRunUploadsOnly(): void
+    {
+        $this->exec('file_storage cleanup -d --uploadsOnly');
+
+        $this->assertExitCode(0);
+        $this->assertOutputNotContains('orphan row(s)');
+        $this->assertOutputNotContains('blob(s)');
+        $this->assertOutputContains('0 upload(s), 0 part file(s) would be deleted; 0 skipped.');
     }
 }
