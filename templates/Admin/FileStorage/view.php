@@ -79,7 +79,7 @@ $variants = (array)$fileStorage->variants;
                 [
                     'class' => 'btn btn-sm btn-outline-info',
                     'escape' => false,
-                                    'escapeAttributes' => true,
+                    'escapeAttributes' => true,
                     'form' => [
                         'class' => 'd-inline',
                         'data-confirm-message' => __d('file_storage', 'Queue a variant regeneration job for {0}?', $fileStorage->filename),
@@ -93,7 +93,7 @@ $variants = (array)$fileStorage->variants;
             [
                 'class' => 'btn btn-sm btn-outline-danger',
                 'escape' => false,
-                                    'escapeAttributes' => true,
+                'escapeAttributes' => true,
                 'form' => [
                     'class' => 'd-inline',
                     'data-confirm-message' => __d('file_storage', 'Delete {0}? This cannot be undone.', $fileStorage->filename),

@@ -40,8 +40,6 @@ use FileStorage\Model\Entity\FileStorage;
  * @method bool delete(\FileStorage\Model\Entity\FileStorage $entity, array $options = [])
  * @method bool deleteOrFail(\FileStorage\Model\Entity\FileStorage $entity, array $options = [])
  * @method \FileStorage\Model\Entity\FileStorage|array<\FileStorage\Model\Entity\FileStorage> loadInto(\FileStorage\Model\Entity\FileStorage|array<\FileStorage\Model\Entity\FileStorage> $entities, array $contain)
- * @mixin \Cake\ORM\Behavior\TimestampBehavior
- * @mixin \FileStorage\Model\Behavior\FileStorageBehavior
  */
 class FileStorageTable extends Table
 {

@@ -126,7 +126,7 @@ $this->assign('title', __d('file_storage', 'Cleanup'));
                         'data' => ['model' => $previewModel, 'collection' => $previewCollection],
                         'class' => 'btn btn-danger',
                         'escape' => false,
-                                    'escapeAttributes' => true,
+                        'escapeAttributes' => true,
                         'form' => [
                             'data-confirm-message' => __d('file_storage', 'Sure? This permanently deletes the orphan rows and files listed above.'),
                         ],

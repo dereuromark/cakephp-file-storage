@@ -2,7 +2,7 @@
 
 All configuration lives under the `FileStorage` key, typically in `config/app.php`
 or a dedicated `config/storage.php`. The plugin ships a complete, commented
-[`config/app.example.php`](https://github.com/dereuromark/cakephp-file-storage/blob/master/config/app.example.php)
+[`config/app.example.php`](https://github.com/dereuromark/cakephp-file-storage/blob/cake6/config/app.example.php)
 you can copy from.
 
 ## Keys at a glance

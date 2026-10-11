@@ -3,24 +3,14 @@
 Add an avatar upload to an existing CakePHP application. Start by storing and
 displaying the original image. Thumbnails are an optional final step.
 
-You need PHP 8.2+, CakePHP 5.3.4+, a working database connection, and an existing
+You need a working database connection and an existing
 `Users` table with a `username` field and integer primary keys. Adapt the table
 and field names if your app uses different ones. For UUID owner keys, configure
 [foreign key column types](./installation#foreign-key-column-types) first.
 
 ## 1. Install and create the tables
 
-Run these commands from your application's root directory:
-
-```bash
-composer require dereuromark/cakephp-file-storage cakephp/migrations
-bin/cake plugin load Migrations
-bin/cake plugin load FileStorage
-bin/cake migrations migrate -p FileStorage
-```
-
-Skip loading a plugin that is already loaded. Existing FileStorage installations
-should follow [Upgrading](./upgrading) before running migrations.
+Follow [Installation](./installation) to install and load the plugin and apply its migrations. Existing FileStorage installations should follow [Upgrading](./upgrading) first.
 
 The admin UI denies access by default. Leave `FileStorage.adminAccess` unset
 while following this tutorial.
@@ -173,7 +163,7 @@ behavior sets `model` and `collection`; CakePHP supplies `foreign_key` when it
 saves the association. Replacing the avatar removes the previous file row and
 its stored files. Deleting the user also deletes its avatar through callbacks.
 
-In `src/Model/Entity/User.php`, add `avatar` to the existing `$_accessible` array:
+In `src/Model/Entity/User.php`, add `avatar` to the existing `$patchable` array:
 
 ```php
 'avatar' => true,
@@ -279,8 +269,8 @@ cleanup before running it.
 
 The steps above need no image processor or GD extension. To generate thumbnails,
 install `php-collective/file-storage-image-processor` and enable GD or Imagick.
-Version 1.x uses Intervention Image 3; version 2.x uses Intervention Image 4 and
-requires PHP 8.3+. The following setup works with both processor versions.
+Version 1.x uses Intervention Image 3; version 2.x uses Intervention Image 4.
+The following setup works with both processor versions.
 
 ```bash
 composer require php-collective/file-storage-image-processor

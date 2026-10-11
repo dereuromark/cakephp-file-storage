@@ -70,4 +70,4 @@ For bugs and feature requests, please use the [issues](https://github.com/dereur
 To contribute to this plugin please follow a few basic rules.
 
 * Pull requests must be sent to the branch that reflects the version you want to contribute to.
-* [Unit tests](http://book.cakephp.org/5/en/development/testing.html) are required.
+* [Unit tests](https://book.cakephp.org/6/en/development/testing.html) are required.

@@ -1,6 +1,6 @@
 # Upgrading
 
-This page covers the 5.x upgrade path for existing applications.
+This page covers the CakePHP 6 development branch and the earlier 5.x upgrade path for existing applications.
 
 ## Upload session migration
 
@@ -298,3 +298,9 @@ row unless you pass `--overwrite`.
 ## CakePHP 6
 
 This development branch uses CakePHP 6. Application extensions use the inherited `defaultConfig`, `config`, `table` and `View` properties. Entity mass-assignment rules use `patchable`, and per-operation overrides use `patchableFields`. Command implementations use `execute()` with `$this->args` and `$this->io`.
+
+CakePHP 6 no longer forwards arbitrary table methods to behaviors. Call custom behavior methods through `$table->getBehavior('FileStorage')`. Register listeners with `on($eventName, $listener, $options)` and plugin routes with `plugin($name, $callback, $options)`. Replace `disableHydration()` with `enableHydration(false)`.
+
+For trusted HTML link titles, replace `escapeTitle => false` with `escape => false` and keep `escapeAttributes => true`. Ordinary text titles use the helper's default escaping.
+
+The migration dependency currently uses the official `fix/6.x-cakephp-compatibility` branch while [Migrations #1121](https://github.com/cakephp/migrations/pull/1121) is pending. Follow [Installation](./installation) for the development dependency settings.

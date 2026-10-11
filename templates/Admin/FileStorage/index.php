@@ -192,7 +192,7 @@ $activeFilters = array_filter($filterValues, static fn (string $v): bool => $v !
                             [
                                 'class' => 'btn btn-sm btn-outline-danger',
                                 'escape' => false,
-                                    'escapeAttributes' => true,
+                                'escapeAttributes' => true,
                                 'title' => __d('file_storage', 'Delete'),
                                 'form' => [
                                     'class' => 'd-inline',

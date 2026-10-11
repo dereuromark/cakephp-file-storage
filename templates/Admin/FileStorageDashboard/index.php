@@ -198,9 +198,8 @@ $humanBytes = function (int|float $bytes): string {
                             <tr>
                                 <td>
                                     <?= $this->Html->link(
-                                        h($entry->filename),
+                                        $entry->filename,
                                         ['plugin' => 'FileStorage', 'prefix' => 'Admin', 'controller' => 'FileStorage', 'action' => 'view', $entry->id],
-                                        ['escape' => false, 'escapeAttributes' => true],
                                     ) ?>
                                 </td>
                                 <td><?= h($entry->collection) ?></td>
@@ -233,9 +232,8 @@ $humanBytes = function (int|float $bytes): string {
                             <tr>
                                 <td>
                                     <?= $this->Html->link(
-                                        h($entry->filename),
+                                        $entry->filename,
                                         ['plugin' => 'FileStorage', 'prefix' => 'Admin', 'controller' => 'FileStorage', 'action' => 'view', $entry->id],
-                                        ['escape' => false, 'escapeAttributes' => true],
                                     ) ?>
                                 </td>
                                 <td><?= h($entry->collection) ?></td>
