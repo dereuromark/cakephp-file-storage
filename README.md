@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/dereuromark/cakephp-file-storage/branch/cake6/graph/badge.svg)](https://app.codecov.io/gh/dereuromark/cakephp-file-storage/tree/cake6)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%208-brightgreen.svg?style=flat)](https://phpstan.org/)
 [![Latest Stable Version](https://poser.pugx.org/dereuromark/cakephp-file-storage/v/stable.svg)](https://packagist.org/packages/dereuromark/cakephp-file-storage)
-[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%208.2-8892BF.svg)](https://php.net/)
+[![Minimum PHP Version](https://img.shields.io/badge/php-%3E%3D%208.5-8892BF.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Total Downloads](https://poser.pugx.org/dereuromark/cakephp-file-storage/d/total.svg)](https://packagist.org/packages/dereuromark/cakephp-file-storage)
 [![Coding Standards](https://img.shields.io/badge/cs-PhpCollective-purple.svg?style=flat-square)](https://github.com/php-collective/code-sniffer)
