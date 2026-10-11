@@ -101,7 +101,7 @@ class ImageHelperTest extends FileStorageTestCase
             'path' => 'test/path/',
             'extension' => 'jpg',
             'adapter' => 'Local',
-        ], ['accessibleFields' => ['*' => true]]);
+        ], ['patchableFields' => ['*' => true]]);
 
         $this->helper->imageUrl($image, 'invalid-version!');
     }
@@ -173,7 +173,7 @@ class ImageHelperTest extends FileStorageTestCase
             'path' => 'test/path/testimage.jpg',
             'extension' => 'jpg',
             'adapter' => 'Local',
-        ], ['accessibleFields' => ['*' => true]]);
+        ], ['patchableFields' => ['*' => true]]);
 
         // When variant doesn't exist, it should fall back to fallback image
         $result = $this->helper->display($image, 'nonexistent', ['fallback' => 'error.jpg']);

@@ -494,9 +494,9 @@ class ResumableUploads
     protected function row(string $id): ?array
     {
         $this->partPath($id);
-        $row = $this->uploads->find()->where(['id' => $id])->disableHydration()->first();
+        $row = $this->uploads->find()->where(['id' => $id])->first();
 
-        return is_array($row) ? $row : null;
+        return $row?->toArray();
     }
 
     /**

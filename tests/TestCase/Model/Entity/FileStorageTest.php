@@ -97,7 +97,7 @@ class FileStorageTest extends FileStorageTestCase
         $fileStorage = new FileStorage([
             'uuid' => '10000000-0000-4000-8000-000000000001',
         ], [
-            'accessibleFields' => ['*' => true],
+            'patchableFields' => ['*' => true],
         ]);
 
         $this->assertSame('10000000-0000-4000-8000-000000000001', $fileStorage->publicId());

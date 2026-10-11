@@ -4,7 +4,7 @@ namespace FileStorage\Command;
 
 use Cake\Command\Command;
 use Cake\Console\Arguments;
-use Cake\Console\ConsoleIo;
+use Cake\Console\ConsoleIoInterface;
 use Cake\Console\ConsoleOptionParser;
 use Cake\Core\Configure;
 use Cake\Core\InstanceConfigTrait;
@@ -41,7 +41,7 @@ class ImageVariantGenerateCommand extends Command
      *
      * @var array<string, mixed>
      */
-    protected array $_defaultConfig = [
+    protected array $defaultConfig = [
         'defaultStorageConfig' => 'Local',
         'ignoreEmptyFile' => true,
         'fileField' => 'file',
@@ -57,13 +57,12 @@ class ImageVariantGenerateCommand extends Command
     /**
      * Implement this method with your command's logic.
      *
-     * @param \Cake\Console\Arguments $args The command arguments.
-     * @param \Cake\Console\ConsoleIo $io The console io
-     *
      * @return int|null|void The exit code or null for success
      */
-    public function execute(Arguments $args, ConsoleIo $io)
+    public function execute()
     {
+        $args = $this->args;
+        $io = $this->io;
         $this->setConfig(Configure::read('FileStorage.behaviorConfig'));
 
         $storageTable = (string)$args->getOption('storage');
@@ -120,12 +119,12 @@ class ImageVariantGenerateCommand extends Command
 
     /**
      * @param \Cake\Console\Arguments $args
-     * @param \Cake\Console\ConsoleIo $io
+     * @param \Cake\Console\ConsoleIoInterface $io
      * @param array<string, mixed> $operations
      *
      * @return int
      */
-    protected function _process(Arguments $args, ConsoleIo $io, array $operations): int
+    protected function _process(Arguments $args, ConsoleIoInterface $io, array $operations): int
     {
         foreach ($operations as $model => $collections) {
             foreach ($collections as $collection => $variants) {
@@ -151,7 +150,7 @@ class ImageVariantGenerateCommand extends Command
     /**
      * Loops through image records and performs requested operation on them.
      *
-     * @param \Cake\Console\ConsoleIo $io
+     * @param \Cake\Console\ConsoleIoInterface $io
      * @param string $model
      * @param string $collection
      * @param array<string, mixed> $operations
@@ -159,7 +158,7 @@ class ImageVariantGenerateCommand extends Command
      *
      * @return void
      */
-    protected function _loop(ConsoleIo $io, string $model, string $collection, array $operations = [], array $options = []): void
+    protected function _loop(ConsoleIoInterface $io, string $model, string $collection, array $operations = [], array $options = []): void
     {
         $offset = 0;
         $limit = $this->limit;

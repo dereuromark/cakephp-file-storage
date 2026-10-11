@@ -3,8 +3,6 @@
 namespace FileStorage\Command;
 
 use Cake\Command\Command;
-use Cake\Console\Arguments;
-use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use FileStorage\Service\AdapterMigrationService;
 use RuntimeException;
@@ -12,13 +10,12 @@ use RuntimeException;
 class MigrateAdapterCommand extends Command
 {
     /**
-     * @param \Cake\Console\Arguments $args The command arguments.
-     * @param \Cake\Console\ConsoleIo $io The console io.
-     *
      * @return int
      */
-    public function execute(Arguments $args, ConsoleIo $io): int
+    public function execute(): int
     {
+        $args = $this->args;
+        $io = $this->io;
         $source = (string)$args->getArgument('source');
         $target = (string)$args->getArgument('target');
         $model = $args->getOption('model');

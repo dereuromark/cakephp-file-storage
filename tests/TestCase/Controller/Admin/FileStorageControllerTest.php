@@ -48,6 +48,8 @@ class FileStorageControllerTest extends TestCase
         $fileStorage = $this->viewVariable('fileStorage');
         $this->assertNotNull($fileStorage);
         $this->assertCount(4, $fileStorage);
+        $this->assertResponseContains('<i class="fas fa-trash"></i>');
+        $this->assertResponseNotContains('&lt;i class="fas fa-trash"&gt;');
     }
 
     /**

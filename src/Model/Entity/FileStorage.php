@@ -38,7 +38,7 @@ class FileStorage extends Entity implements FileStorageEntityInterface
      *
      * @var array<string, bool>
      */
-    protected array $_accessible = [
+    protected array $patchable = [
         '*' => true,
         'id' => false,
         'uuid' => false,

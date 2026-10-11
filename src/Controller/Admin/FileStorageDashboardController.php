@@ -35,7 +35,7 @@ class FileStorageDashboardController extends FileStorageAppController
         /** @var int|null $totalBytes */
         $totalBytes = $this->FileStorage->find()
             ->select(['total' => 'SUM(filesize)'])
-            ->disableHydration()
+            ->enableHydration(false)
             ->all()
             ->first()['total'] ?? 0;
 
@@ -54,7 +54,7 @@ class FileStorageDashboardController extends FileStorageAppController
             ->groupBy(['collection'])
             ->orderByDesc('count')
             ->limit(10)
-            ->disableHydration()
+            ->enableHydration(false)
             ->all()
             ->toList();
 
@@ -68,7 +68,7 @@ class FileStorageDashboardController extends FileStorageAppController
             ->groupBy(['model'])
             ->orderByDesc('count')
             ->limit(10)
-            ->disableHydration()
+            ->enableHydration(false)
             ->all()
             ->toList();
 
@@ -80,7 +80,7 @@ class FileStorageDashboardController extends FileStorageAppController
             ->where(['adapter IS NOT' => null])
             ->groupBy(['adapter'])
             ->orderByDesc('count')
-            ->disableHydration()
+            ->enableHydration(false)
             ->all()
             ->toList();
 
@@ -95,7 +95,7 @@ class FileStorageDashboardController extends FileStorageAppController
             ->groupBy(['mime_type'])
             ->orderByDesc('bytes')
             ->limit(10)
-            ->disableHydration()
+            ->enableHydration(false)
             ->all()
             ->toList();
 

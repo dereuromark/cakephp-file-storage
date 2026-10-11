@@ -337,7 +337,7 @@ class FileStorageBehaviorDeduplicationTest extends FileStorageTestCase
         $listener = function () use ($connection): void {
             $this->FileStorage->setConnection($connection);
         };
-        $this->FileStorage->getEventManager()->on('Model.beforeSave', ['priority' => 1], $listener);
+        $this->FileStorage->getEventManager()->on('Model.beforeSave', $listener, ['priority' => 1]);
         try {
             $this->FileStorage->save($entity);
             $this->fail('Expected unsupported driver failure');

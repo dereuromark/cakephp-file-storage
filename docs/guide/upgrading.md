@@ -294,3 +294,7 @@ The command copies the main file and all variant paths, then updates
 `file_storage.adapter` only after every file for that row was copied
 successfully. Missing source files skip that row. Existing target files skip that
 row unless you pass `--overwrite`.
+
+## CakePHP 6
+
+This development branch uses CakePHP 6. Application extensions use the inherited `defaultConfig`, `config`, `table` and `View` properties. Entity mass-assignment rules use `patchable`, and per-operation overrides use `patchableFields`. Command implementations use `execute()` with `$this->args` and `$this->io`.

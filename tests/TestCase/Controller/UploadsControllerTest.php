@@ -30,10 +30,10 @@ class UploadsControllerTest extends ResumableUploadTestCase
         $this->configApplication(UploadsApplication::class, [CONFIG]);
     }
 
-    protected function _handleError(Throwable $exception): void
+    protected function handleError(Throwable $exception): void
     {
         if ($exception instanceof InvalidCsrfTokenException) {
-            $this->_response = (new Response())->withStatus(403);
+            $this->response = (new Response())->withStatus(403);
 
             return;
         }
@@ -46,7 +46,7 @@ class UploadsControllerTest extends ResumableUploadTestCase
         $this->configRequest(['headers' => ['Tus-Resumable' => '1.0.0', 'Upload-Length' => '3', 'Upload-Metadata' => $this->metadata()]]);
         $this->post('/file-storage/uploads');
         $this->assertResponseCode(201);
-        $location = $this->_response->getHeaderLine('Location');
+        $location = $this->response->getHeaderLine('Location');
         $this->assertMatchesRegularExpression('#^/file-storage/uploads/[0-9a-f-]{36}$#', $location);
         $this->configRequest(['headers' => ['Tus-Resumable' => '1.0.0', 'Content-Type' => 'application/offset+octet-stream', 'Upload-Offset' => '0']]);
         $this->patch($location, 'abc');
@@ -80,8 +80,18 @@ class UploadsControllerTest extends ResumableUploadTestCase
             $this->configRequest(['headers' => $headers]);
             $this->post('/file-storage/uploads');
             $this->assertResponseCode(403);
+        } finally {
+            Configure::delete('Test.uploadCsrf');
+        }
+    }
+
+    public function testCsrfTokenAllowsApplicationUpload(): void
+    {
+        Security::setSalt('upload-controller-test-salt-1234567890');
+        Configure::write('Test.uploadCsrf', true);
+        try {
             $this->enableCsrfToken();
-            $this->configRequest(['headers' => $headers]);
+            $this->configRequest(['headers' => ['Tus-Resumable' => '1.0.0', 'Upload-Length' => '3', 'Upload-Metadata' => $this->metadata()]]);
             $this->post('/file-storage/uploads');
             $this->assertResponseCode(201);
         } finally {

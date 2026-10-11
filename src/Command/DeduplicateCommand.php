@@ -3,8 +3,6 @@
 namespace FileStorage\Command;
 
 use Cake\Command\Command;
-use Cake\Console\Arguments;
-use Cake\Console\ConsoleIo;
 use Cake\Console\ConsoleOptionParser;
 use FileStorage\Service\ExistingFileDeduplicator;
 use InvalidArgumentException;
@@ -18,8 +16,10 @@ use RuntimeException;
  */
 class DeduplicateCommand extends Command
 {
-    public function execute(Arguments $args, ConsoleIo $io): ?int
+    public function execute(): ?int
     {
+        $args = $this->args;
+        $io = $this->io;
         $limit = $args->getOption('limit');
         if ($limit !== null && (filter_var($limit, FILTER_VALIDATE_INT) === false || (int)$limit < 1)) {
             $io->err('Limit must be a positive integer.');

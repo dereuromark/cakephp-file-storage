@@ -37,7 +37,7 @@ class DataTransformerTest extends TestCase
             'path' => 'Item/test.jpg',
             'uuid' => 'test-uuid-123',
         ], [
-            'accessibleFields' => ['*' => true],
+            'patchableFields' => ['*' => true],
         ]);
 
         $file = $transformer->entityToFileObject($entity);

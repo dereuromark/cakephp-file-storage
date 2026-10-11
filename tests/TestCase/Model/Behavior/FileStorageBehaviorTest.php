@@ -145,7 +145,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $entity = $this->FileStorage->newEntity([
             'file' => $file,
         ], [
-            'accessibleFields' => ['*' => true],
+            'patchableFields' => ['*' => true],
         ]);
 
         $event = new Event('Model.beforeSave', $this->FileStorage, [
@@ -174,7 +174,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
                 'type' => 'image/jpeg',
             ],
         ], [
-            'accessibleFields' => ['*' => true],
+            'patchableFields' => ['*' => true],
         ]);
 
         $event = new Event('Model.beforeSave', $this->FileStorage, [
@@ -239,7 +239,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
         $entity = $this->FileStorage->patchEntity(
             $entity,
             ['file' => $this->titusUpload()],
-            ['accessibleFields' => ['*' => true]],
+            ['patchableFields' => ['*' => true]],
         );
         $event = new Event('Model.beforeSave', $this->FileStorage, ['entity' => $entity]);
 
@@ -349,7 +349,7 @@ class FileStorageBehaviorTest extends FileStorageTestCase
      */
     protected function beforeSaveWithUpload(UploadedFile $file): FileStorageEntity
     {
-        $entity = $this->FileStorage->newEntity(['file' => $file], ['accessibleFields' => ['*' => true]]);
+        $entity = $this->FileStorage->newEntity(['file' => $file], ['patchableFields' => ['*' => true]]);
         $event = new Event('Model.beforeSave', $this->FileStorage, ['entity' => $entity]);
 
         $this->FileStorage->behaviors()->FileStorage->beforeSave($event, $entity, new ArrayObject([]));

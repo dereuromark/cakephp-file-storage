@@ -17,10 +17,10 @@ class UploadsApplication extends Application
 {
     public function routes(RouteBuilder $routes): void
     {
-        $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes): void {
+        $routes->plugin('FileStorage', function (RouteBuilder $routes): void {
             $routes->connect('/uploads', ['controller' => 'Uploads', 'action' => 'collection']);
             $routes->connect('/uploads/{id}', ['controller' => 'Uploads', 'action' => 'resource'], ['pass' => ['id']]);
-        });
+        }, ['path' => '/file-storage']);
     }
 
     public function middleware(MiddlewareQueue $middleware): MiddlewareQueue
