@@ -12,8 +12,11 @@ your application. Each record contains:
 
 | Field | Description |
 |-------|-------------|
-| `id` | Unique UUID for the file. |
-| `foreign_key` | The id of the entity this file belongs to (e.g. user id, post id). Type follows the global `Polymorphic.type` config (default `integer`) — see [Foreign key column types](./installation#foreign-key-column-types). |
+| `id` | Integer database primary key. |
+| `uuid` | Public/storage UUID used in signed URLs and path generation. |
+| `hash` | Content hash, SHA-256 by default. |
+| `blob_id` | Shared blob reference when deduplication is enabled. |
+| `foreign_key` | The id of the entity this file belongs to (e.g. user id, post id). Type follows the global `Polymorphic.type` config (default `integer`): see [Foreign key column types](./installation#foreign-key-column-types). |
 | `model` | The model name (e.g. `Users`, `Posts`). |
 | `collection` | The collection / type of file (e.g. `Avatar`, `Cover`, `Gallery`). |
 | `filename` | Original filename. |
@@ -48,8 +51,8 @@ for every variant. This matters for seeders, imports and migrations; the
 
 This distinction is important:
 
-- **Model** — the table alias (e.g. `Users`, `Posts`), from `$this->table()->getAlias()`.
-- **Collection** — a grouping within a model (e.g. `Avatar`, `Cover`, `Gallery`).
+- **Model**: the table alias (e.g. `Users`, `Posts`), from `$this->table()->getAlias()`.
+- **Collection**: a grouping within a model (e.g. `Avatar`, `Cover`, `Gallery`).
 
 For example, a `Posts` model might have a `Cover` collection for cover images, a
 `Gallery` collection for gallery images, and an `Attachments` collection for PDF
@@ -63,10 +66,12 @@ See the [Installation](./installation) guide.
 
 ### 2. Configure the storage service
 
-In your `config/bootstrap.php` or a dedicated `config/storage.php`:
+In your `config/bootstrap.php` or a dedicated `config/storage.php` loaded with
+`require CONFIG . 'storage.php';` from bootstrap:
 
 ```php
 <?php
+use Cake\Core\Configure;
 use PhpCollective\Infrastructure\Storage\StorageAdapterFactory;
 use PhpCollective\Infrastructure\Storage\StorageService;
 use PhpCollective\Infrastructure\Storage\Factories\LocalFactory;
@@ -78,6 +83,8 @@ use PhpCollective\Infrastructure\Storage\Utility\FilenameSanitizer;
 $storageFactory = new StorageAdapterFactory();
 $storageService = new StorageService($storageFactory);
 
+// This example stores PUBLIC files under webroot.
+// For private files use ROOT . DS . 'storage' . DS . 'files' instead.
 // Add a Local storage adapter
 $storageService->addAdapterConfig(
     'Local',
@@ -92,7 +99,7 @@ $pathBuilder = new PathBuilder([
     'pathTemplate' => '{model}{ds}{collection}{ds}{randomPath}{ds}{strippedId}{ds}{filename}.{extension}',
     'variantPathTemplate' => '{model}{ds}{collection}{ds}{randomPath}{ds}{strippedId}{ds}{filename}.{hashedVariant}.{extension}',
     'randomPathLevels' => 1,
-    'sanitizer' => new FilenameSanitizer([
+    'filenameSanitizer' => new FilenameSanitizer([
         'urlSafe' => true,
         'removeUriReservedChars' => true,
         'maxLength' => 190,
@@ -160,8 +167,8 @@ Configure::write('FileStorage.behaviorConfig', [
 echo $this->Form->control('avatar.upload', ['type' => 'file']);
 ```
 
-This is useful when integrating with existing forms or APIs that use different
-field naming conventions.
+This applies to direct saves on the file table. `FileAssociation` currently
+expects `file`, so keep that name when saving through parent associations.
 
 ## Adding file upload to your model
 
@@ -248,7 +255,8 @@ protected array $_accessible = [
 ```
 
 ::: warning Field naming
-- The field must be named `*.file` — the behavior looks for this specific name.
+- Associated uploads through `FileAssociation` use `*.file`. A custom `fileField`
+  on the upload behavior alone does not change the association behavior.
 - For `hasOne`, use the singular property name (e.g. `cover_image.file`).
 - For `hasMany`, use the plural property name with an index (e.g. `gallery_images.0.file`).
 :::
@@ -261,7 +269,13 @@ public function add()
     $post = $this->Posts->newEmptyEntity();
 
     if ($this->request->is('post')) {
-        $post = $this->Posts->patchEntity($post, $this->request->getData());
+        $post = $this->Posts->patchEntity($post, $this->request->getData(), [
+            'fields' => ['title', 'body', 'cover_image', 'gallery_images'],
+            'associated' => [
+                'CoverImages' => ['fields' => ['file', 'filename', 'filesize', 'mime_type', 'extension']],
+                'GalleryImages' => ['fields' => ['file', 'filename', 'filesize', 'mime_type', 'extension']],
+            ],
+        ]);
 
         if ($this->Posts->save($post)) {
             $this->Flash->success(__('The post has been saved.'));
@@ -286,18 +300,23 @@ $post = $this->Posts->get($id, contain: ['CoverImages', 'GalleryImages']);
 ### Display in a template
 
 ```php
-// hasOne — singular property
+// hasOne: singular property
 <?php if ($post->cover_image) { ?>
     <img src="/files/<?= h($post->cover_image->path) ?>" alt="Cover">
 <?php } ?>
 
-// hasMany — plural property
+// hasMany: plural property
 <?php foreach ($post->gallery_images as $image) { ?>
     <img src="/files/<?= h($image->path) ?>" alt="Gallery Image">
 <?php } ?>
 ```
 
-For displaying image variants, prefer the [Image helper](/images/helper) — it
+These direct URLs work only for the public local root above. For private storage,
+generate an authorized [signed URL](/serving/signed-urls). The Image helper
+does not authorize requests; for this public root set `FileStorage.pathPrefix`
+to `files/`.
+
+For displaying image variants, prefer the [Image helper](/images/helper): it
 handles variant lookup, fallbacks, and modern formats for you.
 
 ## Deleting files
@@ -324,11 +343,12 @@ on disk. Use the behavior helper instead.
 :::
 
 ```php
-// Wrong — files won't be deleted from storage
+// Wrong: files won't be deleted from storage
 $this->fetchTable('FileStorage.FileStorage')->deleteAll(['model' => 'Posts']);
 
-// Right — use the behavior's helper method
-$this->Posts->behaviors()->FileStorage->deleteAllFiles(['model' => 'Posts']);
+// Right: use the behavior's helper method
+$this->fetchTable('FileStorage.FileStorage')
+    ->getBehavior('FileStorage')->deleteAllFiles(['model' => 'Posts']);
 ```
 
 ### Deduplicated files
@@ -344,32 +364,42 @@ You can use storage backends beyond the local filesystem.
 
 ### Amazon S3 example
 
+Install the adapter first:
+
+```bash
+composer require league/flysystem-aws-s3-v3
+```
+
+Use the AWS SDK credential provider chain (environment or instance role):
+
 ```php
-use PhpCollective\Infrastructure\Storage\Factories\AwsS3Factory;
+use PhpCollective\Infrastructure\Storage\Factories\AwsS3v3Factory;
 
 $storageService->addAdapterConfig(
     'S3',
-    AwsS3Factory::class,
+    AwsS3v3Factory::class,
     [
-        'key' => 'YOUR_AWS_KEY',
-        'secret' => 'YOUR_AWS_SECRET',
-        'region' => 'us-east-1',
         'bucket' => 'your-bucket-name',
+        'client' => [
+            'region' => 'us-east-1',
+            'version' => 'latest',
+        ],
     ],
 );
 ```
 
-Then specify the adapter when saving files:
+Choose the adapter in trusted server code after marshalling; do not accept
+`adapter`, `path`, ownership or other storage fields from submitted form data:
 
 ```php
-$post->cover_image->adapter = 'S3'; // hasOne — singular property
+$post->cover_image->adapter = 'S3'; // hasOne: singular property
 ```
 
 ## See also
 
-- [Validation](./validation) — validate uploads server-side.
-- [Image variants and versioning](/images/) — automatic thumbnails and crops.
-- [Paths and URLs](./paths-and-urls) — build file paths and URLs anywhere.
+- [Validation](./validation): validate uploads server-side.
+- [Image variants and versioning](/images/): automatic thumbnails and crops.
+- [Paths and URLs](./paths-and-urls): build file paths and URLs anywhere.
 - [Deduplication](./deduplication) - store identical uploads once.
 - [Events](/reference/events) - hook into storing, processing and deleting.
-- [Troubleshooting](/reference/troubleshooting) — common pitfalls and fixes.
+- [Troubleshooting](/reference/troubleshooting): common pitfalls and fixes.

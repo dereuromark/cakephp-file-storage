@@ -28,6 +28,9 @@ class ImageValidator implements UploadValidatorInterface
     public function configure(Validator $validator): void
     {
         $validator->setProvider('upload', static::class);
+        foreach (['fileUnderPhpSizeLimit', 'fileIsValidImage', 'fileAboveMinHeight', 'fileAboveMinWidth'] as $rule) {
+            $validator->remove('file', $rule);
+        }
 
         $validator->add('file', 'fileUnderPhpSizeLimit', [
             'rule' => 'isUnderPhpSizeLimit',
@@ -70,6 +73,12 @@ class ImageValidator implements UploadValidatorInterface
     }
 }
 ```
+
+`configure()` can run more than once while an entity is marshalled and saved.
+Replace your own named rules before adding them again, as above; duplicate rule
+names throw on current CakePHP versions. Do not remove unrelated app rules.
+Remove an empty associated upload from request data before validation if the
+form permits keeping an existing file.
 
 ## Available upload validation rules
 

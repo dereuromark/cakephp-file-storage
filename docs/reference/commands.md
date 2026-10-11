@@ -13,14 +13,15 @@ bin/cake file_storage cleanup [model] [collection] [options]
 
 ### Arguments
 
-- **model** *(optional)* — limit the scan to this model.
-- **collection** *(optional)* — limit the scan to this collection.
+- **model** *(optional)*: limit the scan to this model.
+- **collection** *(optional)*: limit the scan to this collection.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--dryRun`, `-d` | Preview only — report what would change without deleting anything. |
+| `--dryRun`, `-d` | Preview only: report what would change without deleting anything. |
+| `--uploadsOnly` | Only clean expired resumable sessions and abandoned part files. |
 | `--blobsOnly`, `-b` | Only remove unreferenced [deduplicated](/guide/deduplication) blobs and stray blob files. Orphan rows and orphan files are left alone; `model` and `collection` are ignored. |
 
 ### What it reports
@@ -28,10 +29,11 @@ bin/cake file_storage cleanup [model] [collection] [options]
 The command delegates to `FileStorage\Service\CleanupService` and reports:
 
 - the number of rows checked;
-- **orphan rows** — rows whose owning record no longer exists (deleted, or would
-  be deleted with `--dryRun`);
-- **orphan files** — files on disk with no matching row (deleted, or would be);
-- **missing files** — rows whose backing file has disappeared from the adapter;
+- **orphan rows**: rows with an empty `foreign_key` (deleted, or would be deleted
+  with `--dryRun`). Cleanup does not query owning application tables; a stale
+  nonempty foreign key is not detected;
+- **orphan files**: files on disk with no matching row (deleted, or would be);
+- **missing files**: rows whose backing file has disappeared from the adapter;
 - **blobs**: unreferenced blob rows and their files older than the grace period;
 - **stray blob files**: old files under the blob root without a matching blob row;
 - **skipped blobs**: candidates kept because of references, locks, or unsafe file metadata;
@@ -148,8 +150,8 @@ bin/cake file_storage migrate_adapter <source> <target> [options]
 
 ### Arguments
 
-- **source** — source adapter config name, e.g. `Local`.
-- **target** — target adapter config name, e.g. `S3`.
+- **source**: source adapter config name, e.g. `Local`.
+- **target**: target adapter config name, e.g. `S3`.
 
 ### Options
 
@@ -173,6 +175,6 @@ blob. Target-exists and overwrite rules apply only to variants for these rows.
 rows for cleanup. Dry runs make no claims or writes. See
 [Deduplication](/guide/deduplication).
 
-### Expired uploads
+## Expired uploads
 
 `bin/cake file_storage cleanup --uploadsOnly` removes expired resumable sessions and abandoned part files. Add `--dryRun` to preview. Busy locks are skipped; failed part removal keeps the session reservation. The full cleanup command includes this pass across all models and collections. Reports include `deletedUploads`, `deletedUploadParts`, and `skippedUploads`.

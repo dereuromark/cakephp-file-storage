@@ -1,7 +1,7 @@
 # Admin Backend
 
 The plugin ships a self-contained admin backend under the plugin's `Admin`
-prefix — a dashboard, a file listing with bulk delete, and a storage cleanup UI.
+prefix: a dashboard, a file listing with bulk delete, and a storage cleanup UI.
 
 ::: danger Fail-closed by default
 The `Admin/FileStorageController` is **fail-closed**: every action throws
@@ -15,7 +15,7 @@ storage table.
 
 Pick one of the following depending on your auth stack.
 
-### Option A — upstream gate
+### Option A: upstream gate
 
 For an Authentication + Authorization stack, TinyAuth, or custom middleware:
 configure your stack to gate the `Admin` prefix the way you normally would, then
@@ -38,7 +38,7 @@ For TinyAuth specifically, the per-controller ACL line stays the same:
 
 …with `admin` being the role that should be able to access `/admin/file-storage`.
 
-### Option B — inline closure
+### Option B: inline closure
 
 If you don't have a full auth stack and just want to gate by identity / role
 inline:
@@ -76,17 +76,17 @@ Once `adminAccess` is set, the backend exposes:
 
 | URL | Action |
 |-----|--------|
-| `/admin/file-storage` | Dashboard — counts, total size, top collections/models, recent uploads. |
+| `/admin/file-storage` | Dashboard: counts, total size, top collections/models, recent uploads. |
 | `/admin/file-storage/files` | File listing with bulk delete and (optional) variant regen. |
-| `/admin/file-storage/cleanup` | Storage-tree cleanup UI — dry-run preview, then confirm. |
+| `/admin/file-storage/file-storage/cleanup` | Storage-tree cleanup UI: dry-run preview, then confirm. |
 | `/admin/file-storage/dashboard` | Alias for the dashboard. |
-| `/admin/file-storage/files/view/{id}` | View a single `file_storage` entity. |
-| `/admin/file-storage/files/edit/{id}` | Edit a single `file_storage` entity. |
+| `/admin/file-storage/file-storage/view/{id}` | View a single `file_storage` entity. |
+| `/admin/file-storage/file-storage/edit/{id}` | Edit a single `file_storage` entity. |
 
 ## Layout
 
 The plugin ships its own Bootstrap 5 + Font Awesome 6 layout (loaded via CDN with
-SRI — no webroot bundling). Two config keys control how it integrates into your
+SRI: no webroot bundling). Two config keys control how it integrates into your
 application:
 
 ```php
@@ -94,13 +94,13 @@ application:
     'adminAccess' => true,
 
     // Layout switch:
-    //   null        (default) — use the bundled `FileStorage.file_storage` layout
-    //   false                 — fall back to your host app's default layout
-    //   'App.admin'           — use any custom layout you ship
+    //   null        (default): use the bundled `FileStorage.file_storage` layout
+    //   false                : fall back to your host app's default layout
+    //   'App.admin'          : use any custom layout you ship
     'adminLayout' => null,
 
     // Standalone mode: when true, the admin controllers do NOT call
-    // App\Controller\AppController::initialize() — only Flash is loaded.
+    // App\Controller\AppController::initialize(). Only Flash is loaded.
     // Useful for apps without their own admin shell. Default: false (inherit).
     'standalone' => false,
 ],
@@ -116,14 +116,15 @@ You can also add a "back to app" link in the admin header with `adminBackUrl`
 ## Cleanup
 
 The admin's **Cleanup** action runs the same logic as the
-`bin/cake file_storage cleanup` CLI — both delegate to
+`bin/cake file_storage cleanup` CLI: both delegate to
 `FileStorage\Service\CleanupService`. Use the UI for a dry-run preview (orphan
 rows, orphan files on disk, missing backing files), then confirm to run. Use the
 CLI for cron-driven runs.
 
 With [deduplication](/guide/deduplication) the page also lists removed blobs,
 removed stray blob files and skipped blobs. A run from this page is always a
-full cleanup, so it deletes rows without a `foreign_key` too. The blob-only
+full cleanup of the selected model/collection, so it deletes rows without a
+`foreign_key` in that scope too. Blob and upload passes still run globally. The blob-only
 mode is available on the command line: `bin/cake file_storage cleanup --blobsOnly`.
 
 ## Variant regeneration (optional, requires Queue)
@@ -132,7 +133,7 @@ The file listing has a per-row "regenerate variants" button. It's enabled when
 [dereuromark/cakephp-queue](https://github.com/dereuromark/cakephp-queue) is
 installed and loaded; it enqueues a `Queue.Execute` job that runs
 `bin/cake file_storage generate_image_variant …` on a worker (no synchronous
-regen — long requests would 502).
+regen: long requests would 502).
 
 Without the Queue plugin loaded the button is rendered disabled with a tooltip
 pointing to the docs. Install it with:

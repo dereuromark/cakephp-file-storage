@@ -23,6 +23,7 @@ use PhpCollective\Infrastructure\Storage\ContentHashInterface;
 use PhpCollective\Infrastructure\Storage\FileInterface;
 use PhpCollective\Infrastructure\Storage\FileStorage;
 use PhpCollective\Infrastructure\Storage\Processor\ProcessorInterface;
+use PhpCollective\Infrastructure\Storage\Processor\StackProcessor;
 use Psr\Http\Message\UploadedFileInterface;
 use RuntimeException;
 use Throwable;
@@ -692,6 +693,10 @@ class FileStorageBehavior extends Behavior
 
         if ($this->getConfig('fileProcessor') instanceof ProcessorInterface) {
             $this->processor = $this->getConfig('fileProcessor');
+        }
+
+        if ($this->getConfig('fileProcessor') === null) {
+            $this->processor = new StackProcessor([]);
         }
 
         if (!($this->processor instanceof ProcessorInterface)) {

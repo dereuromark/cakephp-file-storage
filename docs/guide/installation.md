@@ -1,5 +1,8 @@
 # Installation
 
+This branch requires PHP 8.2+ and CakePHP 5.3.4+. The optional image processor
+2.x requires PHP 8.3+; use processor 1.x on PHP 8.2.
+
 ## Using Composer
 
 Installing the plugin via [Composer](https://getcomposer.org/) is straightforward.
@@ -15,14 +18,15 @@ composer require dereuromark/cakephp-file-storage
 bin/cake plugin load FileStorage
 ```
 
-If you do not have authentication set up around the admin backend, disable its
-routes so visitors cannot browse to the file-storage backend:
+The admin backend denies access until you configure `FileStorage.adminAccess`.
+If you do not need any plugin routes, load it without routes:
 
 ```bash
 bin/cake plugin load FileStorage --no-routes
 ```
 
-The admin backend is optional — you can always replace it with your own. See the
+This also disables the built-in signed-download route. Keep routes enabled if
+you use `SignedUrlGenerator::url()`. The admin backend is optional. See the
 [Admin Backend](/admin/) page for how to gate and configure it.
 
 ## Database setup
@@ -31,8 +35,13 @@ Set up the plugin database using the
 [official migrations plugin for CakePHP](https://github.com/cakephp/migrations):
 
 ```bash
+composer require cakephp/migrations
+bin/cake plugin load Migrations
 bin/cake migrations migrate -p FileStorage
 ```
+
+Skip loading Migrations if it is already loaded. For an existing installation,
+read [Upgrading](./upgrading) before applying the migration set.
 
 You can also copy the migrations over and adjust them to your needs, then run
 your local `migrations migrate` instead.
@@ -46,10 +55,10 @@ The shipped migration creates `file_storage` with the following column types:
 | `id` | `integer` | The file row's own database primary key. |
 | `uuid` | `CHAR(36)` | The file row's public / storage identity. |
 | `foreign_key` | `integer` | The owning record's id (your `Users.id`, `Posts.id`, …). Configurable via `Polymorphic.type`. |
-| `user_id` | `integer` | Optional uploader / owner id — a plain integer FK to the app's users table. |
+| `user_id` | `integer` | Optional uploader / owner id: a plain integer FK to the app's users table. |
 
 `user_id` and `foreign_key` both follow your application's primary-key signedness
-(via the `Migrations.unsigned_primary_keys` flag — signed by default) for integer
+(via the `Migrations.unsigned_primary_keys` flag: signed by default) for integer
 variants. The `uuid` column stores the storage library's file identity.
 
 #### Configuring the foreign_key type
@@ -66,7 +75,7 @@ config key (default `'integer'`). Accepted values:
 
 To use UUID foreign keys, add the config key before running migrations on a *fresh
 install*. Existing installs require a separate app-side migration to alter the
-`foreign_key` column — changing this value after the initial migration has no
+`foreign_key` column: changing this value after the initial migration has no
 effect on an already-created column.
 
 ```php
@@ -77,22 +86,20 @@ effect on an already-created column.
 ```
 
 ::: tip Upgrading from the UUID primary key schema
-Older versions used `file_storage.id` as a `CHAR(36)` UUID. The next major moves
-the public/storage identity into a dedicated `uuid` column. You can upgrade two
-ways: a minimal, non-destructive migration that just adds `uuid` and keeps your
-current primary key, or the full restructure to an integer `id` primary key. If
-your app stores references to `file_storage.id` outside this plugin, migrate
-those app tables to the new integer `id` or keep using the `uuid` column
-deliberately.
+Older versions used `file_storage.id` as a `CHAR(36)` UUID. Version 5.0 moves
+the public/storage identity into a dedicated `uuid` column and uses an integer
+`id` for database references. The shipped conversion preserves old UUIDs but
+assigns new integer row ids. Update any application-side references as part of
+your migration. Adding `uuid` alone to a legacy UUID-primary-key table is not
+a complete upgrade.
 
-See the [upgrade guide](./upgrading) for both paths and the full migration
+See the [upgrade guide](./upgrading) for the conversion and migration
 checklist.
 :::
 
 ## Adapter-specific configuration
 
-Depending on your storage backend — for example Amazon S3 or Azure — you will
-very likely need additional vendor libraries and extended adapter
+Backends such as Amazon S3 or Azure need additional vendor libraries and extended adapter
 configuration.
 
 The plugin uses the FlySystem-based storage abstraction from the
@@ -101,7 +108,7 @@ the available adapters and their configuration options.
 
 ::: tip
 For local development the bundled `Local` adapter needs nothing extra. See
-[Usage](./usage#configure-storage-service) for a minimal storage configuration.
+[Usage](./usage#_2-configure-the-storage-service) for a minimal storage configuration.
 :::
 
 ## Running the tests
@@ -123,5 +130,5 @@ vendor/bin/phpunit
 
 ## Next steps
 
-- [Quick Start](./quick-start) — a complete avatar upload walkthrough.
-- [Usage](./usage) — storage configuration, associations, and the upload flow.
+- [Quick Start](./quick-start): a complete avatar upload walkthrough.
+- [Usage](./usage): storage configuration, associations, and the upload flow.

@@ -1,6 +1,6 @@
 # Upgrading
 
-This page covers the next major upgrade path for existing applications.
+This page covers the 5.x upgrade path for existing applications.
 
 ## Upload session migration
 
@@ -41,8 +41,7 @@ the [deduplication requirements](./deduplication).
 
 ## Database identity change
 
-Older releases used `file_storage.id` as a `CHAR(36)` UUID primary key. The next
-major release separates the two concerns:
+Older releases used `file_storage.id` as a `CHAR(36)` UUID primary key. Version 5.0 separates the two concerns:
 
 | Column | Meaning |
 |--------|---------|
@@ -55,7 +54,7 @@ Fresh installs run the rewritten initial migration and get both columns directly
 
 Storage paths are derived from the identity string that used to be `id` and is
 now `uuid` (`{randomPath}` and `{strippedId}` are both computed from it). So
-however you upgrade, **backfill `uuid` from the existing `id`** — this keeps
+however you upgrade, **copy each legacy UUID `id` into `uuid`**: this keeps
 every already-stored file resolvable and keeps `CleanupService` from treating
 existing files as orphans.
 
@@ -63,82 +62,46 @@ existing files as orphans.
 Populating `uuid` with fresh random values (e.g. `Text::uuid()`) for existing
 rows repoints path generation away from the files already on disk. Variant
 regeneration then writes to new locations and the cleanup command can delete
-the old files. Always backfill `uuid` from the current `id`.
+the old files. Preserve the original UUID identity.
 :::
 
-Existing installs choose **one** of the two paths below. Do not run both.
+### Use the migration set that owns your table
 
-### Path A — Minimal: add `uuid`, keep your current primary key (recommended)
+Check `bin/cake migrations status -p FileStorage`. If the initial migration is
+already `up`, apply the plugin's migration set. If your application created the
+table itself, adapt the conversion, blob and upload migrations in your app's
+migration set and run `bin/cake migrations migrate`. Do not run the plugin's
+initial migration over an app-managed table. Preserve any custom columns and
+update external foreign keys in your application migration.
 
-Non-destructive and reversible. Adds a `uuid` column and backfills it from the
-existing `id`, leaving your primary key as-is. Works whether your `id` is the
-legacy `CHAR(36)` UUID or you have already switched it to an integer. This is the
-right path if you customized the `file_storage` schema, or manage the table with
-your own application migrations.
+### Existing UUID primary keys
 
-Add this migration to your application's `config/Migrations/` (adjust the
-timestamp prefix in the file name) and run it:
+Use the shipped full conversion below, or write an application migration that
+produces the same integer-`id`, unique-`uuid` schema while preserving old UUIDs.
+Adding a `uuid` column while keeping a legacy `CHAR(36)` primary key is not a
+complete upgrade: new saves leave `id` to the database, and the blob migration
+expects integer file-row references. The shipped conversion skips tables that
+already have a `uuid` column, so do not add that column as a preliminary step.
 
-```php
-<?php
-declare(strict_types=1);
+If your app already converted its ids to integers, backfill `uuid` from the
+preserved original storage identities. Copying new integers or generating random
+UUIDs cannot recover those identities. Rehearse a custom migration against your
+actual schema and file paths.
 
-use Migrations\BaseMigration;
+### Recovering from an earlier add-uuid-only upgrade
 
-class AddUuidToFileStorage extends BaseMigration
-{
-    public function up(): void
-    {
-        // 1. Add nullable uuid so it can be backfilled before enforcing NOT NULL/UNIQUE.
-        $this->table('file_storage')
-            ->addColumn('uuid', 'char', [
-                'limit' => 36,
-                'null' => true,
-                'default' => null,
-                'after' => 'id',
-            ])
-            ->update();
-
-        // 2. Identity-preserving backfill: copy the existing id into uuid so the new
-        //    code recomputes the same storage paths for already-stored files.
-        $this->execute('UPDATE file_storage SET uuid = CAST(id AS CHAR) WHERE uuid IS NULL');
-
-        // 3. Enforce NOT NULL + UNIQUE now every row has a value.
-        $this->table('file_storage')
-            ->changeColumn('uuid', 'char', ['limit' => 36, 'null' => false])
-            ->addIndex(['uuid'], ['unique' => true, 'name' => 'file_storage_uuid_unique'])
-            ->update();
-    }
-
-    public function down(): void
-    {
-        $this->table('file_storage')
-            ->removeIndexByName('file_storage_uuid_unique')
-            ->removeColumn('uuid')
-            ->update();
-    }
-}
-```
-
-```bash
-bin/cake migrations migrate
-```
-
-::: tip Which migration set?
-If the plugin manages your `file_storage` table (the plugin migrations show as
-`up` in `bin/cake migrations status -p FileStorage`), you can instead place a
-copy of this migration in the plugin's migration set and run
-`bin/cake migrations migrate -p FileStorage`. If your application already owns
-the table (the plugin migrations show as `down`), keep the migration in your
-app and run `bin/cake migrations migrate` — do **not** run `-p FileStorage`, or
-it will try to apply the plugin's initial migration on top of your table.
-:::
+If you followed the previous add-uuid-only recipe and still have a UUID `id`,
+do not rerun the shipped conversion unchanged: it skips tables with `uuid`.
+Use an application migration to rebuild the integer primary key, preserve the
+existing `uuid` values, and update application references. Rehearse it on a copy
+of the database and keep a backup. Do not drop `uuid` blindly; existing rows or
+external references may already rely on it.
 
 ### Expect four `** MISSING **` rows in the migration status
 
-The next major folds the intermediate 4.x migrations into the rewritten initial
-migration, so the plugin now ships three migration files instead of five. Existing
-installations still have the four collapsed ids recorded in their
+Version 5.0 folds the intermediate 4.x migrations into the rewritten initial
+migration. The plugin now ships four migration files: the initial schema,
+identity conversion, blobs and upload sessions. Existing installations still have the four collapsed ids recorded in their
 `cake_migrations` table, and those rows now point at files that no longer exist:
 
 ```text
@@ -158,12 +121,10 @@ output is affected.
 Read it as follows when deciding which migration set owns your table: the
 `InitialMigration` row is the one that answers the question above. If it shows
 `up`, the plugin manages your table; the four `MISSING` rows below it do not
-change that. If you prefer a clean status listing, delete those four rows from
-your `cake_migrations` table — but only after confirming your `file_storage`
-table has the `mime_type`, `extension`, `variants`, `metadata` and `collection`
-columns they added.
+change that. Keep the migration history intact. The missing entries are historical records,
+not pending migrations.
 
-### Path B — Full restructure to an integer primary key
+### Full restructure to an integer primary key
 
 Destructive and intentionally irreversible. Use only if your table still has the
 legacy `CHAR(36)` UUID primary key and you want the canonical integer-PK schema.
@@ -183,10 +144,10 @@ from `file_storage_uuid_id_backup` or from your database backup.
 
 ### Rehearse before production
 
-Whichever path you choose, rehearse on a copy of your database first:
+Rehearse on a copy of your database first:
 
 1. Apply the migration and confirm `uuid` is populated (`NOT NULL`, unique).
-2. Load a few pages that render stored images — they must still resolve.
+2. Load a few pages that render stored images: they must still resolve.
 3. Regenerate variants for one model and confirm the files land at their
    existing paths (overwrite in place), not in a new parallel tree.
 4. Run the cleanup command in dry-run mode and confirm it flags **zero**
@@ -232,11 +193,11 @@ generator.
 
 The previous `FileStorage.useEntityModelForVariants` opt-in is now the default
 behavior. `imageVariants` is resolved by the **persisted `file_storage.model`
-value**, then the collection — `FileStorageBehavior::processImages()` reads
+value**, then the collection: `FileStorageBehavior::processImages()` reads
 `$imageVariants[$model][$collection]`. Previously it resolved by the **FileStorage
 association alias**.
 
-::: danger This is a silent breaking change — re-key your config
+::: danger This is a silent breaking change: re-key your config
 If your `imageVariants` config is keyed by association alias and the alias
 differs from the owning table alias, the lookup now misses. There is **no error**:
 `processImages()` simply returns the file unprocessed, so new uploads are saved
@@ -248,7 +209,7 @@ The outer key is the owning table's alias (what the `FileAssociation` behavior
 writes into `file_storage.model`), not the association name:
 
 ```php
-// Before — keyed by association alias (e.g. hasOne('ProfilePhotos'))
+// Before: keyed by association alias (e.g. hasOne('ProfilePhotos'))
 'FileStorage' => [
     'imageVariants' => [
         'ProfilePhotos' => [       // association alias
@@ -257,7 +218,7 @@ writes into `file_storage.model`), not the association name:
     ],
 ],
 
-// After — keyed by the persisted file_storage.model value
+// After: keyed by the persisted file_storage.model value
 'FileStorage' => [
     'imageVariants' => [
         'Profiles' => [            // owning model / table alias
@@ -282,7 +243,7 @@ with empty variants. After fixing the config, regenerate them:
 bin/cake file_storage generate_image_variant <Model> <Collection>
 ```
 
-Existing rows whose variants were generated before the upgrade are unaffected —
+Existing rows whose variants were generated before the upgrade are unaffected,
 their variant paths are already persisted and still render; only the write path
 (new uploads and regeneration) depends on this config.
 

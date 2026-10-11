@@ -1,9 +1,9 @@
 # Serving Files
 
 The FileStorage plugin provides utilities for URL generation and signed URLs, and
-ships a built-in signed-URL serving action. For anything more — custom
-authorization, audit logging, header tweaks — applications implement their own
-serving controller based on their specific requirements.
+ships a built-in signed-URL serving action. Applications implement their own
+serving controller when they need custom authorization, audit logging or
+response headers.
 
 ::: info Key principle
 The plugin provides URL-generation tools and a signed-serving endpoint; your
@@ -12,31 +12,32 @@ application implements custom serving and access control where it needs to.
 
 For temporary, authentication-free access, the
 [built-in signed-URL serving](./signed-urls#built-in-signed-url-serving) is the
-recommended path — you don't need a controller at all. The rest of this section
+recommended path: you don't need a controller at all. The rest of this section
 covers building your own serving controller when you need app-specific
 authorization.
 
 ## Quick start
 
-### 1. Configure the serving route
+### 1. Register the serving route
 
-Tell the plugin where your serving controller is:
+Add a route in your application's `config/routes.php`, inside its app scope:
 
 ```php
-// config/app.php
-'FileStorage' => [
-    'serveRoute' => [
-        'controller' => 'Images',
-        'action' => 'display',
-        'plugin' => false,
-    ],
-    'signatureSecret' => env('FILE_STORAGE_SECRET'),
-],
+$routes->connect('/images/display/{id}', [
+    'controller' => 'Images',
+    'action' => 'display',
+], ['pass' => ['id']]);
 ```
+
+This example uses the integer database id. The built-in signed-download route
+uses the UUID instead. There is no `FileStorage.serveRoute` configuration hook;
+custom URLs must be generated with CakePHP's router.
 
 ### 2. Implement your serving controller
 
-Create a controller to serve files with your authorization logic:
+Create a controller to serve files with your authorization logic. This example
+requires a server-assigned `user_id` on the file row. The avatar quick start
+uses `foreign_key` instead, so check the owning user relation for that setup:
 
 ```php
 // src/Controller/ImagesController.php
@@ -71,9 +72,9 @@ class ImagesController extends AppController
 
         // Get the storage adapter and read the file
         $behavior = $fileStorageTable->getBehavior('FileStorage');
-        $adapter = $behavior->getStorageAdapter();
+        $adapter = $behavior->getStorageAdapter((string)$fileStorage->adapter);
 
-        if (!$adapter->has($fileStorage->path)) {
+        if (!$adapter->fileExists($fileStorage->path)) {
             throw new NotFoundException('File not found');
         }
 
@@ -82,9 +83,11 @@ class ImagesController extends AppController
         return $this->response
             ->withType($fileStorage->mime_type)
             ->withStringBody($contents)
-            ->withCache('-1 minute', '+1 year')
+            ->withHeader('Cache-Control', 'private, no-store')
+            ->withHeader('X-Content-Type-Options', 'nosniff')
+            ->withHeader('Content-Security-Policy', "sandbox; default-src 'none'")
             ->withHeader('Content-Length', (string)$fileStorage->filesize)
-            ->withHeader('Content-Disposition', 'inline; filename="' . $fileStorage->filename . '"');
+            ->withDownload((string)$fileStorage->filename);
     }
 
     /**
@@ -95,9 +98,10 @@ class ImagesController extends AppController
      */
     protected function checkAccess($fileStorage): bool
     {
-        // Implement your authorization logic.
-        // See the Authorization page for ready-made patterns.
-        return true;
+        $identity = $this->request->getAttribute('identity');
+
+        return $identity !== null && $fileStorage->user_id !== null
+            && (string)$fileStorage->user_id === (string)$identity->getIdentifier();
     }
 }
 ```
@@ -117,6 +121,6 @@ echo $this->Html->link(
 
 ## Next steps
 
-- [Authorization](./authorization) — ready-made access-control patterns.
-- [Signed URLs](./signed-urls) — temporary, token-based access.
-- [Security and performance](./security) — hardening, logging, and caching.
+- [Authorization](./authorization): ready-made access-control patterns.
+- [Signed URLs](./signed-urls): temporary, token-based access.
+- [Security and performance](./security): hardening, logging, and caching.

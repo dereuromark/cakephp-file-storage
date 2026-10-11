@@ -11,14 +11,14 @@ publicly accessible.
 :::
 
 ```php
-// ❌ INSECURE — no authorization
+// ❌ INSECURE: no authorization
 public function display($id = null) {
     $fileStorage = $this->fetchTable('FileStorage.FileStorage')->get($id);
     // Serves to anyone!
     return $this->response->withStringBody($adapter->read($fileStorage->path));
 }
 
-// ✅ SECURE — proper authorization
+// ✅ SECURE: proper authorization
 public function display($id = null) {
     $fileStorage = $this->fetchTable('FileStorage.FileStorage')->get($id);
 
@@ -35,11 +35,11 @@ public function display($id = null) {
 Always verify the relationship between files and entities:
 
 ```php
-// ❌ INSECURE — trusts foreign_key blindly
+// ❌ INSECURE: trusts foreign_key blindly
 $imageId = $fileStorage->foreign_key;
 $image = $this->Images->get($imageId);
 
-// ✅ SECURE — verifies the relationship exists
+// ✅ SECURE: verifies the relationship exists
 $image = $this->Images->find()
     ->where([
         'Images.file_storage_id' => $fileStorage->id,
@@ -48,13 +48,14 @@ $image = $this->Images->find()
     ->first();
 
 if (!$image) {
-    // Relationship broken — deny access
+    // Relationship broken: deny access
 }
 ```
 
 ## Prevent hotlinking
 
-Block external referers from embedding your files:
+Referer checks can discourage browser hotlinking. They are not authorization:
+clients can omit or forge this header. Check access independently:
 
 ```php
 protected function checkAccess($fileStorage): bool
@@ -82,7 +83,9 @@ protected function isForeignReferer(): bool
 
 ## Rate limiting
 
-Implement rate limiting to prevent abuse:
+Use atomic counters or a reverse proxy for enforced rate limits. The following
+cache example is an approximate per-key inactivity window: reads and writes can
+race, and each write renews the cache TTL. It is not a fixed hourly quota:
 
 ```php
 use Cake\Cache\Cache;
@@ -104,7 +107,7 @@ protected function checkRateLimit(): bool
 
     $count = Cache::read($cacheKey, 'file_rate_limit') ?: 0;
 
-    if ($count > 100) { // 100 files per hour
+    if ($count >= 100) { // Approximate per-key limit.
         return false;
     }
 
@@ -128,7 +131,10 @@ Configure the cache:
 
 ## File-type restrictions
 
-Restrict which MIME types can be served:
+Restrict which MIME types can be served. Populate the stored MIME type from
+server-side content detection before relying on this check. For arbitrary
+documents, prefer attachment delivery with a sandbox CSP, as in the
+[serving controller](./):
 
 ```php
 protected array $allowedMimeTypes = [
@@ -151,8 +157,8 @@ protected function checkAccess($fileStorage): bool
 
 ## Signed-URL rotation
 
-For sensitive files, rotate signatures periodically by mixing a per-user secret
-into the signature:
+For a custom serving controller, generate and verify with a per-user secret.
+The built-in signed action does not resolve per-user secrets:
 
 ```php
 $signature = SignedUrlGenerator::generate($fileStorage, [
@@ -160,7 +166,8 @@ $signature = SignedUrlGenerator::generate($fileStorage, [
     'secret' => $this->getUserSecret($user), // user-specific secret
 ]);
 
-// Invalidate all of a user's signed URLs by rotating their secret
+// In your custom controller, verify with this same per-user secret.
+// Invalidate that user's signed URLs by rotating it.
 protected function rotateUserSecret($userId): void
 {
     $usersTable = $this->fetchTable('Users');
@@ -229,7 +236,8 @@ protected function checkAccess($fileStorage): bool
 
 ### Eager-load relationships
 
-Load related data in one query to avoid N+1:
+Define the application associations first, then eager-load related data to avoid
+issuing a query per row. These `Images` and `Albums` associations are app-specific:
 
 ```php
 // ❌ N+1 problem
@@ -252,12 +260,12 @@ public function display(?string $id = null): Response
 {
     $fileStorage = $this->fetchTable('FileStorage.FileStorage')->get($id);
 
-    // Public files — redirect to the CDN
+    // Public files: redirect to the CDN
     if ($fileStorage->is_public) {
         return $this->redirect($this->getCdnUrl($fileStorage));
     }
 
-    // Private files — serve through PHP with authorization
+    // Private files: serve through PHP with authorization
     if (!$this->checkAccess($fileStorage)) {
         throw new ForbiddenException();
     }
@@ -268,5 +276,5 @@ public function display(?string $id = null): Response
 
 ## See also
 
-- [Troubleshooting](/reference/troubleshooting) — debugging 403s and signed-URL issues.
-- [Authorization](./authorization) — access-control patterns.
+- [Troubleshooting](/reference/troubleshooting): debugging 403s and signed-URL issues.
+- [Authorization](./authorization): access-control patterns.

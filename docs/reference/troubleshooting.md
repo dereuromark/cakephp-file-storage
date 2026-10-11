@@ -7,7 +7,9 @@
 1. Check that your form has `'type' => 'file'`.
 2. Verify the field is named `*.file` (e.g. `cover_image.file` for `hasOne`,
    `gallery_images.0.file` for `hasMany`).
-3. Ensure `model`, `collection`, and `adapter` are set on the entity.
+3. Attach `FileStorage.FileAssociation` to the parent table. It fills `model` and
+   `collection`; the plugin defaults the adapter to `Local`. For a direct file
+   table save, supply the model and collection yourself.
 4. Check file permissions on the upload directory.
 
 ### Images not processing
@@ -41,7 +43,8 @@ protected function checkAccess($fileStorage): bool
     $user = $this->request->getAttribute('identity');
     Log::debug('User: ' . ($user ? $user->getIdentifier() : 'guest'));
 
-    // … your authorization logic
+    return $user !== null && $fileStorage->user_id !== null
+        && (string)$fileStorage->user_id === (string)$user->getIdentifier();
 }
 ```
 
@@ -53,14 +56,14 @@ Verify your serving route is registered:
 bin/cake routes | grep display
 ```
 
-It should show your configured route, e.g. `/images/display/:id`.
+It should show your configured route, e.g. `/images/display/{id}`.
 
 ### Signed URLs return 403
 
 Possible causes:
 
-1. **Clock skew** between servers.
-2. **The file was modified** — the signature includes the modification time.
+1. **An expired URL** or clock skew between servers.
+2. **The file was modified**: the signature includes the modification time.
 3. **Wrong signature secret.**
 
 Verify a signature manually:
@@ -136,13 +139,13 @@ as the file name too.
 ## FAQ
 
 **Can I serve files without going through a controller?**
-For private files this is not recommended — direct file access bypasses
+For private files this is not recommended: direct file access bypasses
 authorization. For public files, consider a CDN or `X-Accel-Redirect` /
 `X-Sendfile`. For temporary token access, use the built-in
 [signed-URL serving](/serving/signed-urls#built-in-signed-url-serving).
 
 **How do I serve files from S3 or cloud storage?**
-The storage adapter handles it. Your controller code stays the same — just
+The storage adapter handles it. Your controller code stays the same: just
 configure the adapter.
 
 **Can I customize the response headers?**
@@ -156,5 +159,6 @@ return $this->response
 ```
 
 **Do I need to use the URL helper?**
-No, it's optional. You can build URLs manually — the helper just makes it easier
-and configurable.
+URL utilities are optional. Use the Image helper for direct public image URLs
+or `SignedUrlGenerator::url()` for the built-in signed route. Build custom
+controller URLs with CakePHP's router. There is no Storage helper.

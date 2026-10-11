@@ -11,7 +11,7 @@ useful for:
 ## Built-in signed-URL serving
 
 ::: tip Recommended
-This is the simplest path — no serving controller required.
+This is the simplest path: no serving controller required.
 :::
 
 The plugin ships a public action at `/file-storage/signed/{uuid}/{signature}` that
@@ -32,18 +32,30 @@ $url = SignedUrlGenerator::url($fileStorage, [
 // → http://example.com/file-storage/signed/<uuid>/<sha256>?expires=1799999999
 ```
 
-The helper places the signature in the path segment (so reverse-proxy access
-logs that scrub query strings don't shred half the credential) and `expires` in
-the query string. The matching action handles:
+The helper places the signature in the path segment and `expires` in the query
+string. The matching action handles:
 
 - **404** for an unknown UUID;
 - **403** for tampered or expired signatures (same status either way, so probing
   callers can't distinguish);
 - **404** if the backing file disappeared from the adapter.
 
-If `Authentication` is loaded globally, the `signed` action calls
-`allowUnauthenticated('signed')` on initialize so the request isn't bounced to
-the login form — that's the entire authorization story for a signed URL.
+The controller extends CakePHP's base controller and does not inherit your
+`AppController` components. If an Authentication component is present, it allows
+the `signed` action unauthenticated. Application-wide middleware may still need
+an allow-list or an authorization exemption for this route. Test it as a guest.
+Keep other middleware checks appropriate to your application.
+
+The built-in action serves content inline using the row's `mime_type`. Validate
+uploads and normalize stored MIME types from actual bytes before issuing URLs
+for untrusted uploads; client MIME headers alone are not trustworthy. Use a
+custom controller with attachment delivery for arbitrary documents.
+
+The URL is a bearer credential. Avoid logging its signature or leaking it through
+referer headers. Always pass `expires` for temporary access: omitting it creates
+a signature with no time limit. The built-in action serves originals only and
+verifies with the configured secret, so per-call custom secrets require a custom
+controller that verifies with the same secret.
 
 ## Custom serving controller
 
@@ -70,7 +82,7 @@ public function share($fileStorageId)
     $url = Router::url([
         'controller' => 'Files',
         'action' => 'serve',
-        $fileStorage->uuid,
+        $fileStorage->id,
         '?' => $signatureData,
         '_full' => true,
     ]);
@@ -94,7 +106,7 @@ $signature = SignedUrlGenerator::generate($fileStorage, [
 
 // Specific date/time
 $signature = SignedUrlGenerator::generate($fileStorage, [
-    'expires' => strtotime('2025-12-31 23:59:59'),
+    'expires' => strtotime('2027-12-31 23:59:59 UTC'),
 ]);
 ```
 
@@ -105,7 +117,7 @@ For additional security, use a custom secret:
 ```php
 // config/app.php
 'FileStorage' => [
-    'signatureSecret' => env('FILE_STORAGE_SECRET', 'your-secret-key'),
+    'signatureSecret' => env('FILE_STORAGE_SECRET'),
 ],
 ```
 
@@ -134,17 +146,20 @@ public function display(?string $id = null): Response
     $signature = $this->request->getQuery('signature');
     $expires = $this->request->getQuery('expires');
 
-    if ($signature && $expires) {
+    if ($signature !== null) {
+        if (!is_string($signature) || ($expires !== null && !is_scalar($expires))) {
+            throw new ForbiddenException('Invalid signature parameters');
+        }
         $valid = SignedUrlGenerator::verify($fileStorage, $signature, [
-            'expires' => (int)$expires,
+            'expires' => $expires !== null ? (int)$expires : null,
         ]);
 
         if (!$valid) {
             throw new ForbiddenException('Invalid or expired signature');
         }
-        // Signature valid — skip normal authorization
+        // Signature valid: skip normal authorization
     } elseif (!$this->checkAccess($fileStorage)) {
-        // Normal access — check authorization
+        // Normal access: check authorization
         throw new ForbiddenException('Access denied');
     }
 
@@ -152,11 +167,11 @@ public function display(?string $id = null): Response
 }
 ```
 
-The signature includes the file storage id, the file path, the file modification
+The signature includes the public/storage UUID, the file path, the file modification
 timestamp (so it invalidates on file change), and the expiration timestamp.
 
 ## See also
 
-- [Authorization](./authorization) — access-control patterns.
-- [Security and performance](./security#signed-url-rotation) — rotating
+- [Authorization](./authorization): access-control patterns.
+- [Security and performance](./security#signed-url-rotation): rotating
   signatures for sensitive files.
