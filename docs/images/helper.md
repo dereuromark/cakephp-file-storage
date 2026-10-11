@@ -22,6 +22,10 @@ class AppView extends View
 }
 ```
 
+The helper builds direct URLs from stored metadata. It does not authorize access
+or generate signed URLs. Its prefix must match a publicly served storage root;
+use a serving controller for private files.
+
 ## Configuration
 
 The helper accepts the following configuration options:
@@ -145,9 +149,8 @@ If you request a variant that doesn't exist, the helper will:
 
 ## Modern image formats via `picture()`
 
-AVIF and WebP are 25–60% smaller than JPEG/PNG at comparable quality but need
-`<picture>` + `<source type>` content negotiation to ship safely alongside the
-original encoding. `Image->picture()` builds that markup:
+AVIF and WebP can reduce image size. A `<picture>` element offers them alongside
+a fallback encoding. `Image->picture()` builds that markup:
 
 ```php
 echo $this->Image->picture($article->cover, 'medium');
@@ -168,8 +171,8 @@ falls through to the inner `<img>`.
 
 ### Producing the alt-format variants
 
-`picture()` doesn't encode anything itself — it just looks up variants named
-`{version}.{format}`. Declare them in your `FileStorage.imageVariants` config
+`picture()` doesn't encode anything itself: it just looks up variants named
+`{variant}.{format}`. Declare them in your `FileStorage.imageVariants` config
 alongside the base variant:
 
 ```php
@@ -177,9 +180,9 @@ alongside the base variant:
     'imageVariants' => [
         'Articles' => [
             'cover' => [
-                'medium'      => ['width' => 800, 'format' => 'jpeg'],
-                'medium.webp' => ['width' => 800, 'format' => 'webp'],
-                'medium.avif' => ['width' => 800, 'format' => 'avif'],
+                'medium'      => ['operations' => ['widen' => ['width' => 800], 'convert' => ['format' => 'jpeg']]],
+                'medium.webp' => ['operations' => ['widen' => ['width' => 800], 'convert' => ['format' => 'webp']]],
+                'medium.avif' => ['operations' => ['widen' => ['width' => 800], 'convert' => ['format' => 'avif']]],
             ],
         ],
     ],
@@ -192,13 +195,13 @@ the standard processor pipeline.
 
 ### Behavior details
 
-- **Graceful degradation** — a format whose variant isn't defined (or doesn't
-  exist on the storage adapter) is silently skipped. Browsers fall through to the
+- **Missing metadata**: a format without a stored variant path or URL is skipped.
+  The helper does not check whether the bytes exist on the adapter. Browsers fall through to the
   next `<source>` or, ultimately, the `<img>`.
 - **No alt-format variants at all** → `picture()` returns just the plain `<img>`
   without the `<picture>` wrapper, avoiding the visual cost of wrapping the only
   child in a redundant element.
-- **Preference order matters** — the default is `['avif', 'webp']` (AVIF first
+- **Preference order matters**: the default is `['avif', 'webp']` (AVIF first
   because it's the most efficient where supported, WebP as a near-universal
   fallback). Override per call with `formats`:
 
@@ -216,14 +219,14 @@ the standard processor pipeline.
 The helper expects entities that implement `FileStorageEntityInterface`. The
 plugin's `FileStorage` entity implements this interface and provides:
 
-- `path` — path to the original file.
-- `url` — optional URL field (if set, used instead of `path`).
-- `getVariantPath($variant)` — path to a specific variant.
-- `getVariantUrl($variant)` — URL for a specific variant (if stored).
-- `variants` — array of variant information.
+- `path`: path to the original file.
+- `url`: optional URL field (if set, used instead of `path`).
+- `getVariantPath($variant)`: path to a specific variant.
+- `getVariantUrl($variant)`: URL for a specific variant (if stored).
+- `variants`: array of variant information.
 
 ## See also
 
-- [Image variants and versioning](./) — configuring image variants.
-- [Usage](/guide/usage) — the complete usage guide.
-- [Quick Start](/guide/quick-start) — a step-by-step example.
+- [Image variants and versioning](./): configuring image variants.
+- [Usage](/guide/usage): the complete usage guide.
+- [Quick Start](/guide/quick-start): a step-by-step example.

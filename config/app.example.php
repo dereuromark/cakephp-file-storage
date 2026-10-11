@@ -20,7 +20,7 @@ $pathBuilder = new \PhpCollective\Infrastructure\Storage\PathBuilder\PathBuilder
     'pathTemplate' => '{model}{ds}{collection}{ds}{randomPath}{ds}{strippedId}{ds}{filename}.{extension}',
     'variantPathTemplate' => '{model}{ds}{collection}{ds}{randomPath}{ds}{strippedId}{ds}{filename}.{hashedVariant}.{extension}',
     'randomPathLevels' => 1,
-    'sanitizer' => new \PhpCollective\Infrastructure\Storage\Utility\FilenameSanitizer([
+    'filenameSanitizer' => new \PhpCollective\Infrastructure\Storage\Utility\FilenameSanitizer([
         'urlSafe' => true,
         'removeUriReservedChars' => true,
         'maxLength' => 190,
@@ -88,7 +88,7 @@ return [
         //                                 TinyAuth, custom middleware) on the Admin prefix.
         //   Closure(ServerRequest $r)   — return true to allow this request.
         //
-        // See docs/Documentation/Installation.md for examples.
+        // See docs/admin/index.md for examples.
         'adminAccess' => null,
 
         // Standalone admin backend. When true the admin controllers run independent of
@@ -149,8 +149,8 @@ return [
         ],
         'behaviorConfig' => [
             'fileStorage' => $fileStorage,
-            'fileProcessor' => null,
-            'fileValidator' => \App\FileStorage\Validator\ImageValidator::class,
+            'fileProcessor' => $imageProcessor,
+            'fileValidator' => null, // Add your own UploadValidatorInterface implementation.
             // Entity<->file object transformer used by the image variant queue task.
             // Must be a FileStorage\FileStorage\DataTransformerInterface instance;
             // anything else is ignored. Default (unset): a DataTransformer bound

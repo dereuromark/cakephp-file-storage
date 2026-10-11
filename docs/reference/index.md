@@ -20,7 +20,6 @@ you can copy from.
 | `adminBackLabel` | `string` | `'Back to App'` | Label for `adminBackUrl`. |
 | `imageVariants` | `array` | `[]` | [Variant definitions](/images/) keyed by `[Model][Collection]`. |
 | `behaviorConfig` | `array` | `[]` | Default config for the [FileStorage behavior](./behavior). |
-| `serveRoute` | `array` | *(unset)* | Route to your custom [serving controller](/serving/). |
 
 ## Image and path settings
 
@@ -31,13 +30,13 @@ Prefix prepended to generated image paths and URLs (used by the
 
 ### `imageVariants`
 
-Variant definitions in a two-level hierarchy — `[ModelAlias][CollectionName]`.
+Variant definitions in a two-level hierarchy: `[ModelAlias][CollectionName]`.
 See [Image variants and versioning](/images/) for the full operation list.
 
 ```php
 'imageVariants' => [
     'Users' => [
-        'Avatar' => $collection->toArray(),
+        'Avatars' => $collection->toArray(),
     ],
 ],
 ```
@@ -105,7 +104,7 @@ to register files already on an adapter.
 
 The secret used to sign temporary file-access URLs
 ([`SignedUrlGenerator`](/serving/signed-urls), HMAC-SHA256). It should be a
-strong, random, app-specific string kept secret — anyone with it can forge valid
+strong, random, app-specific string kept secret: anyone with it can forge valid
 signed URLs. No default is baked in: when unset, it falls back to the app's
 `Security.salt`. Set it explicitly to decouple signed-URL invalidation from the
 salt.
@@ -121,9 +120,9 @@ salt.
 The admin backend is fail-closed: leaving this unset (or `null`) means every
 action returns 403. Opt in with one of:
 
-- `true` — trust an upstream gate (Authentication + Authorization, TinyAuth,
+- `true`: trust an upstream gate (Authentication + Authorization, TinyAuth,
   custom middleware) on the `Admin` prefix.
-- `Closure(\Cake\Http\ServerRequest $request): bool` — return `true` to allow the
+- `Closure(\Cake\Http\ServerRequest $request): bool`: return `true` to allow the
   request.
 
 See the [Admin Backend](/admin/) page for examples.
@@ -139,15 +138,15 @@ Flash). Useful for projects without their own admin shell. Leave `false`
 
 The bundled Bootstrap 5 / Font Awesome 6 admin layout (CDN with SRI):
 
-- `null` — use the bundled `FileStorage.file_storage` layout (default).
-- `false` — fall back to the host application's default layout.
-- `string` — use the given layout, e.g. `'App.admin'`.
+- `null`: use the bundled `FileStorage.file_storage` layout (default).
+- `false`: fall back to the host application's default layout.
+- `string`: use the given layout, e.g. `'App.admin'`.
 
 ### `adminBackUrl` / `adminBackLabel`
 
 An opt-in "back to app" link in the admin header. When set, an outline button
 appears in the top navbar so admins can escape the plugin-isolated layout.
-`adminBackUrl` accepts anything `Router::url()` takes — a Cake URL array, a path
+`adminBackUrl` accepts anything `Router::url()` takes: a Cake URL array, a path
 string, or a full URL. Use `'plugin' => false` to anchor the builder to the host
 app rather than the FileStorage plugin.
 
@@ -158,15 +157,6 @@ app rather than the FileStorage plugin.
 
 ## Serving
 
-### `serveRoute`
-
-The route to your custom [serving controller](/serving/), used for URL
-generation:
-
-```php
-'serveRoute' => [
-    'controller' => 'Images',
-    'action' => 'display',
-    'plugin' => false,
-],
-```
+Use `SignedUrlGenerator::url()` for the built-in original-file download route.
+Custom serving routes are registered and generated through CakePHP's router;
+there is no `FileStorage.serveRoute` hook. See [Serving files](/serving/).

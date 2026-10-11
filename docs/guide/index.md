@@ -11,7 +11,7 @@ as Amazon S3 or Azure. A database table keeps track of *what* you stored and
 *where*. You can always write your own adapter or extend existing ones.
 
 ::: info CakePHP version
-This documentation is for the branch that supports **CakePHP 5.1+**. See the
+This documentation is for the branch that supports **PHP 8.2+ and CakePHP 5.3.4+**. See the
 [version map](https://github.com/dereuromark/cakephp-file-storage/wiki#cakephp-version-map)
 for older releases.
 :::
@@ -24,21 +24,20 @@ in mind: a file is *always* an entry in the `file_storage` table from the
 application's perspective.
 
 The table is the *reference* to the real place where the file is stored, and it
-keeps some metadata too — mime type, filename, a hash of the file content, and size.
+keeps some metadata too: mime type, filename, a hash of the file content, and size.
 
 ::: warning Don't store paths in arbitrary tables
 Storing the path to a file inside an arbitrary table alongside other data is
-considered **bad practice** — it doesn't respect SoC from an architecture
+considered **bad practice**: it doesn't respect SoC from an architecture
 perspective. Many people do it anyway; this plugin gives you a cleaner option.
 :::
 
 You associate the `file_storage` table with your model using the FileStorage
-model from the plugin via `hasOne`, `hasMany`, or `belongsToMany`. When you
-upload a file, you save it to the FileStorage model through the associations —
-`Documents.file`, for example. The FileStorage model then dispatches
-file-storage-specific events; the listeners process the file, put it in the
-configured storage backend using the right adapter, and build the storage path
-using a path builder class.
+model from the plugin via `hasOne` or `hasMany`. When you
+upload a file, you save it to the FileStorage model through the associations,
+`Documents.file`, for example. The FileStorage behavior builds the path, stores the bytes through the
+configured adapter and runs the configured processor. Events let your application
+extend that lifecycle.
 
 ![File Storage abstract flowchart](./images/file-storage-flowchart.jpg)
 
@@ -46,7 +45,7 @@ using a path builder class.
 
 | Concept | Responsibility |
 |---------|----------------|
-| `file_storage` table | The single source of truth — one row per stored file, with metadata. |
+| `file_storage` table | The single source of truth: one row per stored file, with metadata. |
 | Storage adapter | Where the bytes actually live (Local, S3, Azure, in-memory, …). |
 | Path builder | Generates a deterministic storage path from the entity data. |
 | FileStorage behavior | Wires upload handling into your table's save/delete lifecycle. |
@@ -54,10 +53,10 @@ using a path builder class.
 
 ## Next steps
 
-- [Installation](./installation) — install the plugin and set up the database.
-- [Upgrading](./upgrading) — migrate existing apps to the next major schema.
-- [Quick Start](./quick-start) — add an avatar upload end to end.
-- [Usage](./usage) — the core concepts, associations, and upload flow.
+- [Installation](./installation): install the plugin and set up the database.
+- [Upgrading](./upgrading): migrate existing apps to the 5.x schema.
+- [Quick Start](./quick-start): add an avatar upload end to end.
+- [Usage](./usage): the core concepts, associations, and upload flow.
 - [Deduplication](./deduplication) - store identical uploads once.
 - [Resumable uploads](./resumable-uploads) - upload large files in chunks and continue after a dropped connection.
-- [Serving files](/serving/) — generate URLs and serve files with authorization.
+- [Serving files](/serving/): generate URLs and serve files with authorization.

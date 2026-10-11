@@ -19,13 +19,14 @@ protected function checkAccess($fileStorage): bool
     }
 
     // Check ownership
-    return $fileStorage->user_id === $user->getIdentifier();
+    return $fileStorage->user_id !== null
+        && (string)$fileStorage->user_id === (string)$user->getIdentifier();
 }
 ```
 
 ## Pattern 2: related-entity access
 
-Control access based on a related entity — for example, an image that belongs to
+Control access based on a related entity: for example, an image that belongs to
 an album with visibility settings:
 
 ```php
@@ -126,19 +127,19 @@ plugin:
 protected function checkAccess($fileStorage): bool
 {
     $user = $this->request->getAttribute('identity');
-    $authorization = $this->request->getAttribute('authorization');
-
-    try {
-        $authorization->authorize($user, 'view', $fileStorage);
-
-        return true;
-    } catch (ForbiddenException $e) {
-        return false;
-    }
+    return $user !== null && $user->can('view', $fileStorage);
 }
 ```
 
-Then define a policy:
+The authenticated identity must implement `Authorization\IdentityInterface`,
+as configured by the Authorization plugin. If your middleware requires an
+explicit authorization check, use the Authorization component's
+`authorize($fileStorage, 'view')` in the action. Register a policy mapping for
+`FileStorage\Model\Entity\FileStorage` to your application policy in the
+`MapResolver` used by your `AuthorizationService`; a plugin entity does not
+automatically resolve to an app policy.
+
+Then define that policy:
 
 ```php
 // src/Policy/FileStoragePolicy.php
@@ -148,141 +149,31 @@ class FileStoragePolicy
 {
     public function canView($user, $fileStorage): bool
     {
-        return $fileStorage->user_id === $user->getIdentifier();
+        return $fileStorage->user_id !== null
+            && (string)$fileStorage->user_id === (string)$user->getIdentifier();
     }
 }
 ```
 
-## Complete example: protected image gallery
+## Combining signatures with ownership checks
 
-A serving action that combines signed-URL verification with album-visibility
-authorization:
-
-```php
-// src/Controller/ImagesController.php
-namespace App\Controller;
-
-use Cake\Http\Exception\ForbiddenException;
-use Cake\Http\Exception\NotFoundException;
-use Cake\Http\Response;
-use FileStorage\Utility\SignedUrlGenerator;
-
-class ImagesController extends AppController
-{
-    public function display(?string $id = null): Response
-    {
-        if (!$id) {
-            throw new NotFoundException('Image ID required');
-        }
-
-        $fileStorageTable = $this->fetchTable('FileStorage.FileStorage');
-        $fileStorage = $fileStorageTable->get($id);
-
-        // Check for a signed URL first
-        $signature = $this->request->getQuery('signature');
-        $expires = $this->request->getQuery('expires');
-
-        if ($signature && $expires) {
-            $valid = SignedUrlGenerator::verify($fileStorage, $signature, [
-                'expires' => (int)$expires,
-            ]);
-
-            if (!$valid) {
-                throw new ForbiddenException('Invalid or expired signature');
-            }
-            // Signature valid — skip normal authorization
-        } elseif (!$this->checkAccess($fileStorage)) {
-            throw new ForbiddenException('Access denied');
-        }
-
-        $behavior = $fileStorageTable->getBehavior('FileStorage');
-        $adapter = $behavior->getStorageAdapter();
-
-        if (!$adapter->has($fileStorage->path)) {
-            throw new NotFoundException('File not found');
-        }
-
-        $contents = $adapter->read($fileStorage->path);
-
-        return $this->response
-            ->withType($fileStorage->mime_type)
-            ->withStringBody($contents)
-            ->withCache('-1 minute', '+1 year')
-            ->withHeader('Content-Length', (string)$fileStorage->filesize)
-            ->withHeader('Content-Disposition', 'inline; filename="' . $fileStorage->filename . '"')
-            ->withHeader('Accept-Ranges', 'bytes');
-    }
-
-    protected function isForeignReferer(): bool
-    {
-        $referer = $this->request->getHeaderLine('Referer');
-        if (!$referer) {
-            return false; // no referer is OK
-        }
-
-        return parse_url($referer, PHP_URL_HOST) !== $this->request->host();
-    }
-}
-```
+Use the controller from [Serving files](./) and replace its access check with
+the signature-verification block in [Signed URLs](./signed-urls#verifying-signatures-manually).
+After that check, serve the row's stored path through its adapter. A signature
+is a bearer credential, so issue it only after checking access to the file.
 
 ## Testing authorization
 
-Unit-test the access decision in isolation:
+Test your own controller with an authenticated owner, another user and a guest.
+Use one HTTP request per integration test method. Assert that unauthorized
+requests return 403 and cannot read bytes. Also test expired and tampered signed
+URLs, missing storage files and your policy mapping. Authentication session
+keys depend on your application's authentication setup.
 
-```php
-// tests/TestCase/Event/FileAuthorizationListenerTest.php
-namespace App\Test\TestCase\Event;
-
-use App\Event\FileAuthorizationListener;
-use Cake\Event\Event;
-use Cake\TestSuite\TestCase;
-
-class FileAuthorizationListenerTest extends TestCase
-{
-    public function testBlocksUnauthenticatedUsers(): void
-    {
-        $listener = new FileAuthorizationListener();
-        $fileStorage = $this->createMock('FileStorage\Model\Entity\FileStorage');
-
-        $event = new Event('FileStorage.beforeServe', $this, [
-            'fileStorage' => $fileStorage,
-            'user' => null,
-        ]);
-
-        $listener->authorizeAccess($event);
-
-        $this->assertTrue($event->isStopped());
-        $this->assertSame('Authentication required', $event->getResult());
-    }
-}
-```
-
-Integration-test the controller response:
-
-```php
-public function testServeBlocksUnauthorizedAccess(): void
-{
-    $fileStorage = $this->FileStorage->newEntity([
-        'filename' => 'private.jpg',
-        'path' => 'private/file.jpg',
-        'user_id' => 'owner-123',
-    ]);
-    $this->FileStorage->saveOrFail($fileStorage);
-
-    // Log in as a different user
-    $this->session(['Auth.id' => 'other-user']);
-
-    $this->get([
-        'controller' => 'Images',
-        'action' => 'display',
-        $fileStorage->id,
-    ]);
-
-    $this->assertResponseCode(403);
-}
-```
+The plugin does not dispatch a `FileStorage.beforeServe` event. Test the access
+check or controller you actually implement, rather than an invented listener.
 
 ## See also
 
-- [Signed URLs](./signed-urls) — token-based temporary access.
-- [Security and performance](./security) — hardening and caching.
+- [Signed URLs](./signed-urls): token-based temporary access.
+- [Security and performance](./security): hardening and caching.

@@ -14,9 +14,9 @@ bin/cake file_storage generate_image_variant [model] [collection] [variant]
 All arguments are optional. If omitted, the command processes all configured
 variants.
 
-- **model** *(optional)* — model name of the images to process (e.g. `Posts`, `Users`).
-- **collection** *(optional)* — collection name within the model (e.g. `Avatar`, `Cover`, `Gallery`).
-- **variant** *(optional)* — specific variant to generate (e.g. `thumb`, `medium`, `large`).
+- **model** *(optional)*: model name of the images to process (e.g. `Posts`, `Users`).
+- **collection** *(optional)*: collection name within the model (e.g. `Avatar`, `Cover`, `Gallery`).
+- **variant** *(optional)*: specific variant to generate (e.g. `thumb`, `medium`, `large`).
 
 ## Options
 
@@ -25,9 +25,9 @@ variants.
 | `--storage`, `-s` | `FileStorage.FileStorage` | The storage table to use. |
 | `--limit`, `-l` | `10` | Limit the number of records processed in one batch. |
 | `--adapter`, `-a` | `Local` | The adapter config name to use. |
-| `--force`, `-f` | — | Force regeneration even if variants already exist. Without it, existing variants are merged (preserved); with it, all variants are replaced. |
-| `--dryRun`, `-d` | — | Preview what would be processed without making changes. |
-| `--queue` | — | Enqueue one job per entity instead of processing inline. Requires `dereuromark/cakephp-queue`. See [below](#background-regeneration-via-cakephp-queue). |
+| `--force`, `-f` | - | Force regeneration even if variants already exist. Without it, existing variants are merged (preserved); with it, all variants are replaced. |
+| `--dryRun`, `-d` | - | Preview what would be processed without making changes. |
+| `--queue` | - | Enqueue one job per entity instead of processing inline. Requires `dereuromark/cakephp-queue`. See [below](#background-regeneration-via-cakephp-queue). |
 
 ## Examples
 
@@ -83,18 +83,18 @@ Image variants must be configured in your application configuration (e.g.
     'imageVariants' => [
         'Posts' => [
             'Cover' => [
-                'thumb' => ['width' => 150, 'height' => 150, 'mode' => 'crop'],
-                'medium' => ['width' => 600, 'height' => 400],
-                'large' => ['width' => 1200, 'height' => 800],
+                'thumb' => ['operations' => ['cover' => ['width' => 150, 'height' => 150]]],
+                'medium' => ['operations' => ['scale' => ['width' => 600, 'height' => 400]]],
+                'large' => ['operations' => ['scale' => ['width' => 1200, 'height' => 800]]],
             ],
             'Gallery' => [
-                'thumb' => ['width' => 200, 'height' => 200, 'mode' => 'crop'],
+                'thumb' => ['operations' => ['cover' => ['width' => 200, 'height' => 200]]],
             ],
         ],
         'Users' => [
-            'Avatar' => [
-                'small' => ['width' => 50, 'height' => 50, 'mode' => 'crop'],
-                'medium' => ['width' => 150, 'height' => 150, 'mode' => 'crop'],
+            'Avatars' => [
+                'small' => ['operations' => ['cover' => ['width' => 50, 'height' => 50]]],
+                'medium' => ['operations' => ['cover' => ['width' => 150, 'height' => 150]]],
             ],
         ],
     ],
@@ -120,7 +120,7 @@ Image variants must be configured in your application configuration (e.g.
 
 ## Background regeneration via cakephp-queue
 
-Inline processing blocks the calling shell for the whole batch — fine for a
+Inline processing blocks the calling shell for the whole batch: fine for a
 one-off CLI run, but unworkable from an admin UI button on a deployment with
 thousands of attachments. When `dereuromark/cakephp-queue` is installed, pass
 `--queue` to enqueue one `FileStorage.ImageVariant` job per entity:
@@ -146,8 +146,8 @@ $queuedJobsTable = $this->fetchTable('Queue.QueuedJobs');
 $queuedJobsTable->createJob('FileStorage.ImageVariant', [
     'id' => $fileStorage->id,
     'operations' => [
-        'thumbnail' => ['width' => 100],
-        'medium'    => ['width' => 600],
+        'thumbnail' => ['operations' => ['widen' => ['width' => 100]]],
+        'medium'    => ['operations' => ['widen' => ['width' => 600]]],
     ],
     'merge' => true,                             // keep existing variants
     'storageTable' => 'FileStorage.FileStorage', // optional
@@ -156,5 +156,5 @@ $queuedJobsTable->createJob('FileStorage.ImageVariant', [
 
 The task validates the payload (a missing `id` or `operations` throws
 `Queue\Model\QueueException` so the worker can apply retry / dead-letter
-handling) and soft-fails — no exception, no log noise — when the entity has been
+handling). It returns without an exception or log message when the entity was
 deleted between enqueue and dispatch.

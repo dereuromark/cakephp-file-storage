@@ -63,16 +63,16 @@ class FileAssociationBehavior extends Behavior
         ArrayObject $options,
     ): void {
         $associations = $this->getConfig('associations');
-        foreach ($associations as $assocConfig) {
+        foreach ($associations as $assocName => $assocConfig) {
             $property = $assocConfig['property'];
             if ($entity->{$property} === null) {
                 continue;
             }
 
-            $association = $this->table()->{$assocConfig['collection']};
+            $association = $this->table()->{$assocName};
             if ($association instanceof HasOne) {
                 if (is_array($entity->{$property})) {
-                    $entity->{$property} = $this->table()->{$assocConfig['collection']}->newEntity($entity->{$property});
+                    $entity->{$property} = $this->table()->{$assocName}->newEntity($entity->{$property});
                 }
 
                 $entity->{$property}->set('model', $assocConfig['model']);
@@ -80,7 +80,7 @@ class FileAssociationBehavior extends Behavior
             } elseif ($association instanceof HasMany) {
                 foreach ($entity->{$property} as &$v) {
                     if (is_array($v)) {
-                        $v = $this->table()->{$assocConfig['collection']}->newEntity($v);
+                        $v = $this->table()->{$assocName}->newEntity($v);
                     }
 
                     $v->set('model', $assocConfig['model']);
@@ -108,7 +108,7 @@ class FileAssociationBehavior extends Behavior
             if ($entity->{$property} === null) {
                 continue;
             }
-            $association = $this->table()->{$assocConfig['collection']};
+            $association = $this->table()->{$assocName};
 
             if (!$entity->get('id') || !$entity->{$property}) {
                 continue;
@@ -117,7 +117,7 @@ class FileAssociationBehavior extends Behavior
             if ($association instanceof HasOne) {
                 $this->processOne($entity, $assocName, $assocConfig);
 
-                return;
+                continue;
             }
 
             $this->processMany($entity, $assocName, $assocConfig);

@@ -13,14 +13,14 @@ $this->addBehavior('FileStorage.FileStorage', Configure::read('FileStorage.behav
 
 For uploads saved through another app table, such as `Posts` with a
 `CoverImages` association, attach `FileStorage.FileAssociation` to the app table
-instead. See [Usage](/guide/usage#use-the-right-behavior-for-the-right-table).
+instead. See [Usage](/guide/usage#_3-use-the-right-behavior-for-the-right-table).
 
 ## Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `fileStorage` | `FileStorage` | *required* | The FileStorage instance used to store files. |
-| `fileProcessor` | `ProcessorInterface\|null` | `null` | Image/file processor for generating variants. |
+| `fileProcessor` | `ProcessorInterface\|null` | `null` | Image/file processor. `null` stores originals without processing. |
 | `fileValidator` | `string\|UploadValidatorInterface\|null` | `null` | Validator class or instance for upload validation. |
 | `fileField` | `string` | `'file'` | The form field name that contains the uploaded file. |
 | `defaultStorageConfig` | `string` | `'Local'` | Default storage adapter name. |
@@ -38,7 +38,9 @@ accordingly. See [Usage](/guide/usage#the-filefield-option).
 ### `fileProcessor`
 
 Pass an `ImageProcessor` (or a `StackProcessor` combining several processors) to
-generate image variants on upload. See
+generate image variants on upload. With `null`, upload saves use an empty
+processor stack; no variants are generated. The regeneration command and queue
+task require an actual processor. See
 [Image variants and versioning](/images/#setting-up-the-image-processor).
 
 ### `fileValidator`
