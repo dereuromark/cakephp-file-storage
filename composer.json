@@ -38,6 +38,7 @@
     },
     "require-dev": {
         "cakephp/migrations": "^5.0.0",
+        "dereuromark/cakephp-i18n-lint": "^0.1.1",
         "dereuromark/cakephp-queue": "^8.12",
         "php-collective/code-sniffer": "dev-master",
         "php-collective/file-storage-image-processor": "^1.0 || ^2.0",
@@ -86,6 +87,9 @@
         "stan": "phpstan analyze",
         "stan-setup": "cp composer.json composer.backup && composer require --dev phpstan/phpstan:^2.0.0 && mv composer.backup composer.json",
         "stan-test": "phpstan analyze tests/",
-        "test": "phpunit"
+        "test": "phpunit",
+        "i18n-check": "i18n-lint check",
+        "i18n-extract": "i18n-lint extract",
+        "i18n-lint": "i18n-lint lint"
     }
 }
