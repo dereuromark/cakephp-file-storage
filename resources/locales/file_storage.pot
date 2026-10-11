@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2026-05-04 03:32+0200\n"
+"POT-Creation-Date: 2026-10-11 17:23+0000\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -17,6 +17,9 @@ msgstr ""
 msgid "Dry-Run only."
 msgstr ""
 
+msgid "Only remove unreferenced deduplicated blobs and stray blob files. Orphan rows and files are left alone, model and collection are ignored."
+msgstr ""
+
 msgid "Cannot find variants config for this model/collection."
 msgstr ""
 
@@ -26,7 +29,16 @@ msgstr ""
 msgid "{0} image file(s) will be processed"
 msgstr ""
 
+msgid "The --queue option requires `dereuromark/cakephp-queue` to be installed."
+msgstr ""
+
+msgid "- ID {0} enqueued"
+msgstr ""
+
 msgid "- ID {0} processed"
+msgstr ""
+
+msgid "- ID {0} would be processed"
 msgstr ""
 
 msgid "Command for (re)generating image variants."
@@ -42,6 +54,9 @@ msgid "The adapter config name to use."
 msgstr ""
 
 msgid "Force regeneration of variants even if they already exist."
+msgstr ""
+
+msgid "Enqueue one ImageVariantTask job per entity instead of processing inline. Requires dereuromark/cakephp-queue."
 msgstr ""
 
 msgid "Model name of the images to generate"
@@ -97,6 +112,15 @@ msgid_plural "{0} file storage entries deleted."
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "Missing UUID or signature."
+msgstr ""
+
+msgid "File not found."
+msgstr ""
+
+msgid "Invalid or expired signature."
+msgstr ""
+
 msgid "Cleanup"
 msgstr ""
 
@@ -109,7 +133,7 @@ msgstr ""
 msgid "Model"
 msgstr ""
 
-msgid "— all —"
+msgid "All"
 msgstr ""
 
 msgid "Collection"
@@ -136,6 +160,15 @@ msgstr ""
 msgid "Rows with missing backing files"
 msgstr ""
 
+msgid "Blobs (would delete)"
+msgstr ""
+
+msgid "Stray blob files (would delete)"
+msgstr ""
+
+msgid "Blobs skipped"
+msgstr ""
+
 msgid "Show {0} orphan file paths"
 msgstr ""
 
@@ -154,7 +187,7 @@ msgstr ""
 msgid "Sure? This permanently deletes the orphan rows and files listed above."
 msgstr ""
 
-msgid "Nothing to clean up — storage is in sync."
+msgid "Nothing to clean up. Storage is in sync."
 msgstr ""
 
 msgid "Actions"
@@ -185,6 +218,9 @@ msgid "Filters"
 msgstr ""
 
 msgid "active"
+msgstr ""
+
+msgid "— all —"
 msgstr ""
 
 msgid "Mime prefix"
@@ -251,12 +287,6 @@ msgid "Install dereuromark/cakephp-queue to enable background variant regenerati
 msgstr ""
 
 msgid "Delete {0}?"
-msgstr ""
-
-msgid "previous"
-msgstr ""
-
-msgid "next"
 msgstr ""
 
 msgid "File"
@@ -404,5 +434,14 @@ msgid "Queue Admin"
 msgstr ""
 
 msgid "Queue (not loaded)"
+msgstr ""
+
+msgid "Page navigation"
+msgstr ""
+
+msgid "Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total"
+msgstr ""
+
+msgid "Back to App"
 msgstr ""
 
