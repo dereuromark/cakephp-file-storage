@@ -301,6 +301,6 @@ This development branch uses CakePHP 6 and PHP 8.5 or newer. Application extensi
 
 CakePHP 6 no longer forwards arbitrary table methods to behaviors. Call custom behavior methods through `$table->getBehavior('FileStorage')`. Register listeners with `on($eventName, $listener, $options)` and plugin routes with `plugin($name, $callback, $options)`. Replace `disableHydration()` with `enableHydration(false)`.
 
-For trusted HTML link titles, replace `escapeTitle => false` with `escape => false` and keep `escapeAttributes => true`. Ordinary text titles use the helper's default escaping. Pass route arrays to Form helpers; when a configured URL is already a string, escape it with `$this->Url->build($url, ['escape' => true])` before using it in a form with an unescaped HTML title.
+For trusted HTML link titles, replace `escapeTitle => false` with `escape => false` and keep `escapeAttributes => true`. Ordinary text titles use the helper's default escaping. Form helpers accept raw URL strings and escape the form action themselves. For `HtmlHelper::link()` with `escape => false`, escape a configured string URL with `$this->Url->build($url, ['escape' => true])` before passing it to the helper.
 
 The migration dependency currently uses the official `fix/6.x-cakephp-compatibility` branch while [Migrations #1121](https://github.com/cakephp/migrations/pull/1121) is pending. Follow [Installation](./installation) for the development dependency settings.
