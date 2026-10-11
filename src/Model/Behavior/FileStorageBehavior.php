@@ -82,7 +82,7 @@ class FileStorageBehavior extends Behavior
      *
      * @var array<string, mixed>
      */
-    protected array $_defaultConfig = [
+    protected array $defaultConfig = [
         'defaultStorageConfig' => 'Local',
         'ignoreEmptyFile' => true,
         'fileField' => 'file',

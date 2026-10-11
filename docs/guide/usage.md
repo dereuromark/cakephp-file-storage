@@ -224,7 +224,7 @@ public function initialize(array $config): void
 In your entity (e.g. `Post.php`):
 
 ```php
-protected array $_accessible = [
+protected array $patchable = [
     'title' => true,
     'body' => true,
     'cover_image' => true,   // hasOne association (singular property)

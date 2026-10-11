@@ -11,7 +11,7 @@ as Amazon S3 or Azure. A database table keeps track of *what* you stored and
 *where*. You can always write your own adapter or extend existing ones.
 
 ::: info CakePHP version
-This documentation is for the branch that supports **PHP 8.2+ and CakePHP 5.3.4+**. See the
+This documentation covers the CakePHP 6 development branch. See the
 [version map](https://github.com/dereuromark/cakephp-file-storage/wiki#cakephp-version-map)
 for older releases.
 :::

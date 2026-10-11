@@ -82,7 +82,7 @@ class DataTransformer implements DataTransformerInterface
 
         $options = [
             'validate' => false,
-            'accessibleFields' => ['*' => true],
+            'patchableFields' => ['*' => true],
         ];
 
         if ($entity) {

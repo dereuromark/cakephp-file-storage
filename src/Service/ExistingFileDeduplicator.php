@@ -6,6 +6,7 @@ use Cake\Core\Configure;
 use Cake\Database\Driver\Mysql;
 use Cake\Database\Driver\Postgres;
 use Cake\Database\Driver\Sqlite;
+use Cake\Database\Expression\FunctionExpression;
 use Cake\I18n\DateTime;
 use Cake\ORM\Locator\LocatorAwareTrait;
 use Cake\ORM\Query\SelectQuery;
@@ -111,7 +112,7 @@ class ExistingFileDeduplicator
         }
         if (!$hashOnly) {
             $reserved = $table->find()->where(['blob_id IS' => null])
-                ->where(fn ($exp, $query) => $exp->eq($query->func()->substr(['path' => 'identifier', 1, strlen($this->root) + 1], [1 => 'integer', 2 => 'integer'], 'string'), $this->root . '/', 'string'))->count();
+                ->where(fn ($exp, $query) => $exp->eq(new FunctionExpression('substr', ['path' => 'identifier', 1, strlen($this->root) + 1], [1 => 'integer', 2 => 'integer'], 'string'), $this->root . '/', 'string'))->count();
             if ($reserved > 0) {
                 $this->detail('warnings', sprintf('%d rows are not converted because the blob directory is reserved for blobs.', $reserved));
             }
@@ -320,7 +321,7 @@ class ExistingFileDeduplicator
         }
         $hashed = (clone $candidates)
             ->where(['hash IS NOT' => null, 'hash !=' => ''])
-            ->where(fn ($exp, $query) => $exp->notEq($query->func()->substr(['path' => 'identifier', 1, strlen($this->root) + 1], [1 => 'integer', 2 => 'integer'], 'string'), $this->root . '/', 'string'));
+            ->where(fn ($exp, $query) => $exp->notEq(new FunctionExpression('substr', ['path' => 'identifier', 1, strlen($this->root) + 1], [1 => 'integer', 2 => 'integer'], 'string'), $this->root . '/', 'string'));
         if ($configured !== true) {
             $hashed->where(['OR' => $scopes]);
         }

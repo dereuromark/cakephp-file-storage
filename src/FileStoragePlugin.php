@@ -40,13 +40,13 @@ class FileStoragePlugin extends BasePlugin
     public function routes(RouteBuilder $routes): void
     {
         $routes->prefix('Admin', function (RouteBuilder $routes): void {
-            $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes): void {
+            $routes->plugin('FileStorage', function (RouteBuilder $routes): void {
                 $routes->connect('/', ['controller' => 'FileStorageDashboard', 'action' => 'index']);
                 $routes->connect('/files', ['controller' => 'FileStorage', 'action' => 'index']);
                 $routes->connect('/dashboard', ['controller' => 'FileStorageDashboard', 'action' => 'index']);
 
                 $routes->fallbacks();
-            });
+            }, ['path' => '/file-storage']);
         });
 
         // Public signed-download route. Lives outside the Admin prefix because
@@ -54,13 +54,13 @@ class FileStoragePlugin extends BasePlugin
         // session. The signature is captured as a URL segment (not a query
         // string) so it doesn't get scrubbed from same-origin Referer headers
         // or hidden in reverse-proxy access logs that strip the query.
-        $routes->plugin('FileStorage', ['path' => '/file-storage'], function (RouteBuilder $routes): void {
+        $routes->plugin('FileStorage', function (RouteBuilder $routes): void {
             $routes->connect(
                 '/signed/{uuid}/{signature}',
                 ['controller' => 'FileStorage', 'action' => 'signed'],
                 ['pass' => ['uuid', 'signature'], 'signature' => '[a-f0-9]{64}'],
             );
-        });
+        }, ['path' => '/file-storage']);
     }
 
     /**

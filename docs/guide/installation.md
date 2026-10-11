@@ -1,7 +1,8 @@
 # Installation
 
-This branch requires PHP 8.2+ and CakePHP 5.3.4+. The optional image processor
-2.x requires PHP 8.3+; use processor 1.x on PHP 8.2.
+This development branch targets CakePHP 6. [Composer](https://github.com/dereuromark/cakephp-file-storage/blob/cake6/composer.json) defines package compatibility.
+
+Before installing, allow development dependencies in your application's root `composer.json` with `"minimum-stability": "dev"` and `"prefer-stable": true`.
 
 ## Using Composer
 
@@ -9,7 +10,7 @@ Installing the plugin via [Composer](https://getcomposer.org/) is straightforwar
 Run this in your project folder:
 
 ```bash
-composer require dereuromark/cakephp-file-storage
+composer require dereuromark/cakephp-file-storage:dev-cake6
 ```
 
 ## Load the plugin
@@ -35,7 +36,7 @@ Set up the plugin database using the
 [official migrations plugin for CakePHP](https://github.com/cakephp/migrations):
 
 ```bash
-composer require cakephp/migrations
+composer require cakephp/migrations:dev-fix/6.x-cakephp-compatibility
 bin/cake plugin load Migrations
 bin/cake migrations migrate -p FileStorage
 ```

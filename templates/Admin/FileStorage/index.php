@@ -170,7 +170,8 @@ $activeFilters = array_filter($filterValues, static fn (string $v): bool => $v !
                                 ['action' => 'regenerateVariants', $entry->id],
                                 [
                                     'class' => 'btn btn-sm btn-outline-info',
-                                    'escapeTitle' => false,
+                                    'escape' => false,
+                                    'escapeAttributes' => true,
                                     'title' => __d('file_storage', 'Queue variant regeneration'),
                                     'form' => [
                                         'class' => 'd-inline',
@@ -190,7 +191,8 @@ $activeFilters = array_filter($filterValues, static fn (string $v): bool => $v !
                             ['action' => 'delete', $entry->id],
                             [
                                 'class' => 'btn btn-sm btn-outline-danger',
-                                'escapeTitle' => false,
+                                'escape' => false,
+                                'escapeAttributes' => true,
                                 'title' => __d('file_storage', 'Delete'),
                                 'form' => [
                                     'class' => 'd-inline',

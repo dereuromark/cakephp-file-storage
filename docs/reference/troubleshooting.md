@@ -24,7 +24,7 @@
 1. Verify `foreignKey` is set to `'foreign_key'`.
 2. Check that `conditions` include both `model` and `collection`.
 3. Ensure you use `contain` when loading entities.
-4. Verify the entity `$_accessible` includes the association field.
+4. Verify the entity `$patchable` includes the association field.
 
 ## Serving
 
