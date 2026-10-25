@@ -39,7 +39,7 @@ class DeduplicateCommand extends Command
                 'limit' => $limit === null ? null : (int)$limit,
                 'manifest' => $manifest,
             ]);
-        } catch (RuntimeException | InvalidArgumentException $exception) {
+        } catch (RuntimeException|InvalidArgumentException $exception) {
             $io->err($exception->getMessage());
 
             return static::CODE_ERROR;

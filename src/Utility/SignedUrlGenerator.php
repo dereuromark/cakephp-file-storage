@@ -43,9 +43,9 @@ class SignedUrlGenerator
         }
 
         $expires = $options['expires'] ?? null;
-        $secret = $options['secret'] ??
-                  Configure::read('FileStorage.signatureSecret') ??
-                  Security::getSalt();
+        $secret = $options['secret']
+                  ?? Configure::read('FileStorage.signatureSecret')
+                  ?? Security::getSalt();
 
         // Include data that should invalidate signature if changed
         $data = implode('|', [
