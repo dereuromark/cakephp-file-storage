@@ -267,7 +267,8 @@ $styleNonceAttr = $cspStyleNonce !== '' ? ' nonce="' . h($cspStyleNonce) . '"' :
             });
 
             // Submit-confirm dialogs (CSP-safe: replaces inline confirm() bound via postLink)
-            document.querySelectorAll('form[data-confirm-message]').forEach(function (form) {
+            document.querySelectorAll('form[data-confirm-message]:not([data-confirm-bound])').forEach(function (form) {
+                form.dataset.confirmBound = '1';
                 form.addEventListener('submit', function (e) {
                     if (!confirm(this.dataset.confirmMessage)) {
                         e.preventDefault();

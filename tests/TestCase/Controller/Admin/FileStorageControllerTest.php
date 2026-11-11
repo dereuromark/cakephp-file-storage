@@ -105,8 +105,8 @@ class FileStorageControllerTest extends TestCase
         $this->assertResponseContains('<script nonce="script-nonce" src="https://cdn.jsdelivr.net/npm/chart.js');
         $this->assertResponseContains('<script nonce="script-nonce" src="https://cdn.jsdelivr.net/npm/bootstrap');
         $this->assertResponseNotRegExp('/<script(?![^>]*nonce=)/');
-        $this->assertResponseNotRegExp('/<style(?![^>]*nonce=)/');
-        $this->assertResponseNotRegExp('/<link(?![^>]*nonce=)[^>]*stylesheet/');
+        $this->assertResponseNotRegExp('/<style(?![^>]*nonce="style-nonce")/');
+        $this->assertResponseNotRegExp('/<link(?![^>]*nonce="style-nonce")[^>]*stylesheet/');
     }
 
     /**
