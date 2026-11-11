@@ -3,10 +3,15 @@
  * FileStorage Admin Layout
  *
  * Self-contained admin layout using Bootstrap 5 and Font Awesome 6 via CDN.
- * CSP-safe: all inline scripts use the request's `cspNonce` attribute.
+ * CSP-safe: scripts use the request's `cspScriptNonce` attribute (falling back to
+ * `cspNonce`), styles use `cspStyleNonce`.
  *
  * @var \Cake\View\View $this
  */
+$cspNonce = (string)($this->getRequest()->getAttribute('cspScriptNonce') ?? $this->getRequest()->getAttribute('cspNonce', ''));
+$nonceAttr = $cspNonce !== '' ? ' nonce="' . h($cspNonce) . '"' : '';
+$cspStyleNonce = (string)$this->getRequest()->getAttribute('cspStyleNonce', '');
+$styleNonceAttr = $cspStyleNonce !== '' ? ' nonce="' . h($cspStyleNonce) . '"' : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,11 +20,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $this->fetch('title') ? strip_tags($this->fetch('title')) . ' - ' : '' ?>FileStorage Admin</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link<?= $styleNonceAttr ?> href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link<?= $styleNonceAttr ?> href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous">
+    <script<?= $nonceAttr ?> src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
-    <style>
+    <style<?= $styleNonceAttr ?>>
         :root {
             --fs-primary: #0d6efd;
             --fs-success: #198754;
@@ -252,10 +257,9 @@
 
     <?= $this->fetch('postLink') ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script<?= $nonceAttr ?> src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-    <?php $cspNonce = (string)$this->getRequest()->getAttribute('cspNonce', ''); ?>
-    <script<?= $cspNonce !== '' ? ' nonce="' . h($cspNonce) . '"' : '' ?>>
+    <script<?= $nonceAttr ?>>
         document.addEventListener('DOMContentLoaded', function () {
             // Bootstrap tooltips
             document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function (el) {

@@ -11,7 +11,7 @@
 use Cake\Core\Plugin;
 
 $this->assign('title', __d('file_storage', 'Files'));
-$cspNonce = (string)$this->getRequest()->getAttribute('cspNonce', '');
+$cspNonce = (string)($this->getRequest()->getAttribute('cspScriptNonce') ?? $this->getRequest()->getAttribute('cspNonce', ''));
 
 $activeFilters = array_filter($filterValues, static fn (string $v): bool => $v !== '');
 ?>
