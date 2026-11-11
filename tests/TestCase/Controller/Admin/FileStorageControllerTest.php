@@ -3,13 +3,19 @@
 namespace FileStorage\Test\TestCase\Controller\Admin;
 
 use Cake\Core\Configure;
+use Cake\Event\EventInterface;
+use Cake\Event\EventManager;
 use Cake\Http\Exception\BadRequestException;
 use Cake\Http\Exception\ForbiddenException;
 use Cake\Http\Exception\NotFoundException;
+use Cake\Http\MiddlewareQueue;
 use Cake\Http\ServerRequest;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 use FileStorage\Service\CleanupReport;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 /**
  * @uses \FileStorage\Controller\Admin\FileStorageController
@@ -81,6 +87,54 @@ class FileStorageControllerTest extends TestCase
         $fileStorage = $this->viewVariable('fileStorage');
         $this->assertInstanceOf('FileStorage\Model\Entity\FileStorage', $fileStorage);
         $this->assertSame(1, $fileStorage->id);
+    }
+
+    /**
+     * CakePHP's CspMiddleware stores the nonces as `cspScriptNonce` and `cspStyleNonce`.
+     *
+     * @return void
+     */
+    public function testIndexUsesCoreCspNonces(): void
+    {
+        $this->withRequestAttribute('cspScriptNonce', 'script-nonce');
+        $this->withRequestAttribute('cspStyleNonce', 'style-nonce');
+
+        $this->get(['controller' => 'FileStorage', 'action' => 'index', 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+
+        $this->assertResponseOk();
+        $this->assertResponseContains('<script nonce="script-nonce" src="https://cdn.jsdelivr.net/npm/chart.js');
+        $this->assertResponseContains('<script nonce="script-nonce" src="https://cdn.jsdelivr.net/npm/bootstrap');
+        $this->assertResponseNotRegExp('/<script(?![^>]*nonce=)/');
+        $this->assertResponseNotRegExp('/<style(?![^>]*nonce="style-nonce")/');
+        $this->assertResponseNotRegExp('/<link(?![^>]*nonce="style-nonce")[^>]*stylesheet/');
+    }
+
+    /**
+     * @return void
+     */
+    public function testEditUsesCspScriptNonce(): void
+    {
+        $this->withRequestAttribute('cspScriptNonce', 'script-nonce');
+
+        $this->get(['controller' => 'FileStorage', 'action' => 'edit', 1, 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+
+        $this->assertResponseOk();
+        $this->assertResponseNotRegExp('/<script(?![^>]*nonce="script-nonce")/');
+    }
+
+    /**
+     * A custom middleware may still provide the nonce as `cspNonce`.
+     *
+     * @return void
+     */
+    public function testEditFallsBackToCspNonce(): void
+    {
+        $this->withRequestAttribute('cspNonce', 'custom-nonce');
+
+        $this->get(['controller' => 'FileStorage', 'action' => 'edit', 1, 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+
+        $this->assertResponseOk();
+        $this->assertResponseNotRegExp('/<script(?![^>]*nonce="custom-nonce")/');
     }
 
     /**
@@ -384,5 +438,22 @@ class FileStorageControllerTest extends TestCase
         $this->expectException(NotFoundException::class);
 
         $this->get(['controller' => 'FileStorage', 'action' => 'download', 1, 'prefix' => 'Admin', 'plugin' => 'FileStorage']);
+    }
+
+    /**
+     * Adds a middleware that sets a request attribute, like a CSP middleware would.
+     *
+     * @param string $name
+     * @param string $value
+     *
+     * @return void
+     */
+    protected function withRequestAttribute(string $name, string $value): void
+    {
+        EventManager::instance()->on('Server.buildMiddleware', function (EventInterface $event, MiddlewareQueue $queue) use ($name, $value): void {
+            $queue->prepend(function (ServerRequestInterface $request, RequestHandlerInterface $handler) use ($name, $value): ResponseInterface {
+                return $handler->handle($request->withAttribute($name, $value));
+            });
+        });
     }
 }

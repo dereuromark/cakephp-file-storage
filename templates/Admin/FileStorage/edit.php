@@ -3,7 +3,7 @@
  * @var \App\View\AppView $this
  * @var \FileStorage\Model\Entity\FileStorage $fileStorage
  */
-$cspNonce = (string)$this->getRequest()->getAttribute('cspNonce', '');
+$cspNonce = (string)($this->getRequest()->getAttribute('cspScriptNonce') ?? $this->getRequest()->getAttribute('cspNonce', ''));
 ?>
 <div class="row">
     <aside class="column large-3 medium-4 columns col-sm-4 col-12">
@@ -48,7 +48,8 @@ $cspNonce = (string)$this->getRequest()->getAttribute('cspNonce', '');
     </div>
 </div>
 <script<?= $cspNonce !== '' ? ' nonce="' . h($cspNonce) . '"' : '' ?>>
-document.querySelectorAll('form[data-confirm-message]').forEach(function(form) {
+document.querySelectorAll('form[data-confirm-message]:not([data-confirm-bound])').forEach(function(form) {
+    form.dataset.confirmBound = '1';
     form.addEventListener('submit', function(e) {
         if (!confirm(this.dataset.confirmMessage)) {
             e.preventDefault();
