@@ -56,7 +56,8 @@ A few good entry points:
 
 The Markdown sources live in the [docs](docs/) directory of this repository.
 
-See also the blog post [CakePHP File Management Solution](https://www.dereuromark.de/2025/11/27/cakephp-file-management-solution/).
+See also the blog posts [CakePHP File Management Solution](https://www.dereuromark.de/2025/11/27/cakephp-file-management-solution/) and
+[CakePHP File Storage: store it once, upload it in pieces](https://www.dereuromark.de/2026/10/09/cakephp-file-storage-store-it-once-upload-it-in-pieces/), which covers the design of deduplication and resumable uploads.
 
 ## Support
 

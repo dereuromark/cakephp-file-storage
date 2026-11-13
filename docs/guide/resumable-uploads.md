@@ -122,3 +122,5 @@ The `Location` of a new upload is a path without scheme and host, so a TLS-termi
 Consume copies the complete part into the storage adapter and generates variants synchronously. On a local adapter this is a second full write, so reserve enough free space for it. The internal completed file is not a PHP upload; listeners calling `moveTo()` in a web request cannot use `move_uploaded_file()` successfully.
 
 Parallel chunks, per-chunk checksums, deferred lengths, and creation with upload are unsupported. Resume with the same file bytes. A declared `sha256` catches a mismatch at completion; without it, the server cannot detect that the client resumed from different content.
+
+For the design decisions behind resumable uploads, see the blog post [CakePHP File Storage: store it once, upload it in pieces](https://www.dereuromark.de/2026/10/09/cakephp-file-storage-store-it-once-upload-it-in-pieces/).

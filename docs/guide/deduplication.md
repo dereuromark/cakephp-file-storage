@@ -388,3 +388,5 @@ that fails partway through leaves the variants it already wrote. Rebuild these
 derived files with `bin/cake file_storage generate_image_variant --force`.
 
 Storage is reclaimed only when cleanup runs.
+
+For the design decisions behind deduplication and instant upload, see the blog post [CakePHP File Storage: store it once, upload it in pieces](https://www.dereuromark.de/2026/10/09/cakephp-file-storage-store-it-once-upload-it-in-pieces/).
